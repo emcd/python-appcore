@@ -1,0 +1,27 @@
+# Changes here will be overwritten by Copier
+_commit: v1.27
+_src_path: gh:emcd/python-project-common
+author_email: emcd@users.noreply.github.com
+author_name: Eric McDonald
+description: Common application configuration management.
+development_status: 5 - Production/Stable
+distribution_name: emcd-appcore
+enable_cli: false
+enable_property_tests: false
+enable_publication: true
+enable_rust_extension: false
+gh_owner: emcd
+include_data_resources: false
+inject_exceptions: true
+inject_foundations: true
+package_name: appcore
+project_name: python-appcore
+pypy_versions:
+- '3.10'
+python_version_min: '3.10'
+python_versions:
+- '3.10'
+- '3.11'
+- '3.12'
+- '3.13'
+year_of_origin: 2025
