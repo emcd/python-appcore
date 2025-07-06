@@ -15,6 +15,9 @@ license = 'Apache-2.0'
 readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
+  'absence~=1.1',
+  'dynadoc~=1.2',
+  'frigid~=4.1',
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
@@ -88,7 +91,7 @@ strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/appcore' = 'appcore'
 # --- BEGIN: Injected by Copier ---
-# --- END: Injected by Copier --- 
+# --- END: Injected by Copier ---
 [tool.hatch.envs.default]
 python = '3.10'
 [tool.hatch.envs.develop]

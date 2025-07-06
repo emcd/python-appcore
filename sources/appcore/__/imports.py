@@ -23,9 +23,12 @@
 # ruff: noqa: F401
 
 
-import collections.abc as cabc
+import collections.abc as   cabc
 import types
 
+import dynadoc as           ddoc
+import frigid as            immut
+import platformdirs as      pdirs
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 # --- END: Injected by Copier ---

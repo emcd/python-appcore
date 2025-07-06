@@ -18,20 +18,34 @@
 #============================================================================#
 
 
-''' Common application configuration management. '''
+''' Information about application. '''
 
 
 from . import __
-# --- BEGIN: Injected by Copier ---
-from . import exceptions
-# --- END: Injected by Copier ---
 
 
-from .application import Information as ApplicationInformation
+class Information( __.immut.DataclassObject ):
+    ''' Information about an application. '''
 
+    name: __.typx.Annotated[
+        str,
+        __.ddoc.Doc( "For derivation of platform directories." ),
+    ] = __.package_name
+    publisher: __.typx.Annotated[
+        __.typx.Optional[ str ],
+        __.ddoc.Doc( "For derivation of platform directories." ),
+        # __.tyro.conf.Suppress,
+    ] = None
+    version: __.typx.Annotated[
+        __.typx.Optional[ str ],
+        __.ddoc.Doc( "For derivation of platform directories." ),
+        # __.tyro.conf.Suppress,
+    ] = None
 
-__version__: str
-__version__ = '1.0a0'
-
-
-__.immut.finalize_module( __name__, recursive = True )
+    def produce_platform_directories( self ) -> __.pdirs.PlatformDirs:
+        ''' Produces platform directories object for application. '''
+        arguments: dict[ str, __.typx.Any ] = (
+            dict( appname = self.name, ensure_exists = True ) )
+        if self.publisher: arguments[ 'appauthor' ] = self.publisher
+        if self.version: arguments[ 'version' ] = self.version
+        return __.pdirs.PlatformDirs( **arguments )
