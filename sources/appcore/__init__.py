@@ -28,6 +28,7 @@ from . import exceptions
 
 
 from .application import Information as ApplicationInformation
+from .distribution import Information as DistributionInformation
 
 
 __version__: str
