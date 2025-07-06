@@ -19,6 +19,7 @@
 
 
 ''' Fundamental configuration. '''
+# TODO: Add configuration validation (schema validation, type checking)
 
 
 from . import __

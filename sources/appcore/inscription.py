@@ -20,6 +20,10 @@
 
 ''' Scribes for debugging and logging. '''
 # TODO? Dependency injection of scribes.
+# TODO: Add structured logging support (JSON formatting for log aggregation)
+# TODO: Add distributed tracing support (correlation IDs, execution IDs)
+# TODO: Add metrics collection and reporting
+# TODO: Add OpenTelemetry integration
 
 
 from . import __
