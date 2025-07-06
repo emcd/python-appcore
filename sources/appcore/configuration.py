@@ -22,7 +22,7 @@
 
 
 from . import __
-# from . import dictedits as _dictedits
+from . import dictedits as _dictedits
 from . import distribution as _distribution
 from . import exceptions as _exceptions
 from . import io as _io
@@ -50,7 +50,7 @@ async def acquire(
     application_name: str,
     directories: __.pdirs.PlatformDirs,
     distribution: _distribution.Information,
-    # edits: _dictedits.Edits = ( ),
+    edits: _dictedits.Edits = ( ),
     file: __.Absential[ __.Path ] = __.absent,
 ) -> __.accret.Dictionary[ str, __.typx.Any ]:
     ''' Loads configuration as dictionary. '''
@@ -61,7 +61,7 @@ async def acquire(
     includes = await _acquire_includes(
         application_name, directories, configuration.get( 'includes', ( ) ) )
     for include in includes: configuration.update( include )
-    # for edit in edits: edit( configuration )
+    for edit in edits: edit( configuration )
     return __.accret.Dictionary( configuration )
 
 

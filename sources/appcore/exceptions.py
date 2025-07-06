@@ -38,11 +38,29 @@ class Omnierror( Omniexception, Exception ):
     ''' Base for error exceptions raised by package API. '''
 
 
+class AddressLocateFailure( Omnierror, LookupError ):
+    ''' Failure to locate address. '''
+
+    def __init__(
+        self, subject: str, address: __.cabc.Sequence[ str ], part: str
+    ):
+        super( ).__init__(
+            f"Could not locate part '{part}' of address '{address}' "
+            f"in {subject}." )
+
+
 class AsyncAssertionFailure( Omnierror, AssertionError, TypeError ):
     ''' Assertion of awaitability of entity failed. '''
 
     def __init__( self, entity: __.typx.Any ):
         super( ).__init__( f"Entity must be awaitable: {entity!r}" )
+
+
+class EntryAssertionFailure( Omnierror, AssertionError, KeyError ):
+    ''' Assertion of entry in dictionary failed. '''
+
+    def __init__( self, subject: str, name: str ):
+        super( ).__init__( f"Could not find entry '{name}' in {subject}." )
 
 
 class OperationInvalidity( Omnierror, RuntimeError ):
