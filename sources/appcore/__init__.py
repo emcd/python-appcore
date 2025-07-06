@@ -30,7 +30,9 @@ from . import exceptions
 from .application import Information as ApplicationInformation
 from .configuration import acquire as acquire_configuration
 from .distribution import Information as DistributionInformation
+from .environment import update as update_environment
 from .inscription import prepare as prepare_scribes
+from .preparation import *
 from .state import *
 
 
