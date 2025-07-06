@@ -18,28 +18,40 @@
 #============================================================================#
 
 
-''' Common imports used throughout the package. '''
-
-# ruff: noqa: F401
+''' Common I/O primitives. '''
 
 
-import                      abc
-import collections.abc as   cabc
-import contextlib as        ctxl
-import                      enum
-import                      shutil
-import                      types
+from . import __
+from . import asyncf as _asyncf
 
-from pathlib import Path
 
-import accretive as         accret
-import                      aiofiles
-import dynadoc as           ddoc
-import frigid as            immut
-import platformdirs as      pdirs
-import                      tomli
-import typing_extensions as typx
-# --- BEGIN: Injected by Copier ---
-# --- END: Injected by Copier ---
+async def acquire_text_file_async(
+    file: str | __.Path,
+    charset: str = 'utf-8',
+    deserializer: __.Absential[
+        __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
+) -> __.typx.Any:
+    ''' Reads file asynchronously. '''
+    from aiofiles import open as open_ # pyright: ignore
+    async with open_( file, encoding = charset ) as stream:
+        data = await stream.read( )
+    if not __.is_absent( deserializer ):
+        return deserializer( data )
+    return data
 
-from absence import Absential, absent, is_absent
+
+async def acquire_text_files_async(
+    *files: str | __.Path,
+    charset: str = 'utf-8',
+    deserializer: __.Absential[
+        __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
+    return_exceptions: bool = False
+) -> __.typx.Sequence[ __.typx.Any ]:
+    ''' Reads files in parallel asynchronously. '''
+    # TODO? Batch to prevent fd exhaustion over large file sets.
+    return await _asyncf.gather_async(
+        *(  acquire_text_file_async(
+                file, charset = charset, deserializer = deserializer )
+            for file in files ),
+        error_message = 'Failure to read files.',
+        return_exceptions = return_exceptions )

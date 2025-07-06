@@ -24,13 +24,30 @@
 from . import __
 
 
-class Omniexception( BaseException ):
+class Omniexception(
+    __.immut.Object, BaseException,
+    instances_mutables = ( '__cause__', ), # for PyPy
+    instances_visibles = (
+        '__cause__', '__context__',
+        __.immut.is_public_identifier ),
+):
     ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment and immutability.
-
-    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
-        frozenset( ( '__cause__', '__context__', ) ) )
 
 
 class Omnierror( Omniexception, Exception ):
     ''' Base for error exceptions raised by package API. '''
+
+
+class AsyncAssertionFailure( Omnierror, AssertionError, TypeError ):
+    ''' Assertion of awaitability of entity failed. '''
+
+    def __init__( self, entity: __.typx.Any ):
+        super( ).__init__( f"Entity must be awaitable: {entity!r}" )
+
+
+class OperationInvalidity( Omnierror, RuntimeError ):
+    ''' Invalid operation. '''
+
+    def __init__( self, subject: str, name: str ):
+        super( ).__init__(
+            f"Could not perform operation '{name}' on {subject}." )

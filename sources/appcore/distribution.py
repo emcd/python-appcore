@@ -22,7 +22,7 @@
 
 
 from . import __
-# from . import io as _io
+from . import io as _io
 
 
 class Information( __.immut.DataclassObject ):
@@ -68,13 +68,10 @@ class Information( __.immut.DataclassObject ):
 async def _acquire_development_information(
     location: __.Absential[ __.Path ] = __.absent
 ) -> tuple[ __.Path, str ]:
-    from tomli import loads
     if __.is_absent( location ):
         location = __.Path( __file__ ).parents[ 3 ].resolve( strict = True )
-    # pyproject = await _io.acquire_text_file_async(
-    #     location / 'pyproject.toml', deserializer = loads )
-    with ( location / 'pyproject.toml' ).open( ) as file:
-        pyproject = loads( file.read( ) )
+    pyproject = await _io.acquire_text_file_async(
+        location / 'pyproject.toml', deserializer = __.tomli.loads )
     name = pyproject[ 'project' ][ 'name' ]
     return location, name
 

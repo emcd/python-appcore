@@ -28,6 +28,7 @@ from . import exceptions
 
 
 from .application import Information as ApplicationInformation
+from .configuration import acquire as acquire_configuration
 from .distribution import Information as DistributionInformation
 
 
