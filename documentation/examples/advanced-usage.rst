@@ -271,8 +271,8 @@ Test error conditions and recovery strategies:
     ...     [application]
     ...     name = "error-test"
     ...     '''
+    ...     config_stream = io.StringIO( config_content )
     ...     try:
-    ...         config_stream = io.StringIO( config_content )
     ...         async with contextlib.AsyncExitStack( ) as exits:
     ...             globals_dto = await appcore.prepare(
     ...                 exits,

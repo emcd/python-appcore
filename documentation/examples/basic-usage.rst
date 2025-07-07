@@ -188,7 +188,7 @@ You can customize the application metadata used for directory generation:
 Error Handling
 ===============================================================================
 
-The ``prepare()`` function can raise exceptions in certain scenarios:
+The ``prepare()`` function can raise exceptions in certain scenarios. Use ``Omnierror`` to catch all package errors, or specific exceptions for fine-grained handling:
 
 .. code-block:: python
 
@@ -201,18 +201,30 @@ The ``prepare()`` function can raise exceptions in certain scenarios:
             async with contextlib.AsyncExitStack( ) as exits:
                 globals_dto = await appcore.prepare( exits )
                 print( 'Initialization successful!' )
-        except appcore.exceptions.FileLocateFailure as e:
-            print( f"Could not locate required files: {e}" )
-            # This can happen in development if pyproject.toml is not found
-        except appcore.exceptions.OperationInvalidity as e:
-            print( f"Invalid operation during setup: {e}" )
-            # This can happen with malformed configuration files
+        except appcore.exceptions.Omnierror as e:
+            print( f"Appcore initialization error: {e}" )
+            # Omnierror catches all errors from the package API
+            # You can also catch specific exceptions for fine-grained handling
         except Exception as e:
-            print( f"Unexpected error during initialization: {e}" )
+            print( f"Unexpected system error: {e}" )
             raise
 
     if __name__ == '__main__':
         asyncio.run( main( ) )
+
+**For fine-grained error handling, catch specific exceptions:**
+
+.. code-block:: python
+
+    try:
+        async with contextlib.AsyncExitStack( ) as exits:
+            globals_dto = await appcore.prepare( exits )
+    except appcore.exceptions.FileLocateFailure as e:
+        print( f"Could not locate required files: {e}" )
+        # This can happen in development if pyproject.toml is not found
+    except appcore.exceptions.OperationInvalidity as e:
+        print( f"Invalid operation during setup: {e}" )
+        # This can happen with malformed configuration files
 
 
 Next Steps

@@ -42,29 +42,22 @@ Development vs Production Detection
 ===============================================================================
 
 Appcore automatically detects whether your application is running in
-development or production mode:
+development or production mode by examining how the package is installed:
 
-.. doctest:: Environment.Detection
+**Development mode detection:**
 
-    >>> import appcore
-    >>> from pathlib import Path
-    >>> # Create mock distribution info for testing
-    >>> dev_distribution = appcore.DistributionInformation(
-    ...     name = 'test-app',
-    ...     location = Path( '/dev/project' ),
-    ...     editable = True
-    ... )
-    >>> prod_distribution = appcore.DistributionInformation(
-    ...     name = 'test-app', 
-    ...     location = Path( '/usr/lib/python/site-packages' ),
-    ...     editable = False
-    ... )
+1. **Check package distribution**: Uses ``importlib_metadata.packages_distributions()`` to see if your package is installed as a proper distribution
+2. **If not found**: Assumes development mode (``editable = True``)
+3. **Locate project root**: Searches upward from the current file to find ``pyproject.toml``
+4. **Respect boundaries**: Honors ``GIT_CEILING_DIRECTORIES`` environment variable to limit search scope
 
-Development mode is detected when:
+**Production mode detection:**
 
-- Package is installed in editable mode (``pip install -e``)
-- Running from source directory during development
-- ``pyproject.toml`` is found in the project root
+1. **Package found in distribution**: Package is properly installed (``pip install``, not ``pip install -e``)
+2. **Set production mode**: ``editable = False``
+3. **Use installed location**: Points to the installed package location
+
+**Detection process happens automatically during** ``appcore.prepare()``
 
 .. code-block:: python
 
@@ -75,21 +68,35 @@ Development mode is detected when:
     async def main( ):
         async with contextlib.AsyncExitStack( ) as exits:
             globals_dto = await appcore.prepare( exits )
+            
+            # Check the automatically detected mode
             if globals_dto.distribution.editable:
                 print( 'Running in DEVELOPMENT mode' )
-                print( f"Project location: {globals_dto.distribution.location}" )
+                print( f"Project root: {globals_dto.distribution.location}" )
+                print( f"Package name: {globals_dto.distribution.name}" )
                 # Development-specific behavior
                 debug_mode = True
                 use_local_configs = True
             else:
                 print( 'Running in PRODUCTION mode' )
-                print( f"Package location: {globals_dto.distribution.location}" )
+                print( f"Installed at: {globals_dto.distribution.location}" )
+                print( f"Package name: {globals_dto.distribution.name}" )
                 # Production-specific behavior  
                 debug_mode = False
                 use_local_configs = False
 
     if __name__ == '__main__':
         asyncio.run( main( ) )
+
+**Example output in development:**
+- ``Running in DEVELOPMENT mode``
+- ``Project root: /home/user/projects/myapp``
+- ``Package name: myapp``
+
+**Example output in production:**
+- ``Running in PRODUCTION mode``  
+- ``Installed at: /usr/local/lib/python3.10/site-packages/myapp``
+- ``Package name: myapp``
 
 
 Environment Variable Injection
@@ -346,13 +353,13 @@ Environment setup can encounter various error conditions:
     >>> import contextlib
     >>> from pathlib import Path
     >>> async def test_error_scenarios( ):
+    ...     # Test with invalid distribution location
+    ...     bad_dist = appcore.DistributionInformation(
+    ...         name = 'bad-app',
+    ...         location = Path( '/nonexistent/path' ),
+    ...         editable = True
+    ...     )
     ...     try:
-    ...         # Test with invalid distribution location
-    ...         bad_dist = appcore.DistributionInformation(
-    ...             name = 'bad-app',
-    ...             location = Path( '/nonexistent/path' ),
-    ...             editable = True
-    ...         )
     ...         async with contextlib.AsyncExitStack( ) as exits:
     ...             globals_dto = await appcore.prepare(
     ...                 exits,
@@ -360,9 +367,9 @@ Environment setup can encounter various error conditions:
     ...             )
     ...     except Exception as e:
     ...         print( f"Handled distribution error: {type( e ).__name__}" )
+    ...     # Test with invalid environment values
+    ...     bad_env = { 'INVALID_KEY': None }  # None values not allowed
     ...     try:
-    ...         # Test with invalid environment values
-    ...         bad_env = { 'INVALID_KEY': None }  # None values not allowed
     ...         async with contextlib.AsyncExitStack( ) as exits:
     ...             globals_dto = await appcore.prepare(
     ...                 exits,

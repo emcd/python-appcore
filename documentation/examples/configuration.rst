@@ -281,43 +281,6 @@ You can modify configuration at runtime using edit functions:
         asyncio.run( main( ) )
 
 
-Configuration Validation
-===============================================================================
-
-The configuration system provides structured access to values:
-
-.. code-block:: python
-
-    import asyncio
-    import contextlib
-    import appcore
-
-    async def validate_configuration( config ):
-        ''' Validate configuration values. '''
-        # Check required sections
-        required_sections = [ 'application', 'logging' ]
-        for section in required_sections:
-            if section not in config:
-                raise ValueError( f"Missing required section: {section}" )
-        # Validate specific values
-        app_config = config[ 'application' ]
-        if 'timeout' in app_config and app_config[ 'timeout' ] <= 0:
-            raise ValueError( 'Timeout must be positive' )
-        print( 'Configuration validation passed' )
-
-    async def main( ):
-        async with contextlib.AsyncExitStack( ) as exits:
-            globals_dto = await appcore.prepare( exits )
-            config = globals_dto.configuration
-            await validate_configuration( config )
-            # Use validated configuration
-            timeout = config.get( 'application', { } ).get( 'timeout', 60 )
-            print( f"Using timeout: {timeout} seconds" )
-
-    if __name__ == '__main__':
-        asyncio.run( main( ) )
-
-
 Error Handling
 ===============================================================================
 
@@ -331,13 +294,14 @@ Configuration loading can encounter various error conditions:
     import appcore
 
     async def main( ):
+        # Invalid TOML content
+        invalid_toml = '''
+        [application
+        debug = true  # missing closing bracket
+        '''
+        config_stream = io.StringIO( invalid_toml )
+        
         try:
-            # Invalid TOML content
-            invalid_toml = '''
-            [application
-            debug = true  # missing closing bracket
-            '''
-            config_stream = io.StringIO( invalid_toml )
             async with contextlib.AsyncExitStack( ) as exits:
                 globals_dto = await appcore.prepare(
                     exits,
