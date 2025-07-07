@@ -28,7 +28,11 @@ from . import exceptions
 
 
 from .application import Information as ApplicationInformation
-from .configuration import acquire as acquire_configuration
+from .configuration import (
+    AcquirerAbc as ConfigurationAcquirerAbc,
+    EnablementTristate,
+    TomlAcquirer as TomlConfigurationAcquirer,
+)
 from .distribution import Information as DistributionInformation
 from .environment import update as update_environment
 from .inscription import prepare as prepare_scribes

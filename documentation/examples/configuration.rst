@@ -316,6 +316,67 @@ Configuration loading can encounter various error conditions:
         asyncio.run( main( ) )
 
 
+Custom Configuration Acquirers
+===============================================================================
+
+You can customize configuration loading by providing custom acquirers:
+
+.. doctest:: Configuration.Acquirers
+
+    >>> import appcore
+    >>> 
+    >>> # Custom acquirer with different template filename
+    >>> acquirer = appcore.TomlConfigurationAcquirer( main_filename = 'myapp.toml' )
+    >>> type( acquirer )
+    <class 'appcore.configuration.TomlAcquirer'>
+    >>> acquirer.main_filename
+    'myapp.toml'
+    >>> acquirer.includes_name
+    'includes'
+
+.. code-block:: python
+
+    import asyncio
+    import contextlib
+    import appcore
+
+    async def main( ):
+        # Use custom template filename
+        acquirer = appcore.TomlConfigurationAcquirer( main_filename = 'myapp.toml' )
+        async with contextlib.AsyncExitStack( ) as exits:
+            globals_dto = await appcore.prepare(
+                exits,
+                acquirer = acquirer
+            )
+            # Will look for myapp.toml instead of general.toml
+            config = globals_dto.configuration
+            print( f"Configuration loaded from custom template: {dict( config )}" )
+
+    if __name__ == '__main__':
+        asyncio.run( main( ) )
+
+For testing, you can create custom acquirers that return specific configuration data:
+
+.. doctest:: Configuration.TestAcquirers
+
+    >>> import appcore
+    >>> from dataclasses import dataclass
+    >>> 
+    >>> @dataclass
+    ... class TestConfigurationAcquirer:
+    ...     ''' Custom acquirer for testing. '''
+    ...     config_data: dict
+    ...     
+    ...     async def __call__( self, *args, **kwargs ):
+    ...         return appcore.accretive.Dictionary( self.config_data )
+    >>> 
+    >>> # Create test acquirer with specific data
+    >>> test_data = { 'application': { 'name': 'test-app', 'debug': True } }
+    >>> test_acquirer = TestConfigurationAcquirer( config_data = test_data )
+    >>> test_acquirer.config_data[ 'application' ][ 'debug' ]
+    True
+
+
 Advanced Configuration Patterns
 ===============================================================================
 

@@ -29,6 +29,7 @@ import contextlib as        ctxl
 import dataclasses as       dcls
 import                      enum
 import                      io
+import itertools as         itert
 import                      os
 import                      shutil
 import                      types

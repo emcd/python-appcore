@@ -32,9 +32,11 @@ from . import state as _state
 
 
 _application_information = _application.Information( )
+_configuration_acquirer = _configuration.TomlAcquirer( )
 
 async def prepare( # noqa: PLR0913
     exits: __.ctxl.AsyncExitStack,
+    acquirer: _configuration.AcquirerAbc = _configuration_acquirer,
     application: _application.Information = _application_information,
     configedits: _dictedits.Edits = ( ),
     configfile: __.Absential[ __.Path | __.io.TextIOBase ] = __.absent,
@@ -60,7 +62,7 @@ async def prepare( # noqa: PLR0913
             await _distribution.Information.prepare(
                 package = __.package_name, exits = exits ) )
     configuration = (
-        await _configuration.acquire(
+        await acquirer(
             application_name = application.name,
             directories = directories,
             distribution = distribution,
