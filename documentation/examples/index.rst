@@ -24,5 +24,7 @@ Examples
 .. toctree::
    :maxdepth: 2
 
-
-.. todo:: Add examples to toctree.
+   basic-usage
+   configuration
+   environments
+   advanced-usage
