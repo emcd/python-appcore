@@ -111,6 +111,8 @@ dependencies = [
   'pre-commit',
   'pyright',
   'pytest',
+  'pytest-asyncio',
+  'pytest-mock',
   'ruff',
   'sphinx',
   'sphinx-copybutton',
