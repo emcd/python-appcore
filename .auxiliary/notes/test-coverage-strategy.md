@@ -19,75 +19,62 @@
 
 ## Testing Strategy: Bottom-Up Approach
 
-### Phase 1: Foundation (Files 100-109)
+### Phase 1: Foundation (Files 100-139)
 Start with fundamental utilities that other modules depend on:
 
-#### test_100_generics.py
-- Test generic utilities and type helpers
-- Currently 76% coverage - identify missing edge cases
-- Focus on error conditions and boundary cases
-
-#### test_101_exceptions.py  
+#### test_100_exceptions.py
 - Test all exception classes and inheritance
 - Test error message formatting
 - Verify exception hierarchy works correctly
 
-#### test_102_asyncf.py
+#### test_110_generics.py
+- Test generic utilities and type helpers
+- Currently 76% coverage - identify missing edge cases
+- Focus on error conditions and boundary cases
+
+#### test_120_asyncf.py
 - Test async utility functions (currently 11% coverage)
 - Focus on async context managers, coroutine helpers
 - Use dependency injection for async resource management
 
-#### test_103_io.py
-- Test file I/O utilities
-- Mock filesystem operations
-- Test both sync and async file operations
-
-#### test_104_state.py
-- Test `Globals` DTO and state management
-- Test convenience methods like `provide_cache_location()`
-- Verify immutability and data integrity
-
-### Phase 2: Core Functionality (Files 110-119)
-
-#### test_110_dictedits.py
+#### test_130_dictedits.py
 - Test configuration editing functions
 - Use examples from Advanced.ConfigTesting doctest
 - Test edit function composition and error handling
 
-#### test_111_configuration.py
-- Test configuration loading and template handling
-- Test hierarchical includes and variable substitution
-- Use stream-based testing to avoid filesystem dependencies
-- Test the future `Acquirer` class
+### Phase 2: Core Functionality (Files 200-299)
 
-#### test_112_distribution.py
+#### test_200_application.py
+- Test ApplicationInformation class
+- Test application metadata and configuration
+- Test name validation and defaults
+
+#### test_210_distribution.py
 - Test development vs production detection
 - Test project root discovery with various scenarios
 - Mock `importlib_metadata` and filesystem operations
 - Test `GIT_CEILING_DIRECTORIES` respect
 
-#### test_113_environment.py
-- Test environment variable injection and .env loading
-- Test precedence rules for environment sources
-- Use custom environment dictionaries for isolation
+### Phase 3: Advanced Components (Files 300-499)
 
-#### test_114_inscription.py
-- Test logging configuration and setup
-- Test log level management and scribe preparation
-- Mock logging infrastructure
+#### test_300_configuration.py
+- Test configuration loading and template handling
+- Test hierarchical includes and variable substitution
+- Use stream-based testing to avoid filesystem dependencies
+- Test TomlAcquirer and custom acquirers
 
-### Phase 3: Integration (Files 120-129)
+#### test_400_state.py
+- Test `Globals` DTO and state management
+- Test convenience methods like `provide_cache_location()`
+- Verify immutability and data integrity
 
-#### test_120_preparation.py
+### Phase 4: Integration (Files 500+)
+
+#### test_500_preparation.py
 - Test main `prepare()` function with full dependency injection
 - Use patterns from Advanced.Fixtures and Advanced.Testing doctests
 - Test all parameter combinations and error scenarios
 - Integration testing with real components
-
-#### test_121_integration_scenarios.py
-- Test complete application initialization scenarios
-- Test error recovery and fallback mechanisms
-- Use patterns from Advanced.ErrorTesting doctest
 
 ## Testing Principles
 
@@ -161,18 +148,15 @@ async with contextlib.AsyncExitStack() as exits:
 ## Files to Create
 ```
 tests/
-├── test_100_generics.py
-├── test_101_exceptions.py
-├── test_102_asyncf.py
-├── test_103_io.py
-├── test_104_state.py
-├── test_110_dictedits.py
-├── test_111_configuration.py
-├── test_112_distribution.py
-├── test_113_environment.py
-├── test_114_inscription.py
-├── test_120_preparation.py
-└── test_121_integration_scenarios.py
+├── test_100_exceptions.py
+├── test_110_generics.py
+├── test_120_asyncf.py
+├── test_130_dictedits.py
+├── test_200_application.py
+├── test_210_distribution.py
+├── test_300_configuration.py
+├── test_400_state.py
+└── test_500_preparation.py
 ```
 
 ## Implementation Notes
@@ -181,3 +165,32 @@ tests/
 - Follow existing test file naming conventions
 - Use pytest fixtures for common test setup
 - Add async test markers where needed (`@pytest.mark.asyncio`)
+
+## Testing Conventions
+
+### Module Import Pattern
+```python
+# Use cache_import_module for consistent module loading
+from tests.test_000_appcore import PACKAGE_NAME, cache_import_module
+
+MODULE_QNAME = f"{PACKAGE_NAME}.exceptions"
+module = cache_import_module( MODULE_QNAME )
+```
+
+### Test Function Docstrings
+```python
+# Write docstrings as assertions, not descriptions
+def test_100_template_copy_custom_name( ):
+    ''' Copies configuration template with non-default name. '''
+    # Test implementation
+    
+def test_200_exception_hierarchy( ):
+    ''' All custom exceptions inherit from base exception. '''
+    # Test implementation
+```
+
+### Coding Conventions
+- Follow project style: spaces inside delimiters `( foo )`, not `(foo)`
+- Use single quotes for strings, double quotes for f-strings
+- Pad binary operators with spaces: `foo = 42`, not `foo=42`
+- Use triple single quotes for docstrings: `''' description '''`
