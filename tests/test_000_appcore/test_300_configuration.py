@@ -222,7 +222,7 @@ includes = [
     assert result[ 'app' ][ 'name' ] == 'test-app'
     # The includes configuration is parsed but won't be processed 
     # since no actual include files exist
-    assert 'includes' in result
+    assert 'includes' in result[ 'app' ]
 
 
 @pytest.mark.asyncio
@@ -305,7 +305,7 @@ host = "cache.example.com"
         directories = MagicMock( )
         directories.user_config_path = temp_path
         
-        specs = ( str( temp_path / '*.toml' ), )
+        specs = ( str( temp_path ), )
         
         acquirer = module.TomlAcquirer( )
         result = await acquirer._acquire_includes(

@@ -231,7 +231,7 @@ def test_340_globals_provide_location_with_custom_config( ):
     configuration = {
         'locations': {
             'cache': '{user_home}/custom-cache/{application_name}',
-            'data': '{user_cache}/custom-data'
+            'data': '{user_data}/custom-data'
         }
     }
     directories = MagicMock( )
@@ -254,10 +254,10 @@ def test_340_globals_provide_location_with_custom_config( ):
     expected_cache = Path.home( ) / 'custom-cache' / 'test-app'
     assert cache_result == expected_cache
     
-    # Test custom data location with user_cache substitution
+    # Test custom data location with user_data substitution
     data_result = globals_obj.provide_location(
         module.DirectorySpecies.Data )
-    expected_data = Path( '/user/cache/test-app/custom-data' )
+    expected_data = Path( '/user/data/test-app/custom-data' )
     assert data_result == expected_data
 
 
@@ -446,10 +446,14 @@ def test_430_globals_string_representation( ):
 def test_440_globals_dataclass_fields( ):
     ''' Globals has proper dataclass field definitions. '''
     fields = dataclasses.fields( module.Globals )
-    field_names = { field.name for field in fields }
+    # Filter out frigid internal fields
+    user_field_names = { 
+        field.name for field in fields 
+        if not field.name.startswith( '_frigid' )
+    }
     
     expected_fields = { 
         'application', 'configuration', 'directories', 
         'distribution', 'exits' 
     }
-    assert field_names == expected_fields
+    assert user_field_names == expected_fields
