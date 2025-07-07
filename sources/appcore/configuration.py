@@ -77,7 +77,7 @@ class TomlAcquirer( AcquirerAbc ):
         edits: _dictedits.Edits = ( ),
         file: __.Absential[ __.Path | __.io.TextIOBase ] = __.absent,
     ) -> __.accret.Dictionary[ str, __.typx.Any ]:
-        if __.is_absent( file ):  # pragma: no cover
+        if __.is_absent( file ):
             file = self._discover_copy_template( directories, distribution )
         if isinstance( file, __.io.TextIOBase ):
             content = file.read( )

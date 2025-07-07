@@ -28,6 +28,8 @@ from unittest.mock import MagicMock
 import io
 
 from . import PACKAGE_NAME, cache_import_module
+from .fixtures import (
+    create_temp_directories_and_distribution, create_config_template_files )
 
 
 MODULE_QNAME = f"{PACKAGE_NAME}.configuration"
@@ -193,6 +195,50 @@ version = "1.0.0"
     assert result[ 'app' ][ 'version' ] == '2.0.0'  # Modified by edit
 
 
+@pytest.mark.asyncio
+async def test_325_toml_acquirer_call_with_absent_file( ):
+    ''' TomlAcquirer handles absent file parameter by discovering template. '''
+    # Create temp directories and distribution with template file
+    directories, distribution, temp_dir = (
+        create_temp_directories_and_distribution( ) )
+    
+    template_content = '''
+[app]
+name = "discovered-app"
+version = "1.0.0"
+    '''
+    
+    # Create template file in distribution data location
+    create_config_template_files( 
+        distribution, 
+        main_filename = 'general.toml',
+        content = template_content 
+    )
+    
+    try:
+        acquirer = module.TomlAcquirer( )
+        
+        # Call with absent file parameter (triggers line 80-81)
+        result = await acquirer(
+            'test-app',
+            directories,
+            distribution,
+            file = module.__.absent
+        )
+        
+        # Verify configuration was loaded from discovered template
+        assert result[ 'app' ][ 'name' ] == 'discovered-app'
+        assert result[ 'app' ][ 'version' ] == '1.0.0'
+        
+        # Verify template was copied to user config directory
+        user_config_file = directories.user_config_path / 'general.toml'
+        assert user_config_file.exists( )
+        assert 'discovered-app' in user_config_file.read_text( )
+        
+    finally:
+        # Clean up temp directory
+        import shutil
+        shutil.rmtree( temp_dir )
 
 
 @pytest.mark.asyncio

@@ -21,13 +21,13 @@
 ''' Environment variable loading and dot file processing tests. '''
 
 
-import tempfile
 import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import os
 
 from . import PACKAGE_NAME, cache_import_module
+from .fixtures import create_globals_with_temp_dirs
 
 
 MODULE_QNAME = f"{PACKAGE_NAME}.environment"
@@ -38,36 +38,6 @@ distribution_module = cache_import_module( f"{PACKAGE_NAME}.distribution" )
 state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
 
 
-def create_globals_with_temp_dirs( editable = False, config_locations = None ):
-    ''' Helper to create Globals DTO with temporary directories. '''
-    temp_dir = Path( tempfile.mkdtemp( ) )
-    
-    application = application_module.Information( name = 'test-env-app' )
-    configuration = { }
-    if config_locations:
-        configuration[ 'locations' ] = config_locations
-    
-    directories = MagicMock( )
-    directories.user_config_path = temp_dir / 'config'
-    directories.user_config_path.mkdir( parents = True, exist_ok = True )
-    
-    distribution = distribution_module.Information(
-        name = 'test-dist',
-        location = temp_dir / 'project' if editable else temp_dir,
-        editable = editable
-    )
-    if editable:
-        distribution.location.mkdir( parents = True, exist_ok = True )
-    
-    exits = MagicMock( )
-    
-    return state_module.Globals(
-        application = application,
-        configuration = configuration,
-        directories = directories,
-        distribution = distribution,
-        exits = exits
-    ), temp_dir
 
 
 @pytest.mark.asyncio
