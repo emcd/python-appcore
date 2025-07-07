@@ -48,7 +48,7 @@ class Result( __.immut.Object, __.typx.Generic[ T, E ] ):
 
             Similar to Result.unwrap in Rust.
         '''
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @__.abc.abstractmethod
     def transform(
@@ -58,7 +58,7 @@ class Result( __.immut.Object, __.typx.Generic[ T, E ] ):
 
             Similar to Result.map in Rust.
         '''
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class Value( Result[ T, E ] ):

@@ -193,6 +193,8 @@ version = "1.0.0"
     assert result[ 'app' ][ 'version' ] == '2.0.0'  # Modified by edit
 
 
+
+
 @pytest.mark.asyncio
 async def test_330_toml_acquirer_call_with_includes( ):
     ''' TomlAcquirer processes includes configuration structure. '''

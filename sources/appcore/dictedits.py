@@ -40,7 +40,7 @@ class Edit(
         self, configuration: __.NominativeDictionaryMutable
     ) -> None:
         ''' Performs edit. '''
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def dereference(
         self, configuration: __.NominativeDictionary
