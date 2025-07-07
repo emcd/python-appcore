@@ -89,7 +89,8 @@ def test_150_edit_dereference_missing_key( ):
 
 
 def test_160_edit_dereference_partial_path( ):
-    ''' Edit dereference raises AddressLocateFailure for partial missing path. '''
+    ''' Edit dereference raises AddressLocateFailure for partial missing
+    path. '''
     config = { 'app': { 'name': 'test-app' } }
     edit = module.SimpleEdit(
         address = [ 'app', 'database', 'host' ], value = 'ignored' )
@@ -149,7 +150,8 @@ def test_190_elements_entry_edit_with_identifier( ):
 
 
 def test_200_elements_entry_edit_missing_identifier( ):
-    ''' ElementsEntryEdit raises EntryAssertionFailure for missing identifier key. '''
+    ''' ElementsEntryEdit raises EntryAssertionFailure for missing
+    identifier key. '''
     config = {
         'servers': [
             { 'name': 'server1' },  # Missing 'type' key
@@ -168,11 +170,18 @@ def test_200_elements_entry_edit_missing_identifier( ):
 
 
 def test_210_elements_entry_edit_preserves_other_fields( ):
-    ''' ElementsEntryEdit preserves other fields while editing target field. '''
+    ''' ElementsEntryEdit preserves other fields while editing target
+    field. '''
     config = {
         'users': [
-            { 'name': 'alice', 'role': 'admin', 'active': False, 'created': '2023-01-01' },
-            { 'name': 'bob', 'role': 'user', 'active': False, 'created': '2023-01-02' }
+            {
+                'name': 'alice', 'role': 'admin', 'active': False,
+                'created': '2023-01-01'
+            },
+            {
+                'name': 'bob', 'role': 'user', 'active': False,
+                'created': '2023-01-02'
+            }
         ]
     }
     edit = module.ElementsEntryEdit(
@@ -198,7 +207,8 @@ def test_220_edit_chain_application( ):
     edits = [
         module.SimpleEdit( address = [ 'app', 'name' ], value = 'test-app' ),
         module.SimpleEdit( address = [ 'app', 'version' ], value = '1.0' ),
-        module.SimpleEdit( address = [ 'database', 'host' ], value = 'localhost' )
+        module.SimpleEdit(
+            address = [ 'database', 'host' ], value = 'localhost' )
     ]
     for edit in edits:
         edit( config )

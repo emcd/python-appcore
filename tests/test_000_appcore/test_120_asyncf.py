@@ -99,7 +99,8 @@ async def test_140_gather_async_with_failures( ):
 
 @pytest.mark.asyncio
 async def test_150_gather_async_return_exceptions( ):
-    ''' gather_async returns results and errors when return_exceptions=True. '''
+    ''' gather_async returns results and errors when
+    return_exceptions=True. '''
     async def successful_operation( ):
         return 'success'
     
@@ -138,7 +139,8 @@ async def test_160_gather_async_ignore_nonawaitables( ):
 
 @pytest.mark.asyncio
 async def test_170_gather_async_strict_nonawaitables( ):
-    ''' gather_async raises AsyncAssertionFailure for non-awaitables by default. '''
+    ''' gather_async raises AsyncAssertionFailure for non-awaitables by
+    default. '''
     async def async_operation( ):
         return 'async_result'
     
@@ -174,7 +176,8 @@ async def test_190_gather_async_empty_input( ):
 
 @pytest.mark.asyncio
 async def test_200_gather_async_mixed_results( ):
-    ''' gather_async handles mixed successful and failing operations correctly. '''
+    ''' gather_async handles mixed successful and failing operations
+    correctly. '''
     async def operation1( ):
         return 1
     

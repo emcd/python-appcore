@@ -82,7 +82,8 @@ def test_140_information_complete( ):
 
 
 def test_150_produce_platform_directories_minimal( ):
-    ''' produce_platform_directories creates PlatformDirs with app name only. '''
+    ''' produce_platform_directories creates PlatformDirs with app name
+    only. '''
     app_info = module.Information( name = 'test-app' )
     dirs = app_info.produce_platform_directories( )
     assert isinstance( dirs, platformdirs.PlatformDirs )
@@ -130,7 +131,8 @@ def test_180_produce_platform_directories_complete( ):
 
 
 def test_190_platform_directories_ensure_exists( ):
-    ''' produce_platform_directories creates directories with ensure_exists=True. '''
+    ''' produce_platform_directories creates directories with
+    ensure_exists=True. '''
     app_info = module.Information( name = 'test-app-ensure' )
     dirs = app_info.produce_platform_directories( )
     # PlatformDirs was created with ensure_exists=True

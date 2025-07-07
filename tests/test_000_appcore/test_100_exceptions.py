@@ -53,7 +53,8 @@ def test_120_address_locate_failure_hierarchy( ):
 
 
 def test_130_async_assertion_failure_hierarchy( ):
-    ''' AsyncAssertionFailure inherits from Omnierror, AssertionError, TypeError. '''
+    ''' AsyncAssertionFailure inherits from Omnierror, AssertionError,
+    TypeError. '''
     error = module.AsyncAssertionFailure( 'not_awaitable' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, AssertionError )
@@ -61,7 +62,8 @@ def test_130_async_assertion_failure_hierarchy( ):
 
 
 def test_140_entry_assertion_failure_hierarchy( ):
-    ''' EntryAssertionFailure inherits from Omnierror, AssertionError, KeyError. '''
+    ''' EntryAssertionFailure inherits from Omnierror, AssertionError,
+    KeyError. '''
     error = module.EntryAssertionFailure( 'test dict', 'missing_key' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, AssertionError )
