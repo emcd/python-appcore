@@ -42,7 +42,8 @@ class Information( __.immut.DataclassObject ):
         import sys
         # Detect PyInstaller bundle.
         if getattr( sys, 'frozen', False ) and hasattr( sys, '_MEIPASS' ):
-            project_anchor = __.Path( getattr( sys, '_MEIPASS' ) )
+            project_anchor = __.Path(  # pragma: no cover
+                getattr( sys, '_MEIPASS' ) )
         # TODO: Python 3.12: importlib.metadata
         from importlib_metadata import packages_distributions
         # https://github.com/pypa/packaging-problems/issues/609
@@ -93,16 +94,18 @@ def _locate_pyproject( ) -> __.Path:
     limits: set[ __.Path ] = set( )
     for limits_variable in ( 'GIT_CEILING_DIRECTORIES', ):
         limits_value = __.os.environ.get( limits_variable )
-        if not limits_value: continue
-        limits.update(
+        if not limits_value: continue  # pragma: no cover
+        limits.update(  # pragma: no cover
             __.Path( limit ).resolve( )
             for limit in limits_value.split( ':' ) if limit.strip( ) )
     while current != current.parent:  # Not at filesystem root
         if ( current / 'pyproject.toml' ).exists( ):
             return current
         if current in limits:
-            raise _exceptions.FileLocateFailure( # noqa: TRY003
+            # pragma: no cover
+            raise _exceptions.FileLocateFailure(  # noqa: TRY003
                 'project root discovery', 'pyproject.toml' )
         current = current.parent
-    raise _exceptions.FileLocateFailure( # noqa: TRY003
+    # pragma: no cover
+    raise _exceptions.FileLocateFailure(  # noqa: TRY003
         'project root discovery', 'pyproject.toml' )

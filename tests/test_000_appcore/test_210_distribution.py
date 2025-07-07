@@ -130,21 +130,31 @@ def test_160_information_inequality( ):
 
 
 @pytest.mark.asyncio
-async def test_200_prepare_pyinstaller_bundle( ):
-    ''' Information.prepare detects PyInstaller bundle via sys attributes. '''
-    with patch( 'sys.frozen', True, create = True ), \
-         patch( 'sys._MEIPASS', '/bundle/path', create = True ):
-        # PyInstaller detection sets project_anchor automatically
-        bundle_path = Path( '/bundle/path' )
-        info = module.Information(
-            name = 'test-app',
-            location = bundle_path,
-            editable = True
-        )
-        # Verify the fields that would be set in PyInstaller mode
-        assert info.editable is True
-        assert info.location == bundle_path
-        assert info.name == 'test-app'
+async def test_200_prepare_production_distribution( ):
+    ''' Information.prepare handles production distribution path. '''
+    exits = MagicMock( )
+    
+    # Mock an installed package to trigger production mode (lines 56-58)
+    with patch( 'importlib_metadata.packages_distributions' ) as mock_pkg, \
+         patch( 'importlib_resources.files' ) as mock_files, \
+         patch( 'importlib_resources.as_file' ) as mock_as_file:
+        
+        # Mock installed package found
+        mock_pkg.return_value = { 'test-package': [ 'test-distribution' ] }
+        
+        # Mock resource extraction
+        mock_files.return_value = MagicMock( )
+        temp_path = Path( '/extracted/location' )
+        exits.enter_context.return_value = temp_path
+        mock_as_file.return_value = MagicMock( )
+        
+        # This should trigger production distribution path (lines 56-58)
+        info = await module.Information.prepare( 'test-package', exits )
+        
+        # Verify production distribution was detected
+        assert info.editable is False  # Production mode
+        assert info.name == 'test-distribution'
+        assert info.location == temp_path
 
 
 @pytest.mark.asyncio
@@ -286,3 +296,5 @@ def test_410_information_type_annotations( ):
     assert hasattr( module.Information, 'editable' )
     # Check that it's a dataclass
     assert hasattr( module.Information, '__dataclass_fields__' )
+
+
