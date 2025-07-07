@@ -38,7 +38,8 @@ async def prepare( # noqa: PLR0913
     application: _application.Information = _application_information,
     configedits: _dictedits.Edits = ( ),
     configfile: __.Absential[ __.Path ] = __.absent,
-    environment: bool = False,
+    directories: __.Absential[ __.pdirs.PlatformDirs ] = __.absent,
+    environment: bool | __.NominativeDictionary = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
 ) -> _state.Globals:
     ''' Prepares globals DTO for use with library functions.
@@ -51,7 +52,8 @@ async def prepare( # noqa: PLR0913
         concurrently initialize other entities outside of the library, even
         though the library initialization, itself, is inherently sequential.
     '''
-    directories = application.produce_platform_directories( )
+    if __.is_absent( directories ):
+        directories = application.produce_platform_directories( )
     distribution = (
         await _distribution.Information.prepare(
             package = __.package_name, exits = exits ) )
@@ -68,11 +70,13 @@ async def prepare( # noqa: PLR0913
         directories = directories,
         distribution = distribution,
         exits = exits )
-    if environment: await _environment.update( auxdata )
+    if environment:
+        if isinstance( environment, __.cabc.Mapping ):
+            __.os.environ.update( environment )
+        else: await _environment.update( auxdata )
     if __.is_absent( inscription ):
-        inscription_: _inscription.Control = _inscription.Control( )
-    else: inscription_ = inscription
-    _inscription.prepare( control = inscription_ )
+        inscription = _inscription.Control( )
+    _inscription.prepare( control = inscription )
     _inscribe_preparation_report( auxdata )
     return auxdata
 
