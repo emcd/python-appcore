@@ -28,6 +28,7 @@ import collections.abc as   cabc
 import contextlib as        ctxl
 import dataclasses as       dcls
 import                      enum
+import                      io
 import                      os
 import                      shutil
 import                      types

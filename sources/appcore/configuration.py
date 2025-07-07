@@ -52,13 +52,17 @@ async def acquire(
     directories: __.pdirs.PlatformDirs,
     distribution: _distribution.Information,
     edits: _dictedits.Edits = ( ),
-    file: __.Absential[ __.Path ] = __.absent,
+    file: __.Absential[ __.Path | __.io.TextIOBase ] = __.absent,
 ) -> __.accret.Dictionary[ str, __.typx.Any ]:
     ''' Loads configuration as dictionary. '''
     if __.is_absent( file ):
         file = _discover_copy_template( directories, distribution )
-    configuration = await _io.acquire_text_file_async(
-        file, deserializer = __.tomli.loads )
+    if isinstance( file, __.io.TextIOBase ):
+        content = file.read( )
+        configuration = __.tomli.loads( content )
+    else:
+        configuration = await _io.acquire_text_file_async(
+            file, deserializer = __.tomli.loads )
     includes = await _acquire_includes(
         application_name, directories, configuration.get( 'includes', ( ) ) )
     for include in includes: configuration.update( include )

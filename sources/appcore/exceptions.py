@@ -63,6 +63,14 @@ class EntryAssertionFailure( Omnierror, AssertionError, KeyError ):
         super( ).__init__( f"Could not find entry '{name}' in {subject}." )
 
 
+class FileLocateFailure( Omnierror, FileNotFoundError ):
+    ''' Failure to locate file. '''
+
+    def __init__( self, subject: str, name: str ):
+        super( ).__init__(
+            f"Could not locate file '{name}' for {subject}." )
+
+
 class OperationInvalidity( Omnierror, RuntimeError ):
     ''' Invalid operation. '''
 

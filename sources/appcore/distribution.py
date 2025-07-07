@@ -22,6 +22,7 @@
 
 
 from . import __
+from . import exceptions as _exceptions
 from . import io as _io
 
 
@@ -68,8 +69,7 @@ class Information( __.immut.DataclassObject ):
 async def _acquire_development_information(
     location: __.Absential[ __.Path ] = __.absent
 ) -> tuple[ __.Path, str ]:
-    if __.is_absent( location ):
-        location = __.Path( __file__ ).parents[ 3 ].resolve( strict = True )
+    if __.is_absent( location ): location = _locate_pyproject( )
     pyproject = await _io.acquire_text_file_async(
         location / 'pyproject.toml', deserializer = __.tomli.loads )
     name = pyproject[ 'project' ][ 'name' ]
@@ -84,3 +84,25 @@ async def _acquire_production_location(
     # Extract package contents to temporary directory, if necessary.
     return exits.enter_context(
         as_file( files( package ) ) ) # pyright: ignore
+
+
+def _locate_pyproject( ) -> __.Path:
+    ''' Finds project manifest, if it exists. Errors otherwise. '''
+    initial = __.Path( __file__ ).resolve( )
+    current = initial.parent
+    limits: set[ __.Path ] = set( )
+    for limits_variable in ( 'GIT_CEILING_DIRECTORIES', ):
+        limits_value = __.os.environ.get( limits_variable )
+        if not limits_value: continue
+        limits.update(
+            __.Path( limit ).resolve( )
+            for limit in limits_value.split( ':' ) if limit.strip( ) )
+    while current != current.parent:  # Not at filesystem root
+        if ( current / 'pyproject.toml' ).exists( ):
+            return current
+        if current in limits:
+            raise _exceptions.FileLocateFailure( # noqa: TRY003
+                'project root discovery', 'pyproject.toml' )
+        current = current.parent
+    raise _exceptions.FileLocateFailure( # noqa: TRY003
+        'project root discovery', 'pyproject.toml' )

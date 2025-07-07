@@ -37,8 +37,9 @@ async def prepare( # noqa: PLR0913
     exits: __.ctxl.AsyncExitStack,
     application: _application.Information = _application_information,
     configedits: _dictedits.Edits = ( ),
-    configfile: __.Absential[ __.Path ] = __.absent,
+    configfile: __.Absential[ __.Path | __.io.TextIOBase ] = __.absent,
     directories: __.Absential[ __.pdirs.PlatformDirs ] = __.absent,
+    distribution: __.Absential[ _distribution.Information ] = __.absent,
     environment: bool | __.NominativeDictionary = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
 ) -> _state.Globals:
@@ -54,9 +55,10 @@ async def prepare( # noqa: PLR0913
     '''
     if __.is_absent( directories ):
         directories = application.produce_platform_directories( )
-    distribution = (
-        await _distribution.Information.prepare(
-            package = __.package_name, exits = exits ) )
+    if __.is_absent( distribution ):
+        distribution = (
+            await _distribution.Information.prepare(
+                package = __.package_name, exits = exits ) )
     configuration = (
         await _configuration.acquire(
             application_name = application.name,
