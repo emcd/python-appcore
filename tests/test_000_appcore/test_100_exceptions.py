@@ -45,16 +45,14 @@ def test_110_omnierror_hierarchy( ):
 
 
 def test_120_address_locate_failure_hierarchy( ):
-    ''' AddressLocateFailure inherits from Omnierror and LookupError. '''
+    ''' AddressLocateFailure has appropriate bases. '''
     error = module.AddressLocateFailure( 'test', [ 'a', 'b' ], 'b' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, LookupError )
-    assert isinstance( error, Exception )
 
 
 def test_130_async_assertion_failure_hierarchy( ):
-    ''' AsyncAssertionFailure inherits from Omnierror, AssertionError,
-    TypeError. '''
+    ''' AsyncAssertionFailure has appropriate bases. '''
     error = module.AsyncAssertionFailure( 'not_awaitable' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, AssertionError )
@@ -62,8 +60,7 @@ def test_130_async_assertion_failure_hierarchy( ):
 
 
 def test_140_entry_assertion_failure_hierarchy( ):
-    ''' EntryAssertionFailure inherits from Omnierror, AssertionError,
-    KeyError. '''
+    ''' EntryAssertionFailure has appropriate bases. '''
     error = module.EntryAssertionFailure( 'test dict', 'missing_key' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, AssertionError )
@@ -71,14 +68,14 @@ def test_140_entry_assertion_failure_hierarchy( ):
 
 
 def test_150_file_locate_failure_hierarchy( ):
-    ''' FileLocateFailure inherits from Omnierror and FileNotFoundError. '''
+    ''' FileLocateFailure has appropriate bases. '''
     error = module.FileLocateFailure( 'test', 'missing.txt' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, FileNotFoundError )
 
 
 def test_160_operation_invalidity_hierarchy( ):
-    ''' OperationInvalidity inherits from Omnierror and RuntimeError. '''
+    ''' OperationInvalidity has appropriate bases. '''
     error = module.OperationInvalidity( 'test object', 'invalid_op' )
     assert isinstance( error, module.Omnierror )
     assert isinstance( error, RuntimeError )

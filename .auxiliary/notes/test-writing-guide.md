@@ -14,7 +14,7 @@ with patch.object(acquirer, '_some_method'):
     # ...
 ```
 
-### 2. Class Patching  
+### 2. Class Patching
 ```python
 # WRONG - will fail with AttributeImmutability
 with patch.object(TomlAcquirer, '_some_method'):
@@ -38,10 +38,10 @@ from .fixtures import create_temp_directories_and_distribution, create_config_te
 
 def test_file_operations():
     directories, distribution, temp_dir = create_temp_directories_and_distribution()
-    
+
     # Create real files for testing
     create_config_template_files(distribution, content='[app]\nname="test"')
-    
+
     try:
         # Test with real file operations
         result = await some_function(directories, distribution)
@@ -75,7 +75,7 @@ Configure behavior at object creation time:
 @dataclass(frozen=True)
 class DataProcessor:
     validator: Callable[[str], bool] = default_validator
-    
+
     def process(self, data: str) -> str:
         if self.validator(data):
             return f"valid: {data}"
@@ -102,7 +102,7 @@ directories, distribution, temp_dir = create_temp_directories_and_distribution(
     dist_name='test-dist'
 )
 
-# 2. Full globals DTO for environment testing  
+# 2. Full globals DTO for environment testing
 globals_dto, temp_dir = create_globals_with_temp_dirs(
     editable=True,
     config_locations=['custom/path']
@@ -110,7 +110,7 @@ globals_dto, temp_dir = create_globals_with_temp_dirs(
 
 # 3. Configuration template files
 create_config_template_files(
-    distribution, 
+    distribution,
     main_filename='general.toml',
     content='[app]\nname="test-app"'
 )
@@ -119,7 +119,7 @@ create_config_template_files(
 ## Testing Strategy by Code Type
 
 ### File Operations
-- **Use real temporary directories** 
+- **Use real temporary directories**
 - Create actual files and directories
 - Test actual file system interactions
 - Clean up with `shutil.rmtree()` in `finally` blocks
@@ -137,6 +137,48 @@ create_config_template_files(
 - **Design for testability** by adding optional parameters
 - **Prefer real scenarios** over complex mocking
 - **Use pragmas sparingly** only when dependency injection isn't feasible
+
+## Docstring Guidelines
+
+### Write Behavior-Focused Docstrings
+- **Describe what behavior is being tested**, not function names
+- **Good**: `''' Error interceptor returns Value for successful awaitable. '''`
+- **Bad**: `''' intercept_error_async returns Value for successful awaitable. '''`
+
+### Keep Headlines Concise
+- **Single-line headlines only** - don't let headlines spill across multiple lines
+- **Good**: `''' Configuration acquirer handles absent file parameter. '''`
+- **Bad**: `''' Configuration acquirer handles absent file parameter by discovering template. '''`
+
+### Add Context When Needed
+- Use a blank line to separate headline from additional context
+- Indent context to same level as headline
+```python
+def test_complex_behavior():
+    ''' Error interceptor handles complex scenarios.
+
+        Tests behavior when multiple error conditions overlap
+        and recovery mechanisms are triggered.
+    '''
+```
+
+### Benefits of Good Docstrings
+- **Function renaming doesn't require docstring updates**
+- **Shorter, more readable test descriptions**
+- **Focus on the "why" rather than the "what"**
+
+### Mark Slow Tests
+- **Use `@pytest.mark.slow`** for tests with deliberate delays or sleeps
+- **Allows filtering** with `pytest -m "not slow"` for faster test runs
+```python
+@pytest.mark.asyncio
+@pytest.mark.slow
+async def test_many_concurrent_operations():
+    ''' Async gatherer handles many concurrent operations. '''
+    async def operation(n):
+        await asyncio.sleep(0.001)  # Simulate delay
+        return n * 2
+```
 
 ## Benefits of This Approach
 

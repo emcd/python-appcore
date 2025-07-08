@@ -33,14 +33,14 @@ exceptions_module = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
 
 def test_100_simple_edit_creation( ):
-    ''' SimpleEdit creates with address and value. '''
+    ''' Dictionary editor creates with address and value. '''
     edit = module.SimpleEdit( address = [ 'app', 'name' ], value = 'test-app' )
     assert edit.address == [ 'app', 'name' ]
     assert edit.value == 'test-app'
 
 
 def test_110_simple_edit_inject_new_key( ):
-    ''' SimpleEdit injects value at new address. '''
+    ''' Dictionary editor injects value at new address. '''
     config = { }
     edit = module.SimpleEdit( address = [ 'app', 'name' ], value = 'test-app' )
     edit( config )
@@ -48,7 +48,7 @@ def test_110_simple_edit_inject_new_key( ):
 
 
 def test_120_simple_edit_replace_existing( ):
-    ''' SimpleEdit replaces existing value at address. '''
+    ''' Dictionary editor replaces existing value at address. '''
     config = { 'app': { 'name': 'old-app', 'version': '1.0' } }
     edit = module.SimpleEdit( address = [ 'app', 'name' ], value = 'new-app' )
     edit( config )
@@ -57,7 +57,7 @@ def test_120_simple_edit_replace_existing( ):
 
 
 def test_130_simple_edit_deep_nesting( ):
-    ''' SimpleEdit creates deep nested structure. '''
+    ''' Dictionary editor creates deep nested structure. '''
     config = { }
     edit = module.SimpleEdit(
         address = [ 'app', 'database', 'connection', 'host' ],
@@ -89,8 +89,7 @@ def test_150_edit_dereference_missing_key( ):
 
 
 def test_160_edit_dereference_partial_path( ):
-    ''' Edit dereference raises AddressLocateFailure for partial missing
-    path. '''
+    ''' Edit dereference raises AddressLocateFailure for missing path. '''
     config = { 'app': { 'name': 'test-app' } }
     edit = module.SimpleEdit(
         address = [ 'app', 'database', 'host' ], value = 'ignored' )
@@ -150,8 +149,7 @@ def test_190_elements_entry_edit_with_identifier( ):
 
 
 def test_200_elements_entry_edit_missing_identifier( ):
-    ''' ElementsEntryEdit raises EntryAssertionFailure for missing
-    identifier key. '''
+    ''' Elements entry editor raises EntryAssertionFailure for missing key. '''
     config = {
         'servers': [
             { 'name': 'server1' },  # Missing 'type' key
@@ -170,8 +168,7 @@ def test_200_elements_entry_edit_missing_identifier( ):
 
 
 def test_210_elements_entry_edit_preserves_other_fields( ):
-    ''' ElementsEntryEdit preserves other fields while editing target
-    field. '''
+    ''' Elements entry editor preserves other fields during edits. '''
     config = {
         'users': [
             {

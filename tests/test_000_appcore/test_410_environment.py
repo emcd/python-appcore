@@ -42,7 +42,7 @@ state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
 
 @pytest.mark.asyncio
 async def test_100_update_editable_with_env_file( ):
-    ''' update() loads .env file for editable distributions. '''
+    ''' Environment updater loads .env file for editable distributions. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = True )
     
     # Create .env file in project root
@@ -62,7 +62,7 @@ TEST_VAR_2=editable_value_2
 
 @pytest.mark.asyncio
 async def test_110_update_editable_with_env_directory( ):
-    ''' update() loads multiple .env files from directory for editable. '''
+    ''' Environment updater loads multiple .env files from directory. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = True )
     
     # Create .env directory with multiple files
@@ -91,7 +91,7 @@ OVERRIDE_VAR=local_override
 
 @pytest.mark.asyncio
 async def test_120_update_editable_no_env_file( ):
-    ''' update() falls through when no .env for editable. '''
+    ''' Environment updater falls through when no .env for editable. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = True )
     
     # No .env file exists in project root
@@ -116,7 +116,7 @@ FALLBACK_VAR=fallback_value
 
 @pytest.mark.asyncio
 async def test_130_update_normal_with_configured_location( ):
-    ''' update() loads from configured location for normal installations. '''
+    ''' Environment updater loads from configured location for normal. '''
     config_locations = {
         'environment': '{user_configuration}/app.env'
     }
@@ -142,7 +142,7 @@ PRECEDENCE_VAR=config_precedence
 
 @pytest.mark.asyncio
 async def test_140_update_normal_with_local_precedence( ):
-    ''' update() gives local .env precedence over configured for normal. '''
+    ''' Environment updater gives local .env precedence over configured. '''
     config_locations = {
         'environment': '{user_configuration}/app.env'
     }
@@ -181,7 +181,7 @@ PRECEDENCE_VAR=local_precedence
 
 @pytest.mark.asyncio
 async def test_150_update_normal_local_only( ):
-    ''' update() loads only local .env when no configured location. '''
+    ''' Environment updater loads only local .env when not configured. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = False )
     
     # No configured location, only local .env
@@ -203,7 +203,7 @@ LOCAL_ONLY_VAR=local_only_value
 
 @pytest.mark.asyncio
 async def test_160_update_normal_configured_directory( ):
-    ''' update() loads multiple files from configured directory. '''
+    ''' Environment updater loads multiple files from configured directory. '''
     config_locations = {
         'environment': '{user_configuration}/env-dir'
     }
@@ -238,7 +238,7 @@ API_URL=https://api.example.com
 
 @pytest.mark.asyncio
 async def test_170_update_normal_no_files_exist( ):
-    ''' update() handles case when no .env files exist. '''
+    ''' Environment updater handles case when no .env files exist. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = False )
     
     # No .env files exist anywhere
@@ -252,7 +252,7 @@ async def test_170_update_normal_no_files_exist( ):
 
 @pytest.mark.asyncio
 async def test_180_update_home_template_substitution( ):
-    ''' update() properly substitutes {user_home} in templates. '''
+    ''' Environment updater properly substitutes {user_home} in templates. '''
     config_locations = {
         'environment': '{user_home}/.config/myapp/env.conf'
     }

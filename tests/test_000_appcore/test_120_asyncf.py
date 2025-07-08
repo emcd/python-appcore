@@ -36,7 +36,7 @@ generics_module = cache_import_module( f"{PACKAGE_NAME}.generics" )
 
 @pytest.mark.asyncio
 async def test_100_intercept_error_async_success( ):
-    ''' intercept_error_async returns Value for successful awaitable. '''
+    ''' Error interceptor returns Value for successful awaitable. '''
     async def successful_operation( ):
         return 42
     
@@ -47,7 +47,7 @@ async def test_100_intercept_error_async_success( ):
 
 @pytest.mark.asyncio
 async def test_110_intercept_error_async_failure( ):
-    ''' intercept_error_async returns Error for failing awaitable. '''
+    ''' Error interceptor returns Error for failing awaitable. '''
     async def failing_operation( ):
         raise ValueError( 'test error' )
     
@@ -59,7 +59,7 @@ async def test_110_intercept_error_async_failure( ):
 
 @pytest.mark.asyncio
 async def test_120_intercept_error_async_preserves_non_exceptions( ):
-    ''' intercept_error_async allows BaseException subclasses to propagate. '''
+    ''' Error interceptor allows BaseException subclasses to propagate. '''
     async def keyboard_interrupt_operation( ):
         raise KeyboardInterrupt( 'user interrupt' )
     
@@ -69,7 +69,7 @@ async def test_120_intercept_error_async_preserves_non_exceptions( ):
 
 @pytest.mark.asyncio
 async def test_130_gather_async_all_successful( ):
-    ''' gather_async returns tuple of results for successful operations. '''
+    ''' Async gatherer returns tuple of results for successful operations. '''
     async def operation1( ):
         return 'result1'
     
@@ -82,7 +82,7 @@ async def test_130_gather_async_all_successful( ):
 
 @pytest.mark.asyncio
 async def test_140_gather_async_with_failures( ):
-    ''' gather_async raises ExceptionGroup for failing operations. '''
+    ''' Async gatherer raises ExceptionGroup for failing operations. '''
     async def successful_operation( ):
         return 'success'
     
@@ -99,8 +99,7 @@ async def test_140_gather_async_with_failures( ):
 
 @pytest.mark.asyncio
 async def test_150_gather_async_return_exceptions( ):
-    ''' gather_async returns results and errors when
-    return_exceptions=True. '''
+    ''' Async gatherer returns results and errors with return_exceptions. '''
     async def successful_operation( ):
         return 'success'
     
@@ -122,7 +121,7 @@ async def test_150_gather_async_return_exceptions( ):
 
 @pytest.mark.asyncio
 async def test_160_gather_async_ignore_nonawaitables( ):
-    ''' gather_async handles non-awaitables when ignore_nonawaitables=True. '''
+    ''' Async gatherer handles non-awaitables in permissive mode. '''
     async def async_operation( ):
         return 'async_result'
     
@@ -139,8 +138,7 @@ async def test_160_gather_async_ignore_nonawaitables( ):
 
 @pytest.mark.asyncio
 async def test_170_gather_async_strict_nonawaitables( ):
-    ''' gather_async raises AsyncAssertionFailure for non-awaitables by
-    default. '''
+    ''' Async gatherer raises AsyncAssertionFailure for non-awaitables. '''
     async def async_operation( ):
         return 'async_result'
     
@@ -152,7 +150,7 @@ async def test_170_gather_async_strict_nonawaitables( ):
 
 @pytest.mark.asyncio
 async def test_180_gather_async_custom_error_message( ):
-    ''' gather_async uses custom error message in ExceptionGroup. '''
+    ''' Async gatherer uses custom error message in ExceptionGroup. '''
     async def failing_operation( ):
         raise ValueError( 'failure' )
     
@@ -169,15 +167,14 @@ async def test_180_gather_async_custom_error_message( ):
 
 @pytest.mark.asyncio
 async def test_190_gather_async_empty_input( ):
-    ''' gather_async handles empty input correctly. '''
+    ''' Async gatherer handles empty input correctly. '''
     results = await module.gather_async( )
     assert results == ( )
 
 
 @pytest.mark.asyncio
 async def test_200_gather_async_mixed_results( ):
-    ''' gather_async handles mixed successful and failing operations
-    correctly. '''
+    ''' Async gatherer handles mixed successful and failing operations. '''
     async def operation1( ):
         return 1
     
@@ -207,7 +204,7 @@ async def test_200_gather_async_mixed_results( ):
 
 @pytest.mark.asyncio
 async def test_210_gather_async_permissive_mixed( ):
-    ''' gather_async permissive mode handles awaitables and non-awaitables. '''
+    ''' Async gatherer permissive mode accepts mixed input types. '''
     async def async_op( ):
         return 'async'
     
@@ -224,7 +221,7 @@ async def test_210_gather_async_permissive_mixed( ):
 
 @pytest.mark.asyncio
 async def test_220_intercept_error_async_with_complex_types( ):
-    ''' intercept_error_async works with complex return types. '''
+    ''' Error interceptor works with complex return types. '''
     async def complex_operation( ):
         return { 'data': [ 1, 2, 3 ], 'status': 'success' }
     
@@ -236,8 +233,9 @@ async def test_220_intercept_error_async_with_complex_types( ):
 
 
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_230_gather_async_large_number_of_operations( ):
-    ''' gather_async handles many concurrent operations. '''
+    ''' Async gatherer handles many concurrent operations. '''
     async def numbered_operation( n ):
         await asyncio.sleep( 0.001 )  # Simulate small delay
         return n * 2

@@ -74,14 +74,14 @@ def test_140_enablement_tristate_values( ):
 
 
 def test_200_toml_acquirer_creation( ):
-    ''' TomlAcquirer creates with default values. '''
+    ''' Configuration acquirer creates with default values. '''
     acquirer = module.TomlAcquirer( )
     assert acquirer.main_filename == 'general.toml'
     assert acquirer.includes_name == 'includes'
 
 
 def test_210_toml_acquirer_custom_values( ):
-    ''' TomlAcquirer accepts custom filename and includes name. '''
+    ''' Configuration acquirer accepts custom filename and includes name. '''
     acquirer = module.TomlAcquirer(
         main_filename = 'custom.toml',
         includes_name = 'custom_includes'
@@ -91,7 +91,7 @@ def test_210_toml_acquirer_custom_values( ):
 
 
 def test_220_toml_acquirer_protocol_compliance( ):
-    ''' TomlAcquirer implements AcquirerAbc protocol. '''
+    ''' Configuration acquirer implements AcquirerAbc protocol. '''
     acquirer = module.TomlAcquirer( )
     # Check that TomlAcquirer has the required protocol methods
     assert hasattr( acquirer, '__call__' )
@@ -102,7 +102,7 @@ def test_220_toml_acquirer_protocol_compliance( ):
 
 @pytest.mark.asyncio
 async def test_300_toml_acquirer_call_with_text_io( ):
-    ''' TomlAcquirer processes configuration from TextIO. '''
+    ''' Configuration acquirer processes configuration from TextIO. '''
     toml_content = '''
 [app]
 name = "test-app"
@@ -133,7 +133,7 @@ port = 5432
 
 @pytest.mark.asyncio
 async def test_310_toml_acquirer_call_with_path( ):
-    ''' TomlAcquirer processes configuration from file path. '''
+    ''' Configuration acquirer processes configuration from file path. '''
     toml_content = '''
 [app]
 name = "path-app"
@@ -165,7 +165,7 @@ debug = true
 
 @pytest.mark.asyncio
 async def test_320_toml_acquirer_call_with_edits( ):
-    ''' TomlAcquirer applies edits to configuration. '''
+    ''' Configuration acquirer applies edits to configuration. '''
     toml_content = '''
 [app]
 name = "test-app"
@@ -197,7 +197,7 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_325_toml_acquirer_call_with_absent_file( ):
-    ''' TomlAcquirer handles absent file parameter by discovering template. '''
+    ''' Configuration acquirer handles absent file by discovering template. '''
     # Create temp directories and distribution with template file
     directories, distribution, temp_dir = (
         create_temp_directories_and_distribution( ) )
@@ -243,7 +243,7 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_330_toml_acquirer_call_with_includes( ):
-    ''' TomlAcquirer processes includes configuration structure. '''
+    ''' Configuration acquirer processes includes configuration structure. '''
     toml_content = '''
 [app]
 name = "test-app"
@@ -275,7 +275,7 @@ includes = [
 
 @pytest.mark.asyncio
 async def test_340_toml_acquirer_discover_copy_template( ):
-    ''' TomlAcquirer discovers and copies template when file absent. '''
+    ''' Configuration acquirer discovers and copies template file. '''
     with tempfile.TemporaryDirectory( ) as temp_dir:
         temp_path = Path( temp_dir )
         
@@ -306,7 +306,7 @@ name = "template-app"
 
 @pytest.mark.asyncio
 async def test_350_toml_acquirer_discover_existing_file( ):
-    ''' TomlAcquirer uses existing file when it exists. '''
+    ''' Configuration acquirer uses existing file when it exists. '''
     with tempfile.TemporaryDirectory( ) as temp_dir:
         temp_path = Path( temp_dir )
         
