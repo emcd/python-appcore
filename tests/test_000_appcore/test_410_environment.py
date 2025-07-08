@@ -44,14 +44,12 @@ state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
 async def test_100_update_editable_with_env_file( ):
     ''' Environment updater loads .env file for editable distributions. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = True )
-    
     # Create .env file in project root
     env_file = globals_dto.distribution.location / '.env'
     env_file.write_text( '''
 TEST_VAR_1=editable_value_1
 TEST_VAR_2=editable_value_2
     ''' )
-    
     with patch.dict( os.environ, { }, clear = True ):
         await module.update( globals_dto )
         
@@ -64,21 +62,17 @@ TEST_VAR_2=editable_value_2
 async def test_110_update_editable_with_env_directory( ):
     ''' Environment updater loads multiple .env files from directory. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = True )
-    
     # Create .env directory with multiple files
     env_dir = globals_dto.distribution.location / '.env'
     env_dir.mkdir( )
-    
     ( env_dir / 'base.env' ).write_text( '''
 BASE_VAR=base_value
 OVERRIDE_VAR=base_override
     ''' )
-    
     ( env_dir / 'local.env' ).write_text( '''
 LOCAL_VAR=local_value
 OVERRIDE_VAR=local_override
     ''' )
-    
     with patch.dict( os.environ, { }, clear = True ):
         await module.update( globals_dto )
         
@@ -93,10 +87,8 @@ OVERRIDE_VAR=local_override
 async def test_120_update_editable_no_env_file( ):
     ''' Environment updater falls through when no .env for editable. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = True )
-    
     # No .env file exists in project root
     assert not ( globals_dto.distribution.location / '.env' ).exists( )
-    
     # Create a local .env file in current directory
     local_env = Path( ) / '.env'
     try:
@@ -124,14 +116,12 @@ async def test_130_update_normal_with_configured_location( ):
         editable = False,
         config_locations = config_locations
     )
-    
     # Create configured environment file
     config_env = globals_dto.directories.user_config_path / 'app.env'
     config_env.write_text( '''
 CONFIG_VAR=config_value
 PRECEDENCE_VAR=config_precedence
     ''' )
-    
     with patch.dict( os.environ, { }, clear = True ):
         await module.update( globals_dto )
         
@@ -150,14 +140,12 @@ async def test_140_update_normal_with_local_precedence( ):
         editable = False,
         config_locations = config_locations
     )
-    
     # Create configured environment file
     config_env = globals_dto.directories.user_config_path / 'app.env'
     config_env.write_text( '''
 CONFIG_VAR=config_value
 PRECEDENCE_VAR=config_precedence
     ''' )
-    
     # Create local .env file
     local_env = Path( ) / '.env'
     try:
@@ -183,7 +171,6 @@ PRECEDENCE_VAR=local_precedence
 async def test_150_update_normal_local_only( ):
     ''' Environment updater loads only local .env when not configured. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = False )
-    
     # No configured location, only local .env
     local_env = Path( ) / '.env'
     try:
@@ -211,21 +198,17 @@ async def test_160_update_normal_configured_directory( ):
         editable = False,
         config_locations = config_locations
     )
-    
     # Create configured environment directory
     env_dir = globals_dto.directories.user_config_path / 'env-dir'
     env_dir.mkdir( )
-    
     ( env_dir / 'db.env' ).write_text( '''
 DB_HOST=localhost
 DB_PORT=5432
     ''' )
-    
     ( env_dir / 'api.env' ).write_text( '''
 API_KEY=secret_key
 API_URL=https://api.example.com
     ''' )
-    
     with patch.dict( os.environ, { }, clear = True ):
         await module.update( globals_dto )
         
@@ -240,7 +223,6 @@ API_URL=https://api.example.com
 async def test_170_update_normal_no_files_exist( ):
     ''' Environment updater handles case when no .env files exist. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = False )
-    
     # No .env files exist anywhere
     with patch.dict( os.environ, { }, clear = True ):
         # Should complete without error
@@ -260,12 +242,10 @@ async def test_180_update_home_template_substitution( ):
         editable = False,
         config_locations = config_locations
     )
-    
     # Create environment file in home-based location
     home_config_dir = Path.home( ) / '.config' / 'myapp'
     home_config_dir.mkdir( parents = True, exist_ok = True )
     home_env = home_config_dir / 'env.conf'
-    
     try:
         home_env.write_text( '''
 HOME_VAR=home_value
@@ -293,7 +273,6 @@ def test_200_inject_dotenv_data_success( ):
 TEST_INJECT_VAR=inject_value
 ANOTHER_VAR=another_value
     '''
-    
     with patch.dict( os.environ, { }, clear = True ):
         result = module._inject_dotenv_data( data )
         
@@ -326,7 +305,6 @@ EMPTY_VAR=
 
 QUOTED_VAR="quoted value"
     '''
-    
     with patch.dict( os.environ, { }, clear = True ):
         result = module._inject_dotenv_data( data )
         

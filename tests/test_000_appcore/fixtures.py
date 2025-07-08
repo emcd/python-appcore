@@ -40,18 +40,15 @@ def create_temp_directories_and_distribution(
     dist_name = 'test-dist'
 ):
     ''' Creates temporary directories with directories and distribution DTOs.
-    
     Returns:
         tuple[directories, distribution, temp_dir]: Mock directories object,
         real distribution object, and Path to temp directory for cleanup.
     '''
     temp_dir = Path( tempfile.mkdtemp( ) )
-    
     # Create directories mock with real paths
     directories = MagicMock( )
     directories.user_config_path = temp_dir / 'config'
     directories.user_config_path.mkdir( parents = True, exist_ok = True )
-    
     # Create real distribution with temp location
     distribution = distribution_module.Information(
         name = dist_name,
@@ -60,7 +57,6 @@ def create_temp_directories_and_distribution(
     )
     if editable:
         distribution.location.mkdir( parents = True, exist_ok = True )
-    
     return directories, distribution, temp_dir
 
 
@@ -70,7 +66,6 @@ def create_globals_with_temp_dirs(
     app_name = 'test-env-app' 
 ):
     ''' Creates Globals DTO with temporary directories for environment tests.
-    
     Returns:
         tuple[Globals, temp_dir]: Globals DTO and Path to temp directory.
     '''
@@ -79,14 +74,11 @@ def create_globals_with_temp_dirs(
             editable = editable, 
             app_name = app_name
         ) )
-    
     application = application_module.Information( name = app_name )
     configuration = { }
     if config_locations:
         configuration[ 'locations' ] = config_locations
-    
     exits = MagicMock( )
-    
     return state_module.Globals(
         application = application,
         configuration = configuration,
@@ -102,7 +94,6 @@ def create_config_template_files(
     content = None 
 ):
     ''' Creates configuration template files in distribution data location.
-    
     Args:
         distribution: Distribution DTO with location
         main_filename: Name of main config file 
@@ -114,13 +105,10 @@ def create_config_template_files(
 name = "template-app"
 version = "1.0.0"
         '''
-    
     # Create data/configuration directory structure
     config_dir = distribution.provide_data_location( 'configuration' )
     config_dir.mkdir( parents = True, exist_ok = True )
-    
     # Write template file
     template_file = config_dir / main_filename
     template_file.write_text( content )
-    
     return template_file

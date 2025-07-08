@@ -112,11 +112,9 @@ version = "1.0.0"
 host = "localhost"
 port = 5432
     '''
-    
     file_io = io.StringIO( toml_content )
     directories = MagicMock( )
     distribution = MagicMock( )
-    
     acquirer = module.TomlAcquirer( )
     result = await acquirer(
         'test-app',
@@ -124,7 +122,6 @@ port = 5432
         distribution,
         file = file_io
     )
-    
     assert result[ 'app' ][ 'name' ] == 'test-app'
     assert result[ 'app' ][ 'version' ] == '1.0.0'
     assert result[ 'database' ][ 'host' ] == 'localhost'
@@ -139,12 +136,10 @@ async def test_310_toml_acquirer_call_with_path( ):
 name = "path-app"
 debug = true
     '''
-    
     with tempfile.NamedTemporaryFile( mode = 'w', suffix = '.toml',
                                       delete = False ) as tmp_file:
         tmp_file.write( toml_content )
         tmp_file_path = Path( tmp_file.name )
-    
     try:
         directories = MagicMock( )
         distribution = MagicMock( )
@@ -171,17 +166,14 @@ async def test_320_toml_acquirer_call_with_edits( ):
 name = "test-app"
 version = "1.0.0"
     '''
-    
     file_io = io.StringIO( toml_content )
     directories = MagicMock( )
     distribution = MagicMock( )
-    
     # Create edit to modify version
     edit = dictedits_module.SimpleEdit(
         address = [ 'app', 'version' ],
         value = '2.0.0'
     )
-    
     acquirer = module.TomlAcquirer( )
     result = await acquirer(
         'test-app',
@@ -190,7 +182,6 @@ version = "1.0.0"
         edits = ( edit, ),
         file = file_io
     )
-    
     assert result[ 'app' ][ 'name' ] == 'test-app'
     assert result[ 'app' ][ 'version' ] == '2.0.0'  # Modified by edit
 
@@ -201,20 +192,17 @@ async def test_325_toml_acquirer_call_with_absent_file( ):
     # Create temp directories and distribution with template file
     directories, distribution, temp_dir = (
         create_temp_directories_and_distribution( ) )
-    
     template_content = '''
 [app]
 name = "discovered-app"
 version = "1.0.0"
     '''
-    
     # Create template file in distribution data location
     create_config_template_files( 
         distribution, 
         main_filename = 'general.toml',
         content = template_content 
     )
-    
     try:
         acquirer = module.TomlAcquirer( )
         
@@ -251,12 +239,9 @@ includes = [
     "/path/to/includes/*.toml"
 ]
     '''
-    
     file_io = io.StringIO( toml_content )
     directories = MagicMock( )
     distribution = MagicMock( )
-    
-    # Test basic functionality with includes configuration
     # The actual includes processing would require real files
     acquirer = module.TomlAcquirer( )
     result = await acquirer(
@@ -266,7 +251,6 @@ includes = [
         file = file_io
     )
     
-    assert result[ 'app' ][ 'name' ] == 'test-app'
     # The includes configuration is parsed but won't be processed 
     # since no actual include files exist
     assert 'includes' in result[ 'app' ]
@@ -446,12 +430,9 @@ value = "success"
 async def test_390_toml_acquirer_acquire_includes_empty_specs( ):
     ''' TomlAcquirer._acquire_includes handles empty specifications. '''
     directories = MagicMock( )
-    
     acquirer = module.TomlAcquirer( )
     result = await acquirer._acquire_includes( 'test-app', directories, ( ) )
-    
     assert len( result ) == 0
-
 
 def test_400_acquirer_abc_protocol( ):
     ''' AcquirerAbc is a proper protocol class. '''
@@ -461,7 +442,6 @@ def test_400_acquirer_abc_protocol( ):
     assert inspect.isabstract( module.AcquirerAbc )
     
     # Verify protocol structure
-    assert hasattr( module.AcquirerAbc, '__abstractmethods__' )
     assert '__call__' in module.AcquirerAbc.__abstractmethods__
 
 

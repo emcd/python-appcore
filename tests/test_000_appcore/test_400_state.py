@@ -61,7 +61,6 @@ def test_200_globals_creation( ):
         editable = True
     )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -69,7 +68,6 @@ def test_200_globals_creation( ):
         distribution = distribution,
         exits = exits
     )
-    
     assert globals_obj.application == application
     assert globals_obj.configuration == configuration
     assert globals_obj.directories == directories
@@ -88,7 +86,6 @@ def test_210_globals_as_dictionary( ):
         editable = True
     )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -96,15 +93,12 @@ def test_210_globals_as_dictionary( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.as_dictionary( )
-    
     assert 'application' in result
     assert 'configuration' in result
     assert 'directories' in result
     assert 'distribution' in result
     assert 'exits' in result
-    
     assert result[ 'application' ] == application
     assert result[ 'configuration' ] == configuration
     assert result[ 'directories' ] == directories
@@ -123,7 +117,6 @@ def test_220_globals_as_dictionary_immutable( ):
         editable = True
     )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -131,12 +124,9 @@ def test_220_globals_as_dictionary_immutable( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.as_dictionary( )
-    
     # Modifying the returned dictionary should not affect the original
     result[ 'new_field' ] = 'new_value'
-    
     # Original should not have the new field
     assert not hasattr( globals_obj, 'new_field' )
 
@@ -149,7 +139,6 @@ def test_300_globals_provide_cache_location_basic( ):
     directories.user_cache_path = Path( '/user/cache/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -157,7 +146,6 @@ def test_300_globals_provide_cache_location_basic( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.provide_cache_location( )
     assert result == Path( '/user/cache/test-app' )
 
@@ -170,7 +158,6 @@ def test_310_globals_provide_cache_location_with_appendages( ):
     directories.user_cache_path = Path( '/user/cache/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -178,7 +165,6 @@ def test_310_globals_provide_cache_location_with_appendages( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.provide_cache_location( 'temp', 'files' )
     assert result == Path( '/user/cache/test-app/temp/files' )
 
@@ -191,7 +177,6 @@ def test_320_globals_provide_data_location_basic( ):
     directories.user_data_path = Path( '/user/data/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -199,7 +184,6 @@ def test_320_globals_provide_data_location_basic( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.provide_data_location( )
     assert result == Path( '/user/data/test-app' )
 
@@ -212,7 +196,6 @@ def test_330_globals_provide_state_location_basic( ):
     directories.user_state_path = Path( '/user/state/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -220,7 +203,6 @@ def test_330_globals_provide_state_location_basic( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.provide_state_location( )
     assert result == Path( '/user/state/test-app' )
 
@@ -239,7 +221,6 @@ def test_340_globals_provide_location_with_custom_config( ):
     directories.user_data_path = Path( '/user/data/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -247,13 +228,11 @@ def test_340_globals_provide_location_with_custom_config( ):
         distribution = distribution,
         exits = exits
     )
-    
     # Test custom cache location
     cache_result = globals_obj.provide_location(
         module.DirectorySpecies.Cache )
     expected_cache = Path.home( ) / 'custom-cache' / 'test-app'
     assert cache_result == expected_cache
-    
     # Test custom data location with user_data substitution
     data_result = globals_obj.provide_location(
         module.DirectorySpecies.Data )
@@ -273,7 +252,6 @@ def test_350_globals_provide_location_with_appendages_and_config( ):
     directories.user_cache_path = Path( '/user/cache/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -281,7 +259,6 @@ def test_350_globals_provide_location_with_appendages_and_config( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.provide_location(
         module.DirectorySpecies.Cache, 'temp', 'files' )
     expected = Path.home( ) / 'custom' / 'test-app' / 'temp' / 'files'
@@ -296,7 +273,6 @@ def test_360_globals_provide_location_fallback_to_default( ):
     directories.user_cache_path = Path( '/user/cache/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -304,7 +280,6 @@ def test_360_globals_provide_location_fallback_to_default( ):
         distribution = distribution,
         exits = exits
     )
-    
     result = globals_obj.provide_location( module.DirectorySpecies.Cache )
     assert result == Path( '/user/cache/test-app' )
 
@@ -323,7 +298,6 @@ def test_370_globals_provide_location_partial_config( ):
     directories.user_data_path = Path( '/user/data/test-app' )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -331,12 +305,10 @@ def test_370_globals_provide_location_partial_config( ):
         distribution = distribution,
         exits = exits
     )
-    
     # Cache should use custom config
     cache_result = globals_obj.provide_location(
         module.DirectorySpecies.Cache )
     assert cache_result == Path.home( ) / 'custom-cache'
-    
     # Data should use default
     data_result = globals_obj.provide_location(
         module.DirectorySpecies.Data )
@@ -350,7 +322,6 @@ def test_400_globals_immutability( ):
     directories = MagicMock( )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -358,7 +329,6 @@ def test_400_globals_immutability( ):
         distribution = distribution,
         exits = exits
     )
-    
     # Should not be able to modify fields after creation
     with pytest.raises( ( AttributeError, TypeError ) ):
         globals_obj.application = MagicMock( )  # type: ignore
@@ -375,7 +345,6 @@ def test_410_globals_equality( ):
         editable = True
     )
     exits = MagicMock( )
-    
     globals1 = module.Globals(
         application = application,
         configuration = configuration,
@@ -383,7 +352,6 @@ def test_410_globals_equality( ):
         distribution = distribution,
         exits = exits
     )
-    
     globals2 = module.Globals(
         application = application,
         configuration = configuration,
@@ -391,7 +359,6 @@ def test_410_globals_equality( ):
         distribution = distribution,
         exits = exits
     )
-    
     assert globals1 == globals2
 
 
@@ -403,7 +370,6 @@ def test_420_globals_inequality( ):
     directories = MagicMock( )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals1 = module.Globals(
         application = application1,
         configuration = configuration,
@@ -411,7 +377,6 @@ def test_420_globals_inequality( ):
         distribution = distribution,
         exits = exits
     )
-    
     globals2 = module.Globals(
         application = application2,
         configuration = configuration,
@@ -419,7 +384,6 @@ def test_420_globals_inequality( ):
         distribution = distribution,
         exits = exits
     )
-    
     assert globals1 != globals2
 
 
@@ -430,7 +394,6 @@ def test_430_globals_string_representation( ):
     directories = MagicMock( )
     distribution = MagicMock( )
     exits = MagicMock( )
-    
     globals_obj = module.Globals(
         application = application,
         configuration = configuration,
@@ -438,7 +401,6 @@ def test_430_globals_string_representation( ):
         distribution = distribution,
         exits = exits
     )
-    
     str_repr = str( globals_obj )
     assert 'test-app' in str_repr
 
@@ -451,7 +413,6 @@ def test_440_globals_dataclass_fields( ):
         field.name for field in fields 
         if not field.name.startswith( '_frigid' )
     }
-    
     expected_fields = { 
         'application', 'configuration', 'directories', 
         'distribution', 'exits' 

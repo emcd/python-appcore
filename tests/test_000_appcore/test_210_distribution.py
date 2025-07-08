@@ -133,7 +133,6 @@ def test_160_information_inequality( ):
 async def test_200_prepare_production_distribution( ):
     ''' Information.prepare handles production distribution path. '''
     exits = MagicMock( )
-    
     # Mock an installed package to trigger production mode (lines 56-58)
     with (patch( 'importlib_metadata.packages_distributions' ) as mock_pkg,
           patch( 'importlib_resources.files' ) as mock_files,
@@ -197,7 +196,6 @@ def test_310_locate_pyproject_exception_type( ):
     # This tests the exception type without actually running the function
     assert hasattr( exceptions_module, 'FileLocateFailure' )
     
-    # Create a sample exception to verify message format
     sample_exception = exceptions_module.FileLocateFailure(
         'project root discovery', 'pyproject.toml' )
     assert 'pyproject.toml' in str( sample_exception )
@@ -259,7 +257,6 @@ async def test_350_acquire_production_location( ):
     exits = MagicMock( )
     temp_path = Path( '/temp/extracted' )
     exits.enter_context.return_value = temp_path
-    
     with (patch( 'importlib_resources.files' ) as mock_files,
           patch( 'importlib_resources.as_file' ) as mock_as_file):
         mock_files.return_value = MagicMock( )
