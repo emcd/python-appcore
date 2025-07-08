@@ -50,9 +50,11 @@ class Information( __.immut.DataclassObject ):
         name = packages_distributions( ).get( package )
         if name is None: # Development sources rather than distribution.
             editable = True # Implies no use of importlib.resources.
+            if __.is_absent( project_anchor ):
+                project_anchor = _discover_invoker_location( )
             location, name = (
                 await _acquire_development_information(
-                    location = project_anchor ) )
+                    project_anchor = project_anchor ) )
         else:
             editable = False
             name = name[ 0 ]
@@ -68,9 +70,9 @@ class Information( __.immut.DataclassObject ):
 
 
 async def _acquire_development_information(
-    location: __.Absential[ __.Path ] = __.absent
+    project_anchor: __.Path
 ) -> tuple[ __.Path, str ]:
-    if __.is_absent( location ): location = _locate_pyproject( )
+    location = _locate_pyproject( project_anchor )
     pyproject = await _io.acquire_text_file_async(
         location / 'pyproject.toml', deserializer = __.tomli.loads )
     name = pyproject[ 'project' ][ 'name' ]
@@ -87,10 +89,32 @@ async def _acquire_production_location(
         as_file( files( package ) ) ) # pyright: ignore
 
 
-def _locate_pyproject( ) -> __.Path:
+def _discover_invoker_location( ) -> __.Path:
+    ''' Discovers file path of caller for project root detection. '''
+    import inspect
+    # Get paths to skip during frame crawling
+    package_location = __.Path( __file__ ).parent.resolve( )
+    python_location = __.Path( __.sys.executable ).parent.parent.resolve( )
+    frame = inspect.currentframe( )
+    if frame is None: return __.Path.cwd( )
+    # Walk up the call stack to find the frame outside this module
+    while True:
+        frame = frame.f_back
+        if frame is None: break
+        location_ = frame.f_code.co_filename
+        location = __.Path( location_ ).resolve( )
+        # Skip frames within this package and Python installation.
+        if location.is_relative_to( package_location ): continue
+        if location.is_relative_to( python_location ): continue
+        return location.parent
+    # Fallback location is current working directory.
+    return __.Path.cwd( )
+
+
+def _locate_pyproject( project_anchor: __.Path ) -> __.Path:
     ''' Finds project manifest, if it exists. Errors otherwise. '''
-    initial = __.Path( __file__ ).resolve( )
-    current = initial.parent
+    initial = project_anchor.resolve( )
+    current = initial if initial.is_dir( ) else initial.parent
     limits: set[ __.Path ] = set( )
     for limits_variable in ( 'GIT_CEILING_DIRECTORIES', ):
         limits_value = __.os.environ.get( limits_variable )
@@ -102,10 +126,8 @@ def _locate_pyproject( ) -> __.Path:
         if ( current / 'pyproject.toml' ).exists( ):
             return current
         if current in limits:
-            # pragma: no cover
-            raise _exceptions.FileLocateFailure(  # noqa: TRY003
+            raise _exceptions.FileLocateFailure(  # noqa: TRY003 # pragma: no cover
                 'project root discovery', 'pyproject.toml' )
         current = current.parent
-    # pragma: no cover
-    raise _exceptions.FileLocateFailure(  # noqa: TRY003
+    raise _exceptions.FileLocateFailure(  # noqa: TRY003 # pragma: no cover
         'project root discovery', 'pyproject.toml' )

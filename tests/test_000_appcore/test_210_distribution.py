@@ -226,7 +226,7 @@ version = "1.0.0"
         pyproject_path.write_text( pyproject_content )
         
         location, name = await module._acquire_development_information( 
-            location = temp_path )
+            project_anchor = temp_path )
         assert location == temp_path
         assert name == 'test-package'
 
@@ -246,7 +246,7 @@ version = "1.0.0"
         
         # Test that function can locate and parse pyproject.toml
         location, name = await module._acquire_development_information( 
-            location = temp_path )
+            project_anchor = temp_path )
         assert location == temp_path
         assert name == 'auto-located-package'
 
