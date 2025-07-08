@@ -32,6 +32,7 @@ import                      io
 import itertools as         itert
 import                      os
 import                      shutil
+import                      sys
 import                      types
 
 from logging import getLogger as produce_scribe

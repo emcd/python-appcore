@@ -18,13 +18,12 @@
 #============================================================================#
 
 
-''' Application logging configuration and management tests. '''
+''' Application inscription management tests. '''
 
 
 import io
 import logging
-import tempfile
-from pathlib import Path
+import sys
 from unittest.mock import patch
 
 from . import PACKAGE_NAME, cache_import_module
@@ -47,7 +46,7 @@ def test_110_control_creation_defaults( ):
     control = module.Control( )
     assert control.mode == module.Modes.Plain
     assert control.level == 'info'
-    assert __.is_absent( control.target )
+    assert control.target == sys.stderr
 
 
 def test_120_control_creation_custom_values( ):
@@ -63,18 +62,7 @@ def test_120_control_creation_custom_values( ):
     assert control.target == target_stream
 
 
-def test_130_control_creation_path_target( ):
-    ''' Control accepts Path as target. '''
-    with tempfile.NamedTemporaryFile( ) as tmp_file:
-        target_path = Path( tmp_file.name )
-        control = module.Control(
-            mode = module.Modes.Plain,
-            target = target_path
-        )
-        assert control.target == target_path
-
-
-def test_140_control_immutability( ):
+def test_130_control_immutability( ):
     ''' Control instances are immutable. '''
     control = module.Control( )
     # Should not be able to modify fields after creation
@@ -85,7 +73,7 @@ def test_140_control_immutability( ):
         pass  # Expected
 
 
-def test_150_control_equality( ):
+def test_140_control_equality( ):
     ''' Control instances with same data are equal. '''
     control1 = module.Control( 
         mode = module.Modes.Rich,
@@ -98,7 +86,7 @@ def test_150_control_equality( ):
     assert control1 == control2
 
 
-def test_160_control_inequality( ):
+def test_150_control_inequality( ):
     ''' Control instances with different data are not equal. '''
     control1 = module.Control( mode = module.Modes.Plain )
     control2 = module.Control( mode = module.Modes.Rich )
@@ -106,17 +94,19 @@ def test_160_control_inequality( ):
 
 
 def test_200_prepare_with_null_mode( ):
-    ''' prepare() configures logging with null mode. '''
+    ''' prepare() handles null mode (no configuration). '''
     control = module.Control( mode = module.Modes.Null )
-    # Should not raise an error
+    # Should not raise an error or configure logging
     module.prepare( control )
 
 
 def test_210_prepare_with_plain_mode( ):
     ''' prepare() configures logging with plain mode. '''
+    target_stream = io.StringIO( )
     control = module.Control( 
         mode = module.Modes.Plain,
-        level = 'debug'
+        level = 'debug',
+        target = target_stream
     )
     # Should not raise an error
     module.prepare( control )
@@ -124,7 +114,11 @@ def test_210_prepare_with_plain_mode( ):
 
 def test_220_prepare_with_rich_mode_without_rich( ):
     ''' prepare() gracefully degrades when Rich unavailable. '''
-    control = module.Control( mode = module.Modes.Rich )
+    target_stream = io.StringIO( )
+    control = module.Control( 
+        mode = module.Modes.Rich,
+        target = target_stream
+    )
     # Mock Rich imports to fail
     with patch.dict( 'sys.modules', { 
         'rich.console': None, 
@@ -145,58 +139,14 @@ def test_230_prepare_with_stream_target( ):
     module.prepare( control )
 
 
-def test_240_prepare_with_file_target( ):
-    ''' prepare() accepts file path target. '''
-    with tempfile.NamedTemporaryFile( delete = False ) as tmp_file:
-        target_path = Path( tmp_file.name )
-    try:
-        control = module.Control( 
-            mode = module.Modes.Plain,
-            target = target_path
-        )
-        # Should not raise an error
-        module.prepare( control )
-    finally:
-        # Clean up temp file
-        target_path.unlink( missing_ok = True )
-
-
-def test_300_create_handler_absent_target( ):
-    ''' _create_handler returns StreamHandler for absent target. '''
-    handler = module._create_handler( __.absent )
-    assert isinstance( handler, logging.StreamHandler )
-
-
-def test_310_create_handler_stream_custom( ):
-    ''' _create_handler returns StreamHandler for TextIO target. '''
-    target_stream = io.StringIO( )
-    handler = module._create_handler( target_stream )
-    assert isinstance( handler, logging.StreamHandler )
-    assert handler.stream == target_stream
-
-
-def test_320_create_handler_file( ):
-    ''' _create_handler returns FileHandler for Path target. '''
-    with tempfile.NamedTemporaryFile( delete = False ) as tmp_file:
-        target_path = Path( tmp_file.name )
-    try:
-        handler = module._create_handler( target_path )
-        assert isinstance( handler, logging.FileHandler )
-        # Clean up the handler
-        handler.close( )
-    finally:
-        # Clean up temp file
-        target_path.unlink( missing_ok = True )
-
-
-def test_400_discover_inscription_level_name_default( ):
+def test_300_discover_inscription_level_name_default( ):
     ''' _discover_inscription_level_name uses control level by default. '''
     control = module.Control( level = 'debug' )
     level_name = module._discover_inscription_level_name( control )
     assert level_name == 'debug'
 
 
-def test_410_discover_inscription_level_name_with_inscription_env( ):
+def test_310_discover_inscription_level_name_with_inscription_env( ):
     ''' _discover_inscription_level_name uses INSCRIPTION environment. '''
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, { 'APPCORE_INSCRIPTION_LEVEL': 'error' } ):
@@ -204,7 +154,7 @@ def test_410_discover_inscription_level_name_with_inscription_env( ):
         assert level_name == 'error'
 
 
-def test_420_discover_inscription_level_name_with_log_env( ):
+def test_320_discover_inscription_level_name_with_log_env( ):
     ''' _discover_inscription_level_name uses LOG environment variable. '''
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, { 'APPCORE_LOG_LEVEL': 'warning' } ):
@@ -212,7 +162,7 @@ def test_420_discover_inscription_level_name_with_log_env( ):
         assert level_name == 'warning'
 
 
-def test_430_discover_inscription_level_name_precedence( ):
+def test_330_discover_inscription_level_name_precedence( ):
     ''' _discover_inscription_level_name gives INSCRIPTION precedence. '''
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, { 
@@ -223,41 +173,57 @@ def test_430_discover_inscription_level_name_precedence( ):
         assert level_name == 'debug'
 
 
-def test_500_configure_null_mode( ):
-    ''' _configure_null_mode adds handler to root logger. '''
-    original_handler_count = len( logging.getLogger( ).handlers )
-    module._configure_null_mode( logging.INFO, __.absent )
-    # Should have added one handler
-    new_handler_count = len( logging.getLogger( ).handlers )
-    assert new_handler_count > original_handler_count
+def test_400_prepare_scribes_logging_plain( ):
+    ''' prepare_scribes_logging configures plain logging. '''
+    target_stream = io.StringIO( )
+    control = module.Control( 
+        mode = module.Modes.Plain,
+        level = 'debug',
+        target = target_stream
+    )
+    # Should not raise an error
+    module.prepare_scribes_logging( control )
 
 
-def test_510_configure_plain_mode( ):
-    ''' _configure_plain_mode adds handler to root logger. '''
-    original_handler_count = len( logging.getLogger( ).handlers )
-    module._configure_plain_mode( logging.DEBUG, __.absent )
-    # Should have added one handler
-    new_handler_count = len( logging.getLogger( ).handlers )
-    assert new_handler_count > original_handler_count
-
-
-def test_520_configure_rich_mode_fallback( ):
-    ''' _configure_rich_mode falls back when Rich unavailable. '''
+def test_410_prepare_scribes_logging_rich_fallback( ):
+    ''' prepare_scribes_logging falls back when Rich unavailable. '''
+    target_stream = io.StringIO( )
+    control = module.Control( 
+        mode = module.Modes.Rich,
+        target = target_stream
+    )
     # Mock Rich imports to fail
     with patch.dict( 'sys.modules', { 
         'rich.console': None, 
         'rich.logging': None 
     } ):
         # Should not raise an error (graceful fallback)
-        module._configure_rich_mode( logging.INFO, __.absent )
+        module.prepare_scribes_logging( control )
 
 
-def test_530_configure_rich_mode_file_fallback( ):
-    ''' _configure_rich_mode falls back to plain for file targets. '''
-    with tempfile.NamedTemporaryFile( delete = False ) as tmp_file:
-        target_path = Path( tmp_file.name )
-    try:
-        # Should fallback to plain mode for file targets
-        module._configure_rich_mode( logging.INFO, target_path )
-    finally:
-        target_path.unlink( missing_ok = True )
+def test_420_prepare_scribes_logging_null( ):
+    ''' prepare_scribes_logging handles null mode. '''
+    control = module.Control( mode = module.Modes.Null )
+    # Should not raise an error or configure logging
+    module.prepare_scribes_logging( control )
+
+
+def test_500_prepare_logging_plain( ):
+    ''' _prepare_logging_plain configures basic logging. '''
+    target_stream = io.StringIO( )
+    formatter = logging.Formatter( "%(name)s: %(message)s" )
+    # Should not raise an error
+    module._prepare_logging_plain( logging.DEBUG, target_stream, formatter )
+
+
+def test_510_prepare_logging_rich_fallback( ):
+    ''' _prepare_logging_rich falls back when Rich unavailable. '''
+    target_stream = io.StringIO( )
+    formatter = logging.Formatter( "%(name)s: %(message)s" )
+    # Mock Rich imports to fail
+    with patch.dict( 'sys.modules', { 
+        'rich.console': None, 
+        'rich.logging': None 
+    } ):
+        # Should not raise an error (graceful fallback)
+        module._prepare_logging_rich( logging.INFO, target_stream, formatter )

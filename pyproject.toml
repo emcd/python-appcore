@@ -49,6 +49,8 @@ keywords = [ 'application', 'async', 'configuration' ]
 [[project.authors]]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
+[project.optional-dependencies]
+rich = [ 'rich' ]
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-appcore'
 'Documentation' = 'https://emcd.github.io/python-appcore'
@@ -113,6 +115,7 @@ dependencies = [
   'pytest',
   'pytest-asyncio',
   'pytest-mock',
+  'rich',
   'ruff',
   'sphinx',
   'sphinx-copybutton',
