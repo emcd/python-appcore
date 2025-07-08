@@ -112,3 +112,49 @@ version = "1.0.0"
     template_file = config_dir / main_filename
     template_file.write_text( content )
     return template_file
+
+
+def create_fake_project_with_pyproject( 
+    project_name = 'test-project',
+    project_version = '1.0.0'
+):
+    ''' Creates a temporary directory with a pyproject.toml file.
+    Returns:
+        tuple[Path, Path]: Project directory and pyproject.toml file path.
+    '''
+    temp_dir = Path( tempfile.mkdtemp( ) )
+    pyproject_path = temp_dir / 'pyproject.toml'
+    pyproject_content = f'''
+[project]
+name = "{project_name}"
+version = "{project_version}"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+    '''
+    pyproject_path.write_text( pyproject_content )
+    return temp_dir, pyproject_path
+
+
+def create_nested_project_structure( 
+    project_name = 'nested-project',
+    nesting_levels = 3
+):
+    ''' Creates a nested directory structure with pyproject.toml at the root.
+    Args:
+        project_name: Name for the project in pyproject.toml
+        nesting_levels: Number of subdirectories to create
+    Returns:
+        tuple[Path, Path]: Project root and deepest subdirectory.
+    '''
+    project_root, pyproject_path = create_fake_project_with_pyproject(
+        project_name = project_name )
+    
+    # Create nested subdirectories
+    current_dir = project_root
+    for i in range( nesting_levels ):
+        current_dir = current_dir / f'level_{i}'
+        current_dir.mkdir( parents = True, exist_ok = True )
+    
+    return project_root, current_dir

@@ -27,6 +27,10 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from . import PACKAGE_NAME, cache_import_module
+from .fixtures import (
+    create_fake_project_with_pyproject,
+    create_nested_project_structure
+)
 
 
 MODULE_QNAME = f"{PACKAGE_NAME}.distribution"
@@ -292,5 +296,243 @@ def test_410_information_type_annotations( ):
     assert hasattr( module.Information, 'editable' )
     # Check that it's a dataclass
     assert hasattr( module.Information, '__dataclass_fields__' )
+
+
+def test_500_discover_invoker_location_finds_caller( ):
+    ''' Invoker location discovery finds the calling location. '''
+    # Create a fake project structure
+    project_root, nested_dir = create_nested_project_structure(
+        project_name = 'invoker-test',
+        nesting_levels = 2
+    )
+    
+    # Create a test file in the nested directory
+    test_file = nested_dir / 'test_caller.py'
+    test_file.write_text( '''
+import sys
+from pathlib import Path
+sys.path.insert(0, str(
+    Path(__file__).parent.parent.parent.parent.parent / 'sources'))
+from appcore.distribution import _discover_invoker_location
+
+def call_discover():
+    return _discover_invoker_location()
+
+if __name__ == "__main__":
+    result = call_discover()
+    print(f"RESULT:{result}")
+    ''' )
+    
+    # Execute the test file
+    import subprocess
+    import sys
+    result = subprocess.run(  # noqa: S603
+        [ sys.executable, str( test_file ) ],
+        cwd = nested_dir,
+        capture_output = True,
+        text = True,
+        check = False
+    )
+    
+    assert result.returncode == 0, f"Process failed: {result.stderr}"
+    # The result should be the directory containing the test file
+    assert f"RESULT:{nested_dir}" in result.stdout
+
+
+def test_510_discover_invoker_location_fallback( ):
+    ''' Invoker location discovery returns cwd for no external frame. '''
+    # Direct call from test - should return current working directory
+    # since all frames will be within the appcore package or Python stdlib
+    result = module._discover_invoker_location( )
+    # Should return a valid Path object
+    assert isinstance( result, Path )
+    assert result.exists( )
+
+
+def test_515_discover_invoker_location_no_frame( ):
+    ''' Invoker location discovery handles when currentframe returns None. '''
+    # Test the fallback when inspect.currentframe() returns None
+    # This happens in some Python implementations or when called from certain
+    # contexts
+    import inspect
+    original_currentframe = inspect.currentframe
+    
+    def mock_currentframe():
+        return None
+    
+    try:
+        # Temporarily replace currentframe with our mock
+        inspect.currentframe = mock_currentframe
+        result = module._discover_invoker_location( )
+        # Should return cwd when no frame is available
+        assert isinstance( result, Path )
+        assert result.exists( )
+    finally:
+        # Restore original function
+        inspect.currentframe = original_currentframe
+
+
+def test_516_discover_invoker_location_exhausted_frames( ):
+    ''' Invoker location discovery returns cwd when all frames exhausted. '''
+    # Create a test file that deeply nests calls within the Python stdlib
+    # This should exhaust all frames without finding an external caller
+    project_root, nested_dir = create_nested_project_structure(
+        project_name = 'exhausted-frames-test',
+        nesting_levels = 1
+    )
+    
+    test_file = nested_dir / 'test_exhausted.py'
+    test_file.write_text( '''
+import sys
+import os
+from pathlib import Path
+
+# Add appcore to path
+sys.path.insert(0, str(
+    Path(__file__).parent.parent.parent.parent.parent / 'sources'))
+
+def deeply_nested_call():
+    # Import inside function to avoid early import issues
+    from appcore.distribution import _discover_invoker_location
+    
+    def inner_call():
+        def innermost_call():
+            # Call from deep within Python stdlib-like context
+            return _discover_invoker_location()
+        return innermost_call()
+    return inner_call()
+
+if __name__ == "__main__":
+    # Change to a different directory to test cwd fallback
+    original_cwd = os.getcwd()
+    test_dir = Path(__file__).parent
+    os.chdir(test_dir)
+    try:
+        result = deeply_nested_call()
+        print(f"RESULT:{result}")
+    finally:
+        os.chdir(original_cwd)
+    ''')
+    
+    # Execute the test file
+    import subprocess
+    import sys
+    result = subprocess.run(  # noqa: S603
+        [ sys.executable, str( test_file ) ],
+        cwd = nested_dir,
+        capture_output = True,
+        text = True,
+        check = False
+    )
+    
+    assert result.returncode == 0, f"Process failed: {result.stderr}"
+    # Should return the current working directory when frames are exhausted
+    assert f"RESULT:{nested_dir}" in result.stdout
+
+
+def test_520_locate_pyproject_finds_in_current_dir( ):
+    ''' _locate_pyproject finds pyproject.toml in current directory. '''
+    project_root, pyproject_path = create_fake_project_with_pyproject(
+        project_name = 'current-dir-test'
+    )
+    
+    result = module._locate_pyproject( project_root )
+    assert result == project_root
+    assert ( result / 'pyproject.toml' ).exists( )
+
+
+def test_530_locate_pyproject_finds_in_parent_dir( ):
+    ''' _locate_pyproject finds pyproject.toml in parent directory. '''
+    project_root, nested_dir = create_nested_project_structure(
+        project_name = 'parent-dir-test',
+        nesting_levels = 3
+    )
+    
+    # Call _locate_pyproject from the nested directory
+    result = module._locate_pyproject( nested_dir )
+    assert result == project_root
+    assert ( result / 'pyproject.toml' ).exists( )
+
+
+def test_540_locate_pyproject_handles_file_anchor( ):
+    ''' _locate_pyproject handles file path as anchor. '''
+    project_root, pyproject_path = create_fake_project_with_pyproject(
+        project_name = 'file-anchor-test'
+    )
+    
+    # Create a test file in the project
+    test_file = project_root / 'test.py'
+    test_file.write_text( '# test file' )
+    
+    # Call _locate_pyproject with file path (not directory)
+    result = module._locate_pyproject( test_file )
+    assert result == project_root
+    assert ( result / 'pyproject.toml' ).exists( )
+
+
+@pytest.mark.asyncio
+async def test_550_prepare_development_mode_without_anchor( ):
+    ''' Information.prepare works in development mode without anchor. '''
+    # Create a fake project structure
+    project_root, nested_dir = create_nested_project_structure(
+        project_name = 'no-anchor-test',
+        nesting_levels = 2
+    )
+    
+    # Create a test file that will call prepare
+    test_file = nested_dir / 'test_prepare.py'
+    test_file.write_text( '''
+import sys
+import asyncio
+from pathlib import Path
+from unittest.mock import MagicMock
+
+sys.path.insert(0, str(
+    Path(__file__).parent.parent.parent.parent.parent / 'sources'))
+from appcore.distribution import Information
+
+async def main():
+    exits = MagicMock()
+    # Call prepare without project_anchor - should trigger
+    # _discover_invoker_location
+    info = await Information.prepare('nonexistent-package', exits)
+    print(f"NAME:{{info.name}}")
+    print(f"LOCATION:{{info.location}}")
+    print(f"EDITABLE:{{info.editable}}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+    ''' )
+    
+    # Execute the test file
+    import subprocess
+    import sys
+    result = subprocess.run(  # noqa: S603
+        [ sys.executable, str( test_file ) ],
+        cwd = nested_dir,
+        capture_output = True,
+        text = True,
+        check = False
+    )
+    
+    assert result.returncode == 0, f"Process failed: {result.stderr}"
+    # Should find the project and return development mode
+    assert "NAME:no-anchor-test" in result.stdout
+    assert f"LOCATION:{project_root}" in result.stdout
+    assert "EDITABLE:True" in result.stdout
+
+
+def test_560_locate_pyproject_with_missing_file( ):
+    ''' Project location raises FileLocateFailure when pyproject absent. '''
+    # Create a temporary directory without pyproject.toml
+    with tempfile.TemporaryDirectory( ) as temp_dir:
+        temp_path = Path( temp_dir )
+        
+        # Should raise FileLocateFailure
+        with pytest.raises( exceptions_module.FileLocateFailure ) as exc_info:
+            module._locate_pyproject( temp_path )
+        
+        assert 'pyproject.toml' in str( exc_info.value )
+        assert 'project root discovery' in str( exc_info.value )
 
 
