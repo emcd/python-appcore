@@ -227,6 +227,200 @@ The ``prepare()`` function can raise exceptions in certain scenarios. Use ``Omni
         # This can happen with malformed configuration files
 
 
+Logging Configuration
+===============================================================================
+
+The ``appcore`` package provides flexible logging configuration through the
+``inscription`` module. Logging is automatically configured during ``prepare()``
+with sensible defaults, but can be customized for different environments.
+
+Basic Logging Setup
+-------------------------------------------------------------------------------
+
+Logging is configured automatically with the default settings:
+
+.. code-block:: python
+
+    import asyncio
+    import contextlib
+    import logging
+    import appcore
+
+    async def main( ):
+        async with contextlib.AsyncExitStack( ) as exits:
+            # Logging is configured automatically with defaults
+            globals_dto = await appcore.prepare( exits )
+            
+            # Use standard Python logging
+            logger = logging.getLogger( __name__ )
+            logger.info( 'Application started successfully' )
+            logger.debug( 'Debug information' )
+            logger.warning( 'Warning message' )
+            logger.error( 'Error occurred' )
+
+    if __name__ == '__main__':
+        asyncio.run( main( ) )
+
+The default configuration uses:
+
+- **Mode**: Plain (standard Python logging)
+- **Level**: Info (shows info, warning, error, critical)
+- **Target**: Standard error stream
+
+Custom Logging Configuration
+-------------------------------------------------------------------------------
+
+You can customize logging behavior using ``inscription.Control``:
+
+.. code-block:: python
+
+    import asyncio
+    import contextlib
+    import logging
+    import sys
+    import appcore
+
+    async def main( ):
+        # Create custom inscription control
+        inscription_control = appcore.inscription.Control(
+            mode = appcore.inscription.Modes.Rich,  # Enhanced formatting
+            level = 'debug',  # Show debug messages
+            target = sys.stdout  # Log to stdout instead of stderr
+        )
+        
+        async with contextlib.AsyncExitStack( ) as exits:
+            globals_dto = await appcore.prepare( 
+                exits,
+                inscription = inscription_control
+            )
+            
+            # Test different log levels
+            logger = logging.getLogger( __name__ )
+            logger.debug( 'Debug: Application initialized' )
+            logger.info( 'Info: Processing started' )
+            logger.warning( 'Warning: Non-critical issue detected' )
+            logger.error( 'Error: Something went wrong' )
+
+    if __name__ == '__main__':
+        asyncio.run( main( ) )
+
+Logging Modes
+-------------------------------------------------------------------------------
+
+The inscription module supports three different modes:
+
+**Null Mode** - Minimal logging setup, defers to external management:
+
+.. code-block:: python
+
+    inscription_control = appcore.inscription.Control(
+        mode = appcore.inscription.Modes.Null
+    )
+
+**Plain Mode** - Standard Python logging (default):
+
+.. code-block:: python
+
+    inscription_control = appcore.inscription.Control(
+        mode = appcore.inscription.Modes.Plain,
+        level = 'info'
+    )
+
+**Rich Mode** - Enhanced formatting with colors and better tracebacks:
+
+.. code-block:: python
+
+    inscription_control = appcore.inscription.Control(
+        mode = appcore.inscription.Modes.Rich,
+        level = 'debug'
+    )
+
+Rich mode automatically falls back to plain mode if the ``rich`` package is not installed.
+
+Environment Variable Configuration
+-------------------------------------------------------------------------------
+
+Logging levels can be controlled through environment variables without code changes:
+
+.. code-block:: bash
+
+    # Set inscription level specifically
+    export APPCORE_INSCRIPTION_LEVEL=debug
+    
+    # Or use the general log level variable
+    export APPCORE_LOG_LEVEL=warning
+
+.. code-block:: python
+
+    import asyncio
+    import contextlib
+    import logging
+    import appcore
+
+    async def main( ):
+        async with contextlib.AsyncExitStack( ) as exits:
+            # Environment variables automatically override configured level
+            globals_dto = await appcore.prepare( exits )
+            
+            logger = logging.getLogger( __name__ )
+            logger.debug( 'This appears if APPCORE_INSCRIPTION_LEVEL=debug' )
+            logger.info( 'This appears if level is info or lower' )
+            logger.warning( 'This appears if level is warning or lower' )
+
+    if __name__ == '__main__':
+        asyncio.run( main( ) )
+
+**Environment variable precedence**:
+
+1. ``APPCORE_INSCRIPTION_LEVEL`` - Inscription-specific level (highest priority)
+2. ``APPCORE_LOG_LEVEL`` - General log level
+3. Configuration in code (lowest priority)
+
+Custom Log Targets
+-------------------------------------------------------------------------------
+
+You can redirect logs to custom streams or files:
+
+.. code-block:: python
+
+    import asyncio
+    import contextlib
+    import logging
+    import io
+    import appcore
+
+    async def main( ):
+        # Create custom output stream
+        log_stream = io.StringIO( )
+        
+        inscription_control = appcore.inscription.Control(
+            mode = appcore.inscription.Modes.Plain,
+            level = 'info',
+            target = log_stream
+        )
+        
+        async with contextlib.AsyncExitStack( ) as exits:
+            globals_dto = await appcore.prepare(
+                exits,
+                inscription = inscription_control
+            )
+            
+            # Log some messages
+            logger = logging.getLogger( __name__ )
+            logger.info( 'Message 1' )
+            logger.info( 'Message 2' )
+            logger.warning( 'Warning message' )
+            
+            # Retrieve captured logs
+            log_output = log_stream.getvalue( )
+            print( f"Captured logs:\n{log_output}" )
+
+    if __name__ == '__main__':
+        asyncio.run( main( ) )
+
+This is particularly useful for testing or when you need to capture and process log output programmatically.
+
+
 Next Steps
 ===============================================================================
 
@@ -234,4 +428,4 @@ This covers the basic usage of appcore. For more advanced topics, see:
 
 - **Configuration Management** - Loading TOML configuration files with includes
 - **Environment Handling** - Development vs production detection and environment variables  
-- **Advanced Usage** - Dependency injection, testing patterns, and custom logging
+- **Advanced Usage** - Dependency injection and testing patterns

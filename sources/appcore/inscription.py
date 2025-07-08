@@ -26,6 +26,7 @@
 # TODO? Add distributed tracing support (correlation IDs, execution IDs)
 # TODO? Add metrics collection and reporting
 # TODO? Add OpenTelemetry integration
+# TODO: Add TOML configuration support for inscription control settings
 
 
 import logging as _logging
