@@ -218,7 +218,6 @@ version = "1.0.0"
     try:
         acquirer = module.TomlAcquirer( )
         
-        # Call with absent file parameter (triggers line 80-81)
         result = await acquirer(
             'test-app',
             directories,
@@ -299,7 +298,6 @@ name = "template-app"
         
         assert result_path == temp_path / 'general.toml'
         assert result_path.exists( )
-        # Template should be copied to user config
         content = result_path.read_text( )
         assert 'template-app' in content
 

@@ -135,9 +135,9 @@ async def test_200_prepare_production_distribution( ):
     exits = MagicMock( )
     
     # Mock an installed package to trigger production mode (lines 56-58)
-    with patch( 'importlib_metadata.packages_distributions' ) as mock_pkg, \
-         patch( 'importlib_resources.files' ) as mock_files, \
-         patch( 'importlib_resources.as_file' ) as mock_as_file:
+    with (patch( 'importlib_metadata.packages_distributions' ) as mock_pkg,
+          patch( 'importlib_resources.files' ) as mock_files,
+          patch( 'importlib_resources.as_file' ) as mock_as_file):
         
         # Mock installed package found
         mock_pkg.return_value = { 'test-package': [ 'test-distribution' ] }
@@ -148,7 +148,6 @@ async def test_200_prepare_production_distribution( ):
         exits.enter_context.return_value = temp_path
         mock_as_file.return_value = MagicMock( )
         
-        # This should trigger production distribution path (lines 56-58)
         info = await module.Information.prepare( 'test-package', exits )
         
         # Verify production distribution was detected
@@ -261,8 +260,8 @@ async def test_350_acquire_production_location( ):
     temp_path = Path( '/temp/extracted' )
     exits.enter_context.return_value = temp_path
     
-    with patch( 'importlib_resources.files' ) as mock_files, \
-         patch( 'importlib_resources.as_file' ) as mock_as_file:
+    with (patch( 'importlib_resources.files' ) as mock_files,
+          patch( 'importlib_resources.as_file' ) as mock_as_file):
         mock_files.return_value = MagicMock( )
         mock_as_file.return_value = MagicMock( )
         

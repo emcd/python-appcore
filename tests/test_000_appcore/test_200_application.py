@@ -98,7 +98,6 @@ def test_160_produce_platform_directories_with_publisher( ):
     )
     dirs = app_info.produce_platform_directories( )
     assert isinstance( dirs, platformdirs.PlatformDirs )
-    # Publisher should be included in path structure
     config_path = str( dirs.user_config_path )
     assert 'test-app' in config_path
 
@@ -111,7 +110,6 @@ def test_170_produce_platform_directories_with_version( ):
     )
     dirs = app_info.produce_platform_directories( )
     assert isinstance( dirs, platformdirs.PlatformDirs )
-    # Version should be included in path structure
     config_path = str( dirs.user_config_path )
     assert 'test-app' in config_path
 
