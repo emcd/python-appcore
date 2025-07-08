@@ -111,6 +111,7 @@ dependencies = [
   'furo',
   'packaging',
   'pre-commit',
+  'pyfakefs',
   'pyright',
   'pytest',
   'pytest-asyncio',

@@ -66,11 +66,11 @@ def prepare_scribes_logging(
     level = getattr( _logging, level_name.upper( ) )
     formatter = _logging.Formatter( "%(name)s: %(message)s" )
     match control.mode:
-        case Modes.Null: pass
         case Modes.Plain:
             _prepare_logging_plain( level, control.target, formatter )
         case Modes.Rich:
             _prepare_logging_rich( level, control.target, formatter )
+        case _: pass
 
 
 def _discover_inscription_level_name(

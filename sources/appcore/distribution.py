@@ -92,23 +92,23 @@ async def _acquire_production_location(
 def _discover_invoker_location( ) -> __.Path:
     ''' Discovers file path of caller for project root detection. '''
     import inspect
-    # Get paths to skip during frame crawling
     package_location = __.Path( __file__ ).parent.resolve( )
     python_location = __.Path( __.sys.executable ).parent.parent.resolve( )
     frame = inspect.currentframe( )
     if frame is None: return __.Path.cwd( )
-    # Walk up the call stack to find the frame outside this module
+    # Walk up the call stack to find frame outside of this package.
     while True:
         frame = frame.f_back
-        if frame is None: break
-        location_ = frame.f_code.co_filename
-        location = __.Path( location_ ).resolve( )
+        if frame is None: break # pragma: no cover
+        location = __.Path( frame.f_code.co_filename).resolve( )
         # Skip frames within this package and Python installation.
-        if location.is_relative_to( package_location ): continue
-        if location.is_relative_to( python_location ): continue
+        if location.is_relative_to( package_location ): # pragma: no cover
+            continue
+        if location.is_relative_to( python_location ): # pragma: no cover
+            continue
         return location.parent
     # Fallback location is current working directory.
-    return __.Path.cwd( )
+    return __.Path.cwd( ) # pragma: no cover
 
 
 def _locate_pyproject( project_anchor: __.Path ) -> __.Path:
