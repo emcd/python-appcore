@@ -344,11 +344,11 @@ Logging levels can be controlled through environment variables without code chan
 
 .. code-block:: bash
 
-    # Set inscription level specifically
-    export APPCORE_INSCRIPTION_LEVEL=debug
+    # Set inscription level specifically (using your application name)
+    export MYAPP_INSCRIPTION_LEVEL=debug
     
     # Or use the general log level variable
-    export APPCORE_LOG_LEVEL=warning
+    export MYAPP_LOG_LEVEL=warning
 
 .. code-block:: python
 
@@ -363,7 +363,7 @@ Logging levels can be controlled through environment variables without code chan
             globals_dto = await appcore.prepare( exits )
             
             logger = logging.getLogger( __name__ )
-            logger.debug( 'This appears if APPCORE_INSCRIPTION_LEVEL=debug' )
+            logger.debug( 'This appears if MYAPP_INSCRIPTION_LEVEL=debug' )
             logger.info( 'This appears if level is info or lower' )
             logger.warning( 'This appears if level is warning or lower' )
 
@@ -372,9 +372,11 @@ Logging levels can be controlled through environment variables without code chan
 
 **Environment variable precedence**:
 
-1. ``APPCORE_INSCRIPTION_LEVEL`` - Inscription-specific level (highest priority)
-2. ``APPCORE_LOG_LEVEL`` - General log level
+1. ``{APPLICATION_NAME}_INSCRIPTION_LEVEL`` - Inscription-specific level (highest priority)
+2. ``{APPLICATION_NAME}_LOG_LEVEL`` - General log level
 3. Configuration in code (lowest priority)
+
+Where ``{APPLICATION_NAME}`` is your application's name in uppercase (e.g., ``MYAPP_INSCRIPTION_LEVEL`` for an application named "myapp").
 
 Custom Log Targets
 -------------------------------------------------------------------------------

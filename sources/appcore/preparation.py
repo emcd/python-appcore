@@ -80,7 +80,7 @@ async def prepare( # noqa: PLR0913
         else: await _environment.update( auxdata )
     if __.is_absent( inscription ):
         inscription = _inscription.Control( )
-    _inscription.prepare( control = inscription )
+    _inscription.prepare( auxdata, control = inscription )
     _inscribe_preparation_report( auxdata )
     return auxdata
 

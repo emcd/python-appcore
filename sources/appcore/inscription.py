@@ -32,6 +32,7 @@
 import logging as _logging
 
 from . import __
+from . import state as _state
 
 
 class Modes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
@@ -52,14 +53,16 @@ class Control( __.immut.DataclassObject ):
     target: __.typx.TextIO = __.sys.stderr
 
 
-def prepare( control: Control ) -> None:
+def prepare( auxdata: _state.Globals, /, control: Control ) -> None:
     ''' Prepares various scribes in a sensible manner. '''
-    prepare_scribes_logging( control )
+    prepare_scribes_logging( auxdata, control )
 
 
-def prepare_scribes_logging( control: Control ) -> None:
+def prepare_scribes_logging(
+    auxdata: _state.Globals, control: Control
+) -> None:
     ''' Prepares Python standard logging system. '''
-    level_name = _discover_inscription_level_name( control )
+    level_name = _discover_inscription_level_name( auxdata, control )
     level = getattr( _logging, level_name.upper( ) )
     formatter = _logging.Formatter( "%(name)s: %(message)s" )
     match control.mode:
@@ -70,12 +73,16 @@ def prepare_scribes_logging( control: Control ) -> None:
             _prepare_logging_rich( level, control.target, formatter )
 
 
-def _discover_inscription_level_name( control: Control ) -> str:
+def _discover_inscription_level_name(
+    auxdata: _state.Globals, control: Control
+) -> str:
+    application_name = ''.join(
+        c.upper( ) if c.isalnum( ) else '_'
+        for c in auxdata.application.name )
     for envvar_name_base in ( 'INSCRIPTION', 'LOG' ):
         envvar_name = (
             "{name}_{base}_LEVEL".format(
-                base = envvar_name_base,
-                name = __.package_name.upper( ) ) )
+                base = envvar_name_base, name = application_name ) )
         if envvar_name in __.os.environ:
             return __.os.environ[ envvar_name ]
     return control.level
