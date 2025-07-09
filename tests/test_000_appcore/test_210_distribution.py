@@ -354,8 +354,8 @@ def test_510_discover_invoker_location_fallback( ):
         mock_frame.f_code.co_filename = str( appcore_path / 'some_file.py' )
         mock_frame.f_back = None
         
-        with patch( 'inspect.currentframe', return_value = mock_frame ), \
-             patch( 'pathlib.Path.cwd', return_value = cwd ):
+        with (patch( 'inspect.currentframe', return_value = mock_frame ),
+              patch( 'pathlib.Path.cwd', return_value = cwd )):
             result = module._discover_invoker_location( )
         
         assert result == cwd
@@ -372,8 +372,8 @@ def test_515_discover_invoker_location_no_frame( ):
         fs.create_dir( cwd )
     
         # Mock currentframe to return None
-        with patch( 'inspect.currentframe', return_value = None ), \
-             patch( 'pathlib.Path.cwd', return_value = cwd ):
+        with (patch( 'inspect.currentframe', return_value = None ),
+              patch( 'pathlib.Path.cwd', return_value = cwd )):
             result = module._discover_invoker_location( )
         
         assert result == cwd

@@ -550,7 +550,7 @@ def test_400_module_level_defaults( ):
 
 
 def test_410_inscribe_preparation_report( ):
-    ''' _inscribe_preparation_report function exists and is callable. '''
+    ''' Preparation reporting function provides startup information. '''
     # Verify the function exists
     assert hasattr( module, '_inscribe_preparation_report' )
     assert callable( module._inscribe_preparation_report )

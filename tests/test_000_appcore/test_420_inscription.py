@@ -145,7 +145,7 @@ def test_230_prepare_with_stream_target( ):
 
 
 def test_300_discover_inscription_level_name_default( ):
-    ''' _discover_inscription_level_name uses control level by default. '''
+    ''' Level discovery defaults to control level when no override. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     control = module.Control( level = 'debug' )
     level_name = module._discover_inscription_level_name(
@@ -154,7 +154,7 @@ def test_300_discover_inscription_level_name_default( ):
 
 
 def test_310_discover_inscription_level_name_with_inscription_env( ):
-    ''' _discover_inscription_level_name uses INSCRIPTION environment. '''
+    ''' INSCRIPTION environment variable overrides control level setting. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs(
         app_name = 'test-app' )
     control = module.Control( level = 'info' )
@@ -167,7 +167,7 @@ def test_310_discover_inscription_level_name_with_inscription_env( ):
 
 
 def test_320_discover_inscription_level_name_with_log_env( ):
-    ''' _discover_inscription_level_name uses LOG environment variable. '''
+    ''' LOG environment variable provides alternative level override. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs(
         app_name = 'test-app' )
     control = module.Control( level = 'info' )
