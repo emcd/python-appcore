@@ -138,22 +138,22 @@ async def test_200_prepare_production_distribution( ):
     with (patch( 'importlib_metadata.packages_distributions' ) as mock_pkg,
           patch( 'importlib_resources.files' ) as mock_files,
           patch( 'importlib_resources.as_file' ) as mock_as_file):
-        
+
         # Mock installed package found
         mock_pkg.return_value = { 'test-package': [ 'test-distribution' ] }
-        
+
         # Mock resource extraction
         mock_files.return_value = MagicMock( )
         temp_path = Path( '/extracted/location' )
         exits.enter_context.return_value = temp_path
         mock_as_file.return_value = MagicMock( )
-        
+
         info = await module.Information.prepare( 'test-package', exits )
-        
+
         # Verify production distribution was detected
         assert info.editable is False  # Production mode
         assert info.name == 'test-distribution'
-        assert info.location == temp_path
+        assert info.location.resolve( ) == temp_path.resolve( )
 
 
 @pytest.mark.asyncio
@@ -196,7 +196,7 @@ def test_310_locate_pyproject_exception_type( ):
     # conditions
     # This tests the exception type without actually running the function
     assert hasattr( exceptions_module, 'FileLocateFailure' )
-    
+
     sample_exception = exceptions_module.FileLocateFailure(
         'project root discovery', 'pyproject.toml' )
     assert 'pyproject.toml' in str( sample_exception )
@@ -227,10 +227,10 @@ name = "test-package"
 version = "1.0.0"
         '''
         pyproject_path.write_text( pyproject_content )
-        
-        location, name = await module._acquire_development_information( 
+
+        location, name = await module._acquire_development_information(
             project_anchor = temp_path )
-        assert location == temp_path
+        assert location.resolve( ) == temp_path.resolve( )
         assert name == 'test-package'
 
 
@@ -248,11 +248,11 @@ name = "auto-located-package"
 version = "1.0.0"
         '''
         pyproject_path.write_text( pyproject_content )
-        
+
         # Test that function can locate and parse pyproject.toml
-        location, name = await module._acquire_development_information( 
+        location, name = await module._acquire_development_information(
             project_anchor = temp_path )
-        assert location == temp_path
+        assert location.resolve( ) == temp_path.resolve( )
         assert name == 'auto-located-package'
 
 
@@ -266,10 +266,10 @@ async def test_350_acquire_production_location( ):
           patch( 'importlib_resources.as_file' ) as mock_as_file):
         mock_files.return_value = MagicMock( )
         mock_as_file.return_value = MagicMock( )
-        
-        result = await module._acquire_production_location( 
+
+        result = await module._acquire_production_location(
             'test-package', exits )
-        
+
         assert result == temp_path
         mock_files.assert_called_once_with( 'test-package' )
         exits.enter_context.assert_called_once( )
@@ -302,80 +302,80 @@ def test_410_information_type_annotations( ):
 def test_500_discover_invoker_location_finds_caller( ):
     ''' Invoker location discovery finds the calling location. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Create a fake project structure in the fake filesystem
         project_root = Path( '/fake/project' )
         nested_dir = project_root / 'level_0' / 'level_1'
         fs.create_dir( nested_dir )
-        
+
         # Create the caller file in the nested directory
         caller_file = nested_dir / 'caller.py'
         fs.create_file( caller_file, contents = '# test caller file' )
-        
+
         # Mock the frame inspection with a complete frame chain
-        
+
         # Mock frames to simulate call stack
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( caller_file )
         external_frame.f_back = None
-        
+
         appcore_frame = MagicMock( )
         appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
         appcore_frame.f_back = external_frame
-        
+
         # Mock the package location to be outside our caller location
         with (
             patch( 'inspect.currentframe', return_value = appcore_frame ),
-            patch.object( module.__.Path, 'cwd', 
+            patch.object( module.__.Path, 'cwd',
                          return_value = Path( '/fake/fallback' ) )
         ):
             result = module._discover_invoker_location( )
-        
+
         assert result == nested_dir
 
 
 def test_510_discover_invoker_location_fallback( ):
     ''' Invoker location discovery returns cwd for no external frame. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Set up fake current working directory
         cwd = Path( '/fake/cwd' )
         fs.create_dir( cwd )
-    
+
         # Mock all frames to be within the appcore package
         appcore_path = Path( '/fake/appcore' )
         fs.create_dir( appcore_path )
-    
+
         mock_frame = MagicMock( )
         mock_frame.f_code.co_filename = str( appcore_path / 'some_file.py' )
         mock_frame.f_back = None
-        
+
         with (patch( 'inspect.currentframe', return_value = mock_frame ),
               patch( 'pathlib.Path.cwd', return_value = cwd )):
             result = module._discover_invoker_location( )
-        
+
         assert result == cwd
 
 
 def test_515_discover_invoker_location_no_frame( ):
     ''' Invoker location discovery handles when currentframe returns None. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Set up fake current working directory
         cwd = Path( '/fake/cwd' )
         fs.create_dir( cwd )
-    
+
         # Mock currentframe to return None
         with (patch( 'inspect.currentframe', return_value = None ),
               patch( 'pathlib.Path.cwd', return_value = cwd )):
             result = module._discover_invoker_location( )
-        
+
         assert result == cwd
 
 
@@ -387,7 +387,7 @@ def test_515_discover_invoker_location_no_frame( ):
 def test_520_locate_pyproject_finds_in_current_dir( ):
     ''' _locate_pyproject finds pyproject.toml in current directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -397,7 +397,7 @@ def test_520_locate_pyproject_finds_in_current_dir( ):
 name = "current-dir-test"
 version = "1.0.0"
 ''' )
-        
+
         result = module._locate_pyproject( project_root )
         assert result == project_root
         assert ( result / 'pyproject.toml' ).exists( )
@@ -406,20 +406,20 @@ version = "1.0.0"
 def test_530_locate_pyproject_finds_in_parent_dir( ):
     ''' _locate_pyproject finds pyproject.toml in parent directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
         nested_dir = project_root / 'level_0' / 'level_1' / 'level_2'
         fs.create_dir( nested_dir )
-        
+
         pyproject_path = project_root / 'pyproject.toml'
         fs.create_file( pyproject_path, contents = '''
 [project]
 name = "parent-dir-test"
 version = "1.0.0"
 ''' )
-        
+
         result = module._locate_pyproject( nested_dir )
         assert result == project_root
         assert ( result / 'pyproject.toml' ).exists( )
@@ -428,7 +428,7 @@ version = "1.0.0"
 def test_540_locate_pyproject_handles_file_anchor( ):
     ''' _locate_pyproject handles file path as anchor. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -438,11 +438,11 @@ def test_540_locate_pyproject_handles_file_anchor( ):
 name = "file-anchor-test"
 version = "1.0.0"
 ''' )
-        
+
         # Create a test file in the project
         test_file = project_root / 'test.py'
         fs.create_file( test_file, contents = '# test file' )
-        
+
         # Call _locate_pyproject with file path (not directory)
         result = module._locate_pyproject( test_file )
         assert result == project_root
@@ -459,7 +459,7 @@ async def test_550_prepare_development_mode_without_anchor( ):
         project_root = Path( temp_dir )
         nested_dir = project_root / 'level_0' / 'level_1'
         nested_dir.mkdir( parents = True, exist_ok = True )
-        
+
         # Create pyproject.toml at project root
         pyproject_path = project_root / 'pyproject.toml'
         pyproject_content = '''
@@ -468,51 +468,51 @@ name = "no-anchor-test"
 version = "1.0.0"
 '''
         pyproject_path.write_text( pyproject_content )
-        
+
         # Mock frame inspection to properly isolate our test environment
         package_location = Path( module.__file__ ).parent.resolve( )
-        
+
         # Create mock frame chain that leads to our test directory
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( nested_dir / 'caller.py' )
         external_frame.f_back = None
-        
+
         appcore_frame = MagicMock( )
-        appcore_frame.f_code.co_filename = str( 
+        appcore_frame.f_code.co_filename = str(
             package_location / 'some_file.py' )
         appcore_frame.f_back = external_frame
-        
+
         # Mock only third-party modules, not our internal modules
         with (
-            patch( 'importlib_metadata.packages_distributions', 
+            patch( 'importlib_metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame )
         ):
-            
+
             exits = MagicMock( )
-            info = await module.Information.prepare( 
+            info = await module.Information.prepare(
                 'nonexistent-package', exits )
-            
+
             # Should find the project and return development mode
             assert info.name == 'no-anchor-test'
-            assert info.location == project_root
+            assert info.location.resolve( ) == project_root.resolve( )
             assert info.editable is True
 
 
 def test_560_locate_pyproject_with_missing_file( ):
     ''' Project location raises FileLocateFailure when pyproject absent. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Create a directory without pyproject.toml
         temp_path = Path( '/fake/empty' )
         fs.create_dir( temp_path )
-        
+
         # Should raise FileLocateFailure
         with pytest.raises( exceptions_module.FileLocateFailure ) as exc_info:
             module._locate_pyproject( temp_path )
-        
+
         assert 'pyproject.toml' in str( exc_info.value )
         assert 'project root discovery' in str( exc_info.value )
 
@@ -525,7 +525,7 @@ async def test_570_prepare_development_mode_with_anchor( ):
     with tempfile.TemporaryDirectory( ) as temp_dir:
         # Create a fake project structure
         project_root = Path( temp_dir )
-        
+
         # Create pyproject.toml at project root
         pyproject_path = project_root / 'pyproject.toml'
         pyproject_content = '''
@@ -534,21 +534,21 @@ name = "anchor-test"
 version = "1.0.0"
 '''
         pyproject_path.write_text( pyproject_content )
-        
+
         # Mock only third-party modules, not our internal modules
-        with patch( 'importlib_metadata.packages_distributions', 
+        with patch( 'importlib_metadata.packages_distributions',
                    return_value = {} ):
-            
+
             exits = MagicMock( )
-            
-            # Call prepare WITH project_anchor - should NOT trigger 
+
+            # Call prepare WITH project_anchor - should NOT trigger
             # _discover_invoker_location
-            info = await module.Information.prepare( 
+            info = await module.Information.prepare(
                 'nonexistent-package', exits, project_anchor = project_root )
-            
+
             # Should find the project and return development mode
             assert info.name == 'anchor-test'
-            assert info.location == project_root
+            assert info.location.resolve( ) == project_root.resolve( )
             assert info.editable is True
 
 
@@ -562,7 +562,7 @@ async def test_580_prepare_development_mode_no_anchor_absent( ):
         project_root = Path( temp_dir )
         nested_dir = project_root / 'caller_location'
         nested_dir.mkdir( parents = True, exist_ok = True )
-        
+
         # Create pyproject.toml at project root
         pyproject_path = project_root / 'pyproject.toml'
         pyproject_content = '''
@@ -571,35 +571,35 @@ name = "absent-anchor-test"
 version = "1.0.0"
 '''
         pyproject_path.write_text( pyproject_content )
-        
+
         # Mock frame inspection to properly isolate our test environment
         package_location = Path( module.__file__ ).parent.resolve( )
-        
+
         # Create mock frame chain that leads to our test directory
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( nested_dir / 'caller.py' )
         external_frame.f_back = None
-        
+
         appcore_frame = MagicMock( )
-        appcore_frame.f_code.co_filename = str( 
+        appcore_frame.f_code.co_filename = str(
             package_location / 'some_file.py' )
         appcore_frame.f_back = external_frame
-        
+
         # Mock only third-party modules, not our internal modules
         with (
-            patch( 'importlib_metadata.packages_distributions', 
+            patch( 'importlib_metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame )
         ):
-            
+
             exits = MagicMock( )
             # Call prepare without project_anchor (will be absent)
-            info = await module.Information.prepare( 
+            info = await module.Information.prepare(
                 'nonexistent-package', exits )
-            
+
             # Should discover project via frame inspection
             assert info.name == 'absent-anchor-test'
-            assert info.location == project_root
+            assert info.location.resolve( ) == project_root.resolve( )
             assert info.editable is True
 
 
@@ -617,28 +617,28 @@ name = "development-mode-test"
 version = "1.0.0"
 '''
         pyproject_path.write_text( pyproject_content )
-        
-        # Mock packages_distributions to return empty 
+
+        # Mock packages_distributions to return empty
         # (no installed package found)
         # This triggers the development mode path when name is None
-        with patch( 'importlib_metadata.packages_distributions', 
+        with patch( 'importlib_metadata.packages_distributions',
                    return_value = {} ):
             exits = MagicMock( )
-            
+
             # This should trigger development mode because package not found
-            info = await module.Information.prepare( 
+            info = await module.Information.prepare(
                 'nonexistent-package', exits, project_anchor = project_root )
-            
+
             # Verify we're in development mode
             assert info.editable is True
             assert info.name == 'development-mode-test'
-            assert info.location == project_root
+            assert info.location.resolve( ) == project_root.resolve( )
 
 
 def test_590_locate_pyproject_with_git_ceiling_directories( ):
     ''' _locate_pyproject respects GIT_CEILING_DIRECTORIES. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Create a directory structure
@@ -646,7 +646,7 @@ def test_590_locate_pyproject_with_git_ceiling_directories( ):
         project_root = ceiling_dir / 'project'
         nested_dir = project_root / 'nested'
         fs.create_dir( nested_dir )
-        
+
         # Create pyproject.toml above the ceiling directory
         upper_pyproject = Path( '/fake/pyproject.toml' )
         fs.create_file( upper_pyproject, contents = '''
@@ -654,15 +654,15 @@ def test_590_locate_pyproject_with_git_ceiling_directories( ):
 name = "upper-project"
 version = "1.0.0"
 ''' )
-        
+
         # Set GIT_CEILING_DIRECTORIES to the ceiling directory
-        with patch.dict( os.environ, 
+        with patch.dict( os.environ,
                         { 'GIT_CEILING_DIRECTORIES': str( ceiling_dir ) } ):
             # Should raise FileLocateFailure when hitting ceiling
             with pytest.raises( exceptions_module.FileLocateFailure ) as (
                 exc_info ):
                 module._locate_pyproject( nested_dir )
-            
+
             assert 'pyproject.toml' in str( exc_info.value )
             assert 'project root discovery' in str( exc_info.value )
 
@@ -670,14 +670,14 @@ version = "1.0.0"
 def test_600_locate_pyproject_with_empty_ceiling_directories( ):
     ''' _locate_pyproject handles empty GIT_CEILING_DIRECTORIES. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Create a directory structure
         project_root = Path( '/fake/project' )
         nested_dir = project_root / 'nested'
         fs.create_dir( nested_dir )
-        
+
         # Create pyproject.toml at project root
         pyproject_path = project_root / 'pyproject.toml'
         fs.create_file( pyproject_path, contents = '''
@@ -685,7 +685,7 @@ def test_600_locate_pyproject_with_empty_ceiling_directories( ):
 name = "empty-ceiling-test"
 version = "1.0.0"
 ''' )
-        
+
         # Set GIT_CEILING_DIRECTORIES to empty string
         with patch.dict( os.environ, { 'GIT_CEILING_DIRECTORIES': '' } ):
             result = module._locate_pyproject( nested_dir )
@@ -696,17 +696,17 @@ version = "1.0.0"
 def test_610_locate_pyproject_filesystem_root_traversal( ):
     ''' _locate_pyproject raises FileLocateFailure at filesystem root. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         # Create a deep directory structure without pyproject.toml
         deep_dir = Path( '/fake/very/deep/directory/structure' )
         fs.create_dir( deep_dir )
-        
+
         # Should raise FileLocateFailure when reaching filesystem root
         with pytest.raises( exceptions_module.FileLocateFailure ) as exc_info:
             module._locate_pyproject( deep_dir )
-        
+
         assert 'pyproject.toml' in str( exc_info.value )
         assert 'project root discovery' in str( exc_info.value )
 
