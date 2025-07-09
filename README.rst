@@ -17,7 +17,7 @@
    +--------------------------------------------------------------------------+
 
 *******************************************************************************
-                                  emcd-appcore                                 
+                                  emcd-appcore
 *******************************************************************************
 
 .. image:: https://img.shields.io/pypi/v/emcd-appcore
@@ -45,7 +45,30 @@
    :target: https://pypi.org/project/emcd-appcore/
 
 
-.. todo:: Provide project description and key features.
+🏗️ A Python library package which provides **application foundation
+components** - streamlined async initialization, configuration management,
+platform directories, logging setup, and environment handling for Python
+applications.
+
+
+Key Features ⭐
+===============================================================================
+
+* 🚀 **Async Application Initialization**: Single ``prepare()`` function that
+  sets up your entire application foundation with sensible defaults.
+* 📁 **Platform Directory Management**: Automatic discovery and creation of
+  platform-specific directories for configuration, data, and cache.
+* ⚙️ **TOML Configuration System**: Hierarchical configuration loading with
+  includes, template variables, and overrides. Can bring your own configuration
+  system too.
+* 🎯 **Distribution Detection**: Automatic detection of development vs
+  production deployment modes with package introspection.
+* 📝 **Logging Configuration**: Logging setup with plain and rich modes and
+  environment variable overrides.
+* 🔄 **Resource Management**: Integration with ``AsyncExitStack`` for proper
+  cleanup of async resources.
+* 🏷️ **Safety**: Full type annotations with immutable data structures for
+  thread safety.
 
 
 Installation 📦
@@ -68,7 +91,105 @@ Or, install via ``pip``:
     pip install emcd-appcore
 
 
-.. todo:: Provide usage examples and additional content.
+Examples 💡
+===============================================================================
+
+
+Quick Start 🚀
+-------------------------------------------------------------------------------
+
+The simplest way to initialize your application:
+
+>>> import asyncio
+>>> import contextlib
+>>> import appcore
+>>> async def main( ):
+...     async with contextlib.AsyncExitStack( ) as exits:
+...         # Initialize application core with auto-detection
+...         auxdata = await appcore.prepare( exits )
+...         print( f"App: {auxdata.application.name}" )
+...         print( f"Mode: {'dev' if auxdata.distribution.editable else 'prod'}" )
+...         return auxdata.configuration
+>>> # asyncio.run( main( ) )  # Returns configuration dictionary
+
+
+Configuration Access ⚙️
+-------------------------------------------------------------------------------
+
+Access your application's TOML configuration:
+
+>>> async def show_config( ):
+...     async with contextlib.AsyncExitStack( ) as exits:
+...         auxdata = await appcore.prepare( exits )
+...         config = auxdata.configuration
+...         # Configuration loaded from general.toml in user config directory
+...         print( f"Available sections: {list( config.keys( ) )}" )
+...         # Access nested configuration values
+...         if 'app' in config:
+...             print( f"App name: {config[ 'app' ].get( 'name', 'Unknown' )}" )
+...         return config
+>>> # asyncio.run( show_config( ) )
+
+
+Platform Directories 📁
+-------------------------------------------------------------------------------
+
+Access platform-specific directories for your application:
+
+>>> async def show_directories( ):
+...     async with contextlib.AsyncExitStack( ) as exits:
+...         app_info = appcore.ApplicationInformation(
+...             name = 'my-app', publisher = 'MyCompany' )
+...         auxdata = await appcore.prepare( exits, application = app_info )
+...         dirs = auxdata.directories
+...         print( f"Config: {dirs.user_config_path}" )
+...         print( f"Data: {dirs.user_data_path}" )
+...         print( f"Cache: {dirs.user_cache_path}" )
+>>> # asyncio.run( show_directories( ) )
+
+Logging Configuration 📝
+-------------------------------------------------------------------------------
+
+Configure logging with Rich support and environment overrides:
+
+>>> import appcore
+>>> async def setup_logging( ):
+...     async with contextlib.AsyncExitStack( ) as exits:
+...         # Rich logging with environment variable support
+...         inscription = appcore.inscription.Control(
+...             mode = appcore.inscription.Modes.Rich, level = 'debug' )
+...         auxdata = await appcore.prepare( exits, inscription = inscription )
+...         # Logging level can be overridden via MY_APP_INSCRIPTION_LEVEL
+...         return "Logging configured"
+>>> # asyncio.run( setup_logging( ) )
+
+
+Dependencies & Architecture 🏛️
+===============================================================================
+
+Appcore is built on a foundation of proven, lightweight dependencies:
+
+* **Configuration**: Uses standard library ``tomli`` for TOML parsing with
+  `accretive <https://pypi.org/project/accretive/>`_ data structures that can
+  grow but never shrink.
+* **Platform Integration**: Leverages ``platformdirs`` for cross-platform
+  directory discovery and ``aiofiles`` for async file operations.
+* **Logging Enhancement**: Optional integration with `Rich
+  <https://github.com/Textualize/rich>`_ for enhanced console output with
+  graceful fallbacks.
+* **Distribution Management**: Uses ``importlib-metadata`` and
+  ``importlib-resources`` for package introspection and resource handling.
+
+The architecture emphasizes:
+
+* **Immutability**: All configuration and state objects are immutable after
+  creation, preventing accidental modifications.
+* **Async-First**: Built from the ground up for async/await patterns with
+  proper resource management.
+* **Dependency Injection**: Configurable components that can be replaced or
+  extended without modifying core functionality.
+* **Type Safety**: Comprehensive type annotations for excellent IDE support
+  and static analysis.
 
 
 Contribution 🤝
@@ -127,28 +248,34 @@ For development guidance and standards, please see the `development guide
 Other Projects by This Author 🌟
 ===============================================================================
 
-
-* `python-absence <https://github.com/emcd/python-absence>`_ (`absence <https://pypi.org/project/absence/>`_ on PyPI) 
+* `python-absence <https://github.com/emcd/python-absence>`_ (`absence <https://pypi.org/project/absence/>`_ on PyPI)
 
   🕳️ A Python library package which provides a **sentinel for absent values** - a falsey, immutable singleton that represents the absence of a value in contexts where ``None`` or ``False`` may be valid values.
-* `python-accretive <https://github.com/emcd/python-accretive>`_ (`accretive <https://pypi.org/project/accretive/>`_ on PyPI) 
+
+* `python-accretive <https://github.com/emcd/python-accretive>`_ (`accretive <https://pypi.org/project/accretive/>`_ on PyPI)
 
   🌌 A Python library package which provides **accretive data structures** - collections which can grow but never shrink.
-* `python-classcore <https://github.com/emcd/python-classcore>`_ (`classcore <https://pypi.org/project/classcore/>`_ on PyPI) 
+
+* `python-classcore <https://github.com/emcd/python-classcore>`_ (`classcore <https://pypi.org/project/classcore/>`_ on PyPI)
 
   🏭 A Python library package which provides **foundational class factories and decorators** for providing classes with attributes immutability and concealment and other custom behaviors.
-* `python-dynadoc <https://github.com/emcd/python-dynadoc>`_ (`dynadoc <https://pypi.org/project/dynadoc/>`_ on PyPI) 
+
+* `python-dynadoc <https://github.com/emcd/python-dynadoc>`_ (`dynadoc <https://pypi.org/project/dynadoc/>`_ on PyPI)
 
   📝 A Python library package which bridges the gap between **rich annotations** and **automatic documentation generation** with configurable renderers and support for reusable fragments.
-* `python-falsifier <https://github.com/emcd/python-falsifier>`_ (`falsifier <https://pypi.org/project/falsifier/>`_ on PyPI) 
+
+* `python-falsifier <https://github.com/emcd/python-falsifier>`_ (`falsifier <https://pypi.org/project/falsifier/>`_ on PyPI)
 
   🎭 A very simple Python library package which provides a **base class for falsey objects** - objects that evaluate to ``False`` in boolean contexts.
-* `python-frigid <https://github.com/emcd/python-frigid>`_ (`frigid <https://pypi.org/project/frigid/>`_ on PyPI) 
+
+* `python-frigid <https://github.com/emcd/python-frigid>`_ (`frigid <https://pypi.org/project/frigid/>`_ on PyPI)
 
   🔒 A Python library package which provides **immutable data structures** - collections which cannot be modified after creation.
-* `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI) 
+
+* `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI)
 
   🍦 **Flavorful Debugging** - A Python library which enhances the powerful and well-known ``icecream`` package with flavored traces, configuration hierarchies, customized outputs, ready-made recipes, and more.
-* `python-mimeogram <https://github.com/emcd/python-mimeogram>`_ (`mimeogram <https://pypi.org/project/mimeogram/>`_ on PyPI) 
+
+* `python-mimeogram <https://github.com/emcd/python-mimeogram>`_ (`mimeogram <https://pypi.org/project/mimeogram/>`_ on PyPI)
 
   📨 A command-line tool for **exchanging collections of files with Large Language Models** - bundle multiple files into a single clipboard-ready document while preserving directory structure and metadata... good for code reviews, project sharing, and LLM interactions.
