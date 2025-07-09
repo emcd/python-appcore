@@ -161,12 +161,12 @@ async def test_210_prepare_development_mode_simple( ):
     ''' Information.prepare creates development mode instance. '''
     dev_info = module.Information(
         name = 'dev-package',
-        location = Path( '/dev/path' ),
+        location = Path( '/test/path' ),
         editable = True
     )
     # Verify development mode characteristics
     assert dev_info.editable is True
-    assert dev_info.location == Path( '/dev/path' )
+    assert dev_info.location == Path( '/test/path' )
     assert dev_info.name == 'dev-package'
 
 
@@ -175,12 +175,12 @@ async def test_220_prepare_production_mode_simple( ):
     ''' Information.prepare creates production mode instance. '''
     prod_info = module.Information(
         name = 'prod-package',
-        location = Path( '/prod/path' ),
+        location = Path( '/production/path' ),
         editable = False
     )
     # Verify production mode characteristics
     assert prod_info.editable is False
-    assert prod_info.location == Path( '/prod/path' )
+    assert prod_info.location == Path( '/production/path' )
     assert prod_info.name == 'prod-package'
 
 
@@ -334,7 +334,7 @@ def test_500_discover_invoker_location_finds_caller( ):
         ):
             result = module._discover_invoker_location( )
 
-        assert result == nested_dir
+        assert result.samefile( nested_dir )
 
 
 def test_510_discover_invoker_location_fallback( ):
@@ -359,7 +359,7 @@ def test_510_discover_invoker_location_fallback( ):
               patch( 'pathlib.Path.cwd', return_value = cwd )):
             result = module._discover_invoker_location( )
 
-        assert result == cwd
+        assert result.samefile( cwd )
 
 
 def test_515_discover_invoker_location_no_frame( ):
@@ -377,7 +377,7 @@ def test_515_discover_invoker_location_no_frame( ):
               patch( 'pathlib.Path.cwd', return_value = cwd )):
             result = module._discover_invoker_location( )
 
-        assert result == cwd
+        assert result.samefile( cwd )
 
 
 # Skip complex frame inspection test for now - edge case
@@ -400,7 +400,7 @@ version = "1.0.0"
 ''' )
 
         result = module._locate_pyproject( project_root )
-        assert result == project_root
+        assert result.samefile( project_root )
         assert ( result / 'pyproject.toml' ).exists( )
 
 
@@ -422,7 +422,7 @@ version = "1.0.0"
 ''' )
 
         result = module._locate_pyproject( nested_dir )
-        assert result == project_root
+        assert result.samefile( project_root )
         assert ( result / 'pyproject.toml' ).exists( )
 
 
@@ -446,7 +446,7 @@ version = "1.0.0"
 
         # Call _locate_pyproject with file path (not directory)
         result = module._locate_pyproject( test_file )
-        assert result == project_root
+        assert result.samefile( project_root )
         assert ( result / 'pyproject.toml' ).exists( )
 
 
@@ -690,7 +690,7 @@ version = "1.0.0"
         # Set GIT_CEILING_DIRECTORIES to empty string
         with patch.dict( os.environ, { 'GIT_CEILING_DIRECTORIES': '' } ):
             result = module._locate_pyproject( nested_dir )
-            assert result == project_root
+            assert result.samefile( project_root )
             assert ( result / 'pyproject.toml' ).exists( )
 
 

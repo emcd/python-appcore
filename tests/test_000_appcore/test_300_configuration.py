@@ -284,7 +284,7 @@ name = "template-app"
         result_path = acquirer._discover_copy_template(
             directories, distribution )
         
-        assert result_path == temp_path / 'general.toml'
+        assert result_path.samefile( temp_path / 'general.toml' )
         assert result_path.exists( )
         content = result_path.read_text( )
         assert 'template-app' in content
