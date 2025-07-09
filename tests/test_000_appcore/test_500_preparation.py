@@ -25,6 +25,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 import io
+import contextlib
 
 from . import PACKAGE_NAME, cache_import_module
 
@@ -437,6 +438,30 @@ async def test_210_prepare_auto_distribution( ):
         assert "Distribution name: fake-app" in result.stdout
         assert f"Distribution location: {temp_path}" in result.stdout
         assert "Distribution editable: True" in result.stdout
+
+
+@pytest.mark.asyncio
+async def test_215_prepare_distribution_auto_discovery( ):
+    ''' Distribution auto-discovery triggers when not provided. '''
+    # Create real configuration stream
+    config_content = '''
+[app]
+name = "test-app"
+'''
+    config_stream = io.StringIO( config_content )
+    async with contextlib.AsyncExitStack( ) as exits:
+        # Call prepare() without distribution to trigger auto-discovery
+        result = await module.prepare(
+            exits,
+            configfile = config_stream
+            # Note: no distribution parameter - should auto-discover
+        )
+        # Verify that distribution was auto-discovered and assigned
+        assert result.distribution is not None
+        assert isinstance( result.distribution, 
+                          distribution_module.Information )
+        # Should discover this package (emcd-appcore)
+        assert result.distribution.name == 'emcd-appcore'
 
 
 @pytest.mark.asyncio

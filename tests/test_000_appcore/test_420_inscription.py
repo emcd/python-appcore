@@ -24,6 +24,7 @@
 import io
 import logging
 import sys
+import pytest
 from unittest.mock import patch
 
 from . import PACKAGE_NAME, cache_import_module
@@ -265,13 +266,26 @@ def test_500_prepare_logging_plain( ):
 
 
 def test_510_prepare_logging_rich_fallback( ):
-    ''' _prepare_logging_rich falls back when Rich unavailable. '''
+    ''' Rich logging gracefully falls back when import fails. '''
     target_stream = io.StringIO( )
     formatter = logging.Formatter( "%(name)s: %(message)s" )
-    # Mock Rich imports to fail
-    with patch.dict( 'sys.modules', { 
-        'rich.console': None, 
-        'rich.logging': None 
-    } ):
+    # Mock the import to raise ImportError 
+    with patch( 'builtins.__import__', side_effect = ImportError( ) ):
         # Should not raise an error (graceful fallback)
         module._prepare_logging_rich( logging.INFO, target_stream, formatter )
+
+
+def test_520_prepare_logging_rich_available( ):
+    ''' Rich logging configures when Rich is available. '''
+    import importlib.util
+    target_stream = io.StringIO( )
+    formatter = logging.Formatter( "%(name)s: %(message)s" )
+    # Check if rich is available using importlib
+    if ( importlib.util.find_spec( 'rich.console' ) is not None and
+         importlib.util.find_spec( 'rich.logging' ) is not None ):
+        # Rich is available, test the rich path
+        module._prepare_logging_rich( logging.DEBUG, target_stream, formatter )
+        # Should have configured logging without error
+    else:
+        # Rich not available in test environment, skip this test
+        pytest.skip( "Rich not available in test environment" )
