@@ -423,11 +423,52 @@ You can redirect logs to custom streams or files:
 This is particularly useful for testing or when you need to capture and process log output programmatically.
 
 
+Application Profiles for Different Deployments
+===============================================================================
+
+Create application information objects for different deployment scenarios:
+
+.. doctest:: Basic.ApplicationProfiles
+
+    >>> import appcore
+    >>> def create_application_profiles( ):
+    ...     ''' Create different application profiles. '''
+    ...     return {
+    ...         'development': appcore.ApplicationInformation(
+    ...             name = 'myapp-dev',
+    ...             publisher = 'DevCorp',
+    ...             version = '0.1.0-dev'
+    ...         ),
+    ...         'staging': appcore.ApplicationInformation(
+    ...             name = 'myapp-staging',
+    ...             publisher = 'DevCorp',
+    ...             version = '1.0.0-rc1'
+    ...         ),
+    ...         'production': appcore.ApplicationInformation(
+    ...             name = 'myapp',
+    ...             publisher = 'ProductionCorp',
+    ...             version = '1.0.0'
+    ...         )
+    ...     }
+    >>> 
+    >>> profiles = create_application_profiles( )
+    >>> dev_profile = profiles[ 'development' ]
+    >>> print( f"Dev app: {dev_profile.name} v{dev_profile.version}" )
+    Dev app: myapp-dev v0.1.0-dev
+    >>> 
+    >>> # Each profile will have different platform directories
+    >>> dev_dirs = dev_profile.produce_platform_directories( )
+    >>> prod_dirs = profiles[ 'production' ].produce_platform_directories( )
+    >>> print( f"Different apps use different directories" )
+    Different apps use different directories
+
+This pattern is useful for applications that need different configurations for development, staging, and production environments.
+
+
 Next Steps
 ===============================================================================
 
 This covers the basic usage of appcore. For more advanced topics, see:
 
 - **Configuration Management** - Loading TOML configuration files with includes
-- **Environment Handling** - Development vs production detection and environment variables  
-- **Advanced Usage** - Dependency injection and testing patterns
+- **Environment Handling** - Development vs production detection and environment variables

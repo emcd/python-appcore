@@ -27,4 +27,3 @@ Examples
    basic-usage
    configuration
    environments
-   advanced-usage

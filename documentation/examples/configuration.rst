@@ -419,11 +419,52 @@ Complex applications can use sophisticated configuration patterns:
         asyncio.run( main( ) )
 
 
+Resource Management Patterns
+===============================================================================
+
+Advanced patterns for managing resources with AsyncExitStack:
+
+.. doctest:: Configuration.Resources
+
+    >>> import tempfile
+    >>> import io
+    >>> import platformdirs
+    >>> import contextlib
+    >>> import appcore
+    >>> 
+    >>> async def example_with_temporary_resources( ):
+    ...     ''' Example using temporary resources that are cleaned up automatically. '''
+    ...     async with contextlib.AsyncExitStack( ) as exits:
+    ...         # Create temporary directory
+    ...         temp_dir = exits.enter_context( tempfile.TemporaryDirectory( ) )
+    ...         print( f"Created temp directory: {temp_dir}" )
+    ...         # Use custom directories pointing to temp location
+    ...         custom_dirs = platformdirs.PlatformDirs( 'temp-app', ensure_exists = False )
+    ...         # Initialize appcore with temporary resources
+    ...         globals_dto = await appcore.prepare(
+    ...             exits,
+    ...             directories = custom_dirs,
+    ...             configfile = io.StringIO( '''
+    ...             [application]
+    ...             name = "temp-app"
+    ...             [data]
+    ...             temporary = true
+    ...             ''' )
+    ...         )
+    ...         # Use the globals object
+    ...         config = globals_dto.configuration
+    ...         is_temporary = config[ 'data' ][ 'temporary' ]
+    ...         print( f"Using temporary setup: {is_temporary}" )
+    ...         return globals_dto
+    ...     # temp_dir is automatically cleaned up when exiting the context
+
+This pattern is particularly useful for testing scenarios where you need isolated, temporary resources that are guaranteed to be cleaned up.
+
+
 Next Steps
 ===============================================================================
 
 This covers configuration management in appcore. For more topics, see:
 
 - **Environment Handling** - Environment variables and development detection
-- **Advanced Usage** - Dependency injection and testing patterns
 - **Basic Usage** - Application setup and platform directories
