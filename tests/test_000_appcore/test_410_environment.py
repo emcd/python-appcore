@@ -30,6 +30,14 @@ from . import PACKAGE_NAME, cache_import_module
 from .fixtures import create_globals_with_temp_dirs
 
 
+def _get_home_environment_vars( ):
+    ''' Get minimal environment variables needed for Path.home(). '''
+    return {
+        key: value for key, value in os.environ.items( )
+        if key in ( 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'HOME' )
+    }
+
+
 MODULE_QNAME = f"{PACKAGE_NAME}.environment"
 module = cache_import_module( MODULE_QNAME )
 
@@ -50,7 +58,8 @@ async def test_100_update_editable_with_env_file( ):
 TEST_VAR_1=editable_value_1
 TEST_VAR_2=editable_value_2
     ''' )
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
         
         # Environment should be updated with values from .env file
@@ -73,7 +82,8 @@ OVERRIDE_VAR=base_override
 LOCAL_VAR=local_value
 OVERRIDE_VAR=local_override
     ''' )
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
         
         # Environment should be updated with values from both files
@@ -96,7 +106,8 @@ async def test_120_update_editable_no_env_file( ):
 FALLBACK_VAR=fallback_value
         ''' )
         
-        with patch.dict( os.environ, { }, clear = True ):
+        with patch.dict( 
+            os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
             
             # Should load from local .env since project .env doesn't exist
@@ -122,7 +133,8 @@ async def test_130_update_normal_with_configured_location( ):
 CONFIG_VAR=config_value
 PRECEDENCE_VAR=config_precedence
     ''' )
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
         
         # Environment should be updated from configured location
@@ -154,7 +166,8 @@ LOCAL_VAR=local_value
 PRECEDENCE_VAR=local_precedence
         ''' )
         
-        with patch.dict( os.environ, { }, clear = True ):
+        with patch.dict( 
+            os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
             
             # Both files should be loaded
@@ -178,7 +191,8 @@ async def test_150_update_normal_local_only( ):
 LOCAL_ONLY_VAR=local_only_value
         ''' )
         
-        with patch.dict( os.environ, { }, clear = True ):
+        with patch.dict( 
+            os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
             
             # Should load from local .env only
@@ -209,7 +223,8 @@ DB_PORT=5432
 API_KEY=secret_key
 API_URL=https://api.example.com
     ''' )
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
         
         # Environment should have values from both files
@@ -224,12 +239,16 @@ async def test_170_update_normal_no_files_exist( ):
     ''' Environment updater handles case when no .env files exist. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( editable = False )
     # No .env files exist anywhere
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         # Should complete without error
         await module.update( globals_dto )
         
-        # Environment should remain empty
-        assert len( os.environ ) == 0
+        # Environment should only contain home directory variables
+        expected_vars = _get_home_environment_vars( )
+        assert len( os.environ ) == len( expected_vars )
+        for key, value in expected_vars.items( ):
+            assert os.environ.get( key ) == value
 
 
 @pytest.mark.asyncio
@@ -251,7 +270,8 @@ async def test_180_update_home_template_substitution( ):
 HOME_VAR=home_value
         ''' )
         
-        with patch.dict( os.environ, { }, clear = True ):
+        with patch.dict( 
+            os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
             
             # Should load from home-based location
@@ -273,7 +293,8 @@ def test_200_inject_dotenv_data_success( ):
 TEST_INJECT_VAR=inject_value
 ANOTHER_VAR=another_value
     '''
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         result = module._inject_dotenv_data( data )
         
         # Should return True for successful load
@@ -285,13 +306,17 @@ ANOTHER_VAR=another_value
 
 def test_210_inject_dotenv_data_empty( ):
     ''' _inject_dotenv_data handles empty data gracefully. '''
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         result = module._inject_dotenv_data( '' )
         
         # Should return False for empty data
         assert result is False
-        # Environment should remain empty
-        assert len( os.environ ) == 0
+        # Environment should only contain home directory variables
+        expected_vars = _get_home_environment_vars( )
+        assert len( os.environ ) == len( expected_vars )
+        for key, value in expected_vars.items( ):
+            assert os.environ.get( key ) == value
 
 
 def test_220_inject_dotenv_data_comments_and_whitespace( ):
@@ -305,7 +330,8 @@ EMPTY_VAR=
 
 QUOTED_VAR="quoted value"
     '''
-    with patch.dict( os.environ, { }, clear = True ):
+    with patch.dict( 
+        os.environ, _get_home_environment_vars( ), clear = True ):
         result = module._inject_dotenv_data( data )
         
         # Should return True for successful load
