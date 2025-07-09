@@ -109,14 +109,14 @@ jobs:
         run: |
           set -eu -o pipefail
           cd ${{ env.DISTRIBUTIONS_PATH }}
-          sha256sum emcd-appcore-* >SHA256SUMS.txt
+          sha256sum emcd_appcore-* >SHA256SUMS.txt
 
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
             ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
-            ${{ env.DISTRIBUTIONS_PATH }}/emcd-appcore-*
+            ${{ env.DISTRIBUTIONS_PATH }}/emcd_appcore-*
 
       - name: Generate Release Notes
         run: |
