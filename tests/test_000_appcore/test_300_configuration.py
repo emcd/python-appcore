@@ -259,8 +259,12 @@ includes = [
 @pytest.mark.asyncio
 async def test_340_toml_acquirer_discover_copy_template( ):
     ''' Configuration acquirer discovers and copies template file. '''
-    with tempfile.TemporaryDirectory( ) as temp_dir:
-        temp_path = Path( temp_dir )
+    from pyfakefs.fake_filesystem_unittest import Patcher
+    
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        temp_path = Path( '/fake/config' )
+        fs.create_dir( temp_path )
         
         directories = MagicMock( )
         directories.user_config_path = temp_path
@@ -271,7 +275,7 @@ async def test_340_toml_acquirer_discover_copy_template( ):
         
         # Create template file
         template_file = temp_path / 'template.toml'
-        template_file.write_text( '''
+        fs.create_file( template_file, contents = '''
 [app]
 name = "template-app"
         ''' )
@@ -289,8 +293,12 @@ name = "template-app"
 @pytest.mark.asyncio
 async def test_350_toml_acquirer_discover_existing_file( ):
     ''' Configuration acquirer uses existing file when it exists. '''
-    with tempfile.TemporaryDirectory( ) as temp_dir:
-        temp_path = Path( temp_dir )
+    from pyfakefs.fake_filesystem_unittest import Patcher
+    
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        temp_path = Path( '/fake/config' )
+        fs.create_dir( temp_path )
         
         directories = MagicMock( )
         directories.user_config_path = temp_path
@@ -299,7 +307,7 @@ async def test_350_toml_acquirer_discover_existing_file( ):
         
         # Create existing file
         existing_file = temp_path / 'general.toml'
-        existing_file.write_text( '''
+        fs.create_file( existing_file, contents = '''
 [app]
 name = "existing-app"
         ''' )
