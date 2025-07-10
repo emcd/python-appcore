@@ -79,6 +79,7 @@ class TomlAcquirer( AcquirerAbc ):
     ) -> __.accret.Dictionary[ str, __.typx.Any ]:
         if __.is_absent( file ):
             file = self._discover_copy_template( directories, distribution )
+            if __.is_absent( file ): return __.accret.Dictionary( { } )
         if isinstance( file, __.io.TextIOBase ):
             content = file.read( )
             configuration = __.tomli.loads( content )
@@ -117,10 +118,12 @@ class TomlAcquirer( AcquirerAbc ):
         self,
         directories: __.pdirs.PlatformDirs,
         distribution: _distribution.Information,
-    ) -> __.Path:
+    ) -> __.Absential[ __.Path ]:
         file = directories.user_config_path / self.main_filename
         if not file.exists( ):
-            __.shutil.copyfile(
-                distribution.provide_data_location(
-                    'configuration', self.main_filename ), file )
+            template_location = distribution.provide_data_location(
+                'configuration', self.main_filename )
+            if template_location.exists( ):
+                __.shutil.copyfile( template_location, file )
+            else: return __.absent
         return file

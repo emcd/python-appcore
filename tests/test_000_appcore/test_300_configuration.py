@@ -291,6 +291,34 @@ name = "template-app"
 
 
 @pytest.mark.asyncio
+async def test_345_toml_acquirer_call_with_no_template( ):
+    ''' Configuration acquirer returns empty dict when no template exists. '''
+    # Create temp directories and distribution WITHOUT template file
+    directories, distribution, temp_dir = (
+        create_temp_directories_and_distribution( ) )
+    
+    try:
+        acquirer = module.TomlAcquirer( )
+        
+        result = await acquirer(
+            'test-app',
+            directories,
+            distribution
+        )
+        
+        # Should return empty configuration when no template exists
+        assert len( result ) == 0
+        
+        # User config file should not be created when no template exists
+        config_file = directories.user_config_path / 'general.toml'
+        assert not config_file.exists( )
+        
+    finally:
+        import shutil
+        shutil.rmtree( temp_dir )
+
+
+@pytest.mark.asyncio
 async def test_350_toml_acquirer_discover_existing_file( ):
     ''' Configuration acquirer uses existing file when it exists. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
