@@ -148,7 +148,8 @@ async def test_200_prepare_production_distribution( ):
         exits.enter_context.return_value = temp_path
         mock_as_file.return_value = MagicMock( )
 
-        info = await module.Information.prepare( 'test-package', exits )
+        info = await module.Information.prepare(
+            exits, package = 'test-package' )
 
         # Verify production distribution was detected
         assert info.editable is False  # Production mode
@@ -229,7 +230,7 @@ version = "1.0.0"
         pyproject_path.write_text( pyproject_content )
 
         location, name = await module._acquire_development_information(
-            project_anchor = temp_path )
+            anchor = temp_path )
         assert location.resolve( ) == temp_path.resolve( )
         assert name == 'test-package'
 
@@ -251,7 +252,7 @@ version = "1.0.0"
 
         # Test that function can locate and parse pyproject.toml
         location, name = await module._acquire_development_information(
-            project_anchor = temp_path )
+            anchor = temp_path )
         assert location.resolve( ) == temp_path.resolve( )
         assert name == 'auto-located-package'
 
@@ -320,6 +321,7 @@ def test_500_discover_invoker_location_finds_caller( ):
         # Mock frames to simulate call stack
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( caller_file )
+        external_frame.f_globals = { '__module__': 'test.caller.module' }
         external_frame.f_back = None
 
         appcore_frame = MagicMock( )
@@ -332,9 +334,10 @@ def test_500_discover_invoker_location_finds_caller( ):
             patch.object( module.__.Path, 'cwd',
                          return_value = Path( '/fake/fallback' ) )
         ):
-            result = module._discover_invoker_location( )
+            package, anchor = module._discover_invoker_location( )
 
-        assert result.samefile( nested_dir )
+        assert package == 'test'
+        assert anchor.samefile( nested_dir )
 
 
 def test_510_discover_invoker_location_fallback( ):
@@ -357,9 +360,10 @@ def test_510_discover_invoker_location_fallback( ):
 
         with (patch( 'inspect.currentframe', return_value = mock_frame ),
               patch( 'pathlib.Path.cwd', return_value = cwd )):
-            result = module._discover_invoker_location( )
+            package, anchor = module._discover_invoker_location( )
 
-        assert result.samefile( cwd )
+        assert module.__.is_absent( package )
+        assert anchor.samefile( cwd )
 
 
 def test_515_discover_invoker_location_no_frame( ):
@@ -375,9 +379,10 @@ def test_515_discover_invoker_location_no_frame( ):
         # Mock currentframe to return None
         with (patch( 'inspect.currentframe', return_value = None ),
               patch( 'pathlib.Path.cwd', return_value = cwd )):
-            result = module._discover_invoker_location( )
+            package, anchor = module._discover_invoker_location( )
 
-        assert result.samefile( cwd )
+        assert module.__.is_absent( package )
+        assert anchor.samefile( cwd )
 
 
 # Skip complex frame inspection test for now - edge case
@@ -492,7 +497,7 @@ version = "1.0.0"
 
             exits = MagicMock( )
             info = await module.Information.prepare(
-                'nonexistent-package', exits )
+                exits, package = 'nonexistent-package' )
 
             # Should find the project and return development mode
             assert info.name == 'no-anchor-test'
@@ -545,7 +550,7 @@ version = "1.0.0"
             # Call prepare WITH project_anchor - should NOT trigger
             # _discover_invoker_location
             info = await module.Information.prepare(
-                'nonexistent-package', exits, project_anchor = project_root )
+                exits, anchor = project_root, package = 'nonexistent-package' )
 
             # Should find the project and return development mode
             assert info.name == 'anchor-test'
@@ -596,7 +601,7 @@ version = "1.0.0"
             exits = MagicMock( )
             # Call prepare without project_anchor (will be absent)
             info = await module.Information.prepare(
-                'nonexistent-package', exits )
+                exits, package = 'nonexistent-package' )
 
             # Should discover project via frame inspection
             assert info.name == 'absent-anchor-test'
@@ -628,7 +633,7 @@ version = "1.0.0"
 
             # This should trigger development mode because package not found
             info = await module.Information.prepare(
-                'nonexistent-package', exits, project_anchor = project_root )
+                exits, anchor = project_root, package = 'nonexistent-package' )
 
             # Verify we're in development mode
             assert info.editable is True
@@ -710,5 +715,24 @@ def test_610_locate_pyproject_filesystem_root_traversal( ):
 
         assert 'pyproject.toml' in str( exc_info.value )
         assert 'project root discovery' in str( exc_info.value )
+
+
+@pytest.mark.asyncio
+async def test_615_prepare_with_auto_detection( ):
+    ''' Distribution.prepare with __.absent auto-detects calling package. '''
+    from . import cache_import_module
+    
+    # Import the required modules
+    __ = cache_import_module( f"{PACKAGE_NAME}.__" )
+    
+    async with __.ctxl.AsyncExitStack( ) as exits:
+        # Test auto-detection by passing __.absent as package
+        distribution = await module.Information.prepare(
+            exits, package = __.absent )
+        
+        # Should auto-detect this project (emcd-appcore) instead of 'appcore'
+        assert distribution.name == 'emcd-appcore'
+        assert distribution.editable is True
+        assert distribution.location.name == 'python-appcore'
 
 
