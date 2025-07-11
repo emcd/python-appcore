@@ -1,1 +1,0 @@
-Fix configuration system to gracefully handle missing templates by returning empty dictionary instead of crashing.
