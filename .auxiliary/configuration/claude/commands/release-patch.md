@@ -91,7 +91,8 @@ git pull origin release-$ARGUMENTS
 **Determine patch location and integrate if needed:**
 
 ### 3.1. Identify Patch Commits
-Before cherry-picking, identify which commits contain actual patch fixes vs. maintenance:
+Before cherry-picking, identify which commits contain actual patch fixes vs.
+maintenance:
 
 ```bash
 git log --oneline master
@@ -99,6 +100,11 @@ git log --graph --oneline master --since="1 month ago"
 # Show commits on master not on release branch
 git log --oneline release-$ARGUMENTS..master --since="1 month ago"
 ```
+
+**IMPORTANT**
+- Do **not** cherry-pick commits which were previously cherry-picked onto the
+  branch.
+- Look at the Towncrier news fragments to help you decide what to pick.
 
 **Patch commits** (always cherry-pick):
 - Bug fixes
