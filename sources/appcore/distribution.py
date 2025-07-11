@@ -44,7 +44,7 @@ class Information( __.immut.DataclassObject ):
         if (    __.is_absent( anchor )
             and getattr( __.sys, 'frozen', False )
             and hasattr( __.sys, '_MEIPASS' )
-        ):
+        ): # pragma: no cover
             location, name = await _acquire_pyinstaller_information( )
             return selfclass(
                 editable = False, location = location, name = name )
@@ -96,8 +96,9 @@ async def _acquire_production_location(
         as_file( files( package ) ) ) # pyright: ignore
 
 
-async def _acquire_pyinstaller_information( ) -> tuple[ __.Path, str ]:
-    anchor_ = __.Path(  # pragma: no cover
+async def _acquire_pyinstaller_information( # pragma: no cover
+) -> tuple[ __.Path, str ]:
+    anchor_ = __.Path(
         getattr( __.sys, '_MEIPASS' ) )
     # TODO: More rigorously determine package name.
     #       Currently assumes 'pyproject.toml' is present in distribution.
