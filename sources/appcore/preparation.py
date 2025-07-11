@@ -44,12 +44,11 @@ async def prepare( # noqa: PLR0913
     distribution: __.Absential[ _distribution.Information ] = __.absent,
     environment: bool | __.NominativeDictionary = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
-    package: __.Absential[ str ] = __.absent,
 ) -> _state.Globals:
-    ''' Prepares globals DTO for use with library functions.
+    ''' Prepares globals DTO to pass through application.
 
         Also:
-        * Configures logging for library package (not application).
+        * Optionally, configures logging for application
         * Optionally, loads process environment from files.
 
         Note that asynchronous preparation allows for applications to
@@ -60,8 +59,7 @@ async def prepare( # noqa: PLR0913
         directories = application.produce_platform_directories( )
     if __.is_absent( distribution ):
         distribution = (
-            await _distribution.Information.prepare(
-                package = package, exits = exits ) )
+            await _distribution.Information.prepare( exits = exits ) )
     configuration = (
         await acquirer(
             application_name = application.name,
