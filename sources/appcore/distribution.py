@@ -35,32 +35,39 @@ class Information( __.immut.DataclassObject ):
 
     @classmethod
     async def prepare(
-        selfclass, package: str, exits: __.ctxl.AsyncExitStack,
-        project_anchor: __.Absential[ __.Path ] = __.absent,
+        selfclass,
+        exits: __.ctxl.AsyncExitStack,
+        anchor: __.Absential[ __.Path ] = __.absent,
+        package: __.Absential[ str ] = __.absent,
     ) -> __.typx.Self:
-        ''' Acquires information about our package distribution. '''
-        import sys
-        # Detect PyInstaller bundle.
-        if getattr( sys, 'frozen', False ) and hasattr( sys, '_MEIPASS' ):
-            project_anchor = __.Path(  # pragma: no cover
-                getattr( sys, '_MEIPASS' ) )
-        # TODO: Python 3.12: importlib.metadata
-        from importlib_metadata import packages_distributions
+        ''' Acquires information about package distribution. '''
+        if (    __.is_absent( anchor )
+            and getattr( __.sys, 'frozen', False )
+            and hasattr( __.sys, '_MEIPASS' )
+        ): # pragma: no cover
+            location, name = await _acquire_pyinstaller_information( )
+            return selfclass(
+                editable = False, location = location, name = name )
+        if __.is_absent( package ):
+            package, _ = _discover_invoker_location( )
+        if not __.is_absent( package ):
+            # TODO: Python 3.12: importlib.metadata
+            from importlib_metadata import packages_distributions
+            name = packages_distributions( ).get( package )
+            if name:
+                location = (
+                    await _acquire_production_location( package, exits ) )
+                return selfclass(
+                    editable = False, location = location, name = name[ 0 ] )
         # https://github.com/pypa/packaging-problems/issues/609
-        name = packages_distributions( ).get( package )
-        if name is None: # Development sources rather than distribution.
-            editable = True # Implies no use of importlib.resources.
-            if __.is_absent( project_anchor ):
-                project_anchor = _discover_invoker_location( )
-            location, name = (
-                await _acquire_development_information(
-                    project_anchor = project_anchor ) )
-        else:
-            editable = False
-            name = name[ 0 ]
-            location = await _acquire_production_location( package, exits )
+        # Development sources rather than distribution.
+        # Implies no use of importlib.resources.
+        if __.is_absent( anchor ):
+            _, anchor = _discover_invoker_location( )
+        location, name = (
+            await _acquire_development_information( anchor = anchor ) )
         return selfclass(
-            editable = editable, location = location, name = name )
+            editable = True, location = location, name = name )
 
     def provide_data_location( self, *appendages: str ) -> __.Path:
         ''' Provides location of distribution data. '''
@@ -70,9 +77,9 @@ class Information( __.immut.DataclassObject ):
 
 
 async def _acquire_development_information(
-    project_anchor: __.Path
+    anchor: __.Path
 ) -> tuple[ __.Path, str ]:
-    location = _locate_pyproject( project_anchor )
+    location = _locate_pyproject( anchor )
     pyproject = await _io.acquire_text_file_async(
         location / 'pyproject.toml', deserializer = __.tomli.loads )
     name = pyproject[ 'project' ][ 'name' ]
@@ -89,13 +96,22 @@ async def _acquire_production_location(
         as_file( files( package ) ) ) # pyright: ignore
 
 
-def _discover_invoker_location( ) -> __.Path:
+async def _acquire_pyinstaller_information( # pragma: no cover
+) -> tuple[ __.Path, str ]:
+    anchor_ = __.Path(
+        getattr( __.sys, '_MEIPASS' ) )
+    # TODO: More rigorously determine package name.
+    #       Currently assumes 'pyproject.toml' is present in distribution.
+    return await _acquire_development_information( anchor = anchor_ )
+
+
+def _discover_invoker_location( ) -> tuple[ __.Absential[ str ], __.Path ]:
     ''' Discovers file path of caller for project root detection. '''
     import inspect
     package_location = __.Path( __file__ ).parent.resolve( )
     python_location = __.Path( __.sys.executable ).parent.parent.resolve( )
     frame = inspect.currentframe( )
-    if frame is None: return __.Path.cwd( )
+    if frame is None: return __.absent, __.Path.cwd( )
     # Walk up the call stack to find frame outside of this package.
     while True:
         frame = frame.f_back
@@ -106,9 +122,12 @@ def _discover_invoker_location( ) -> __.Path:
             continue
         if location.is_relative_to( python_location ): # pragma: no cover
             continue
-        return location.parent
+        mname = frame.f_globals.get( '__module__' )
+        if not mname: continue
+        pname = mname.split( '.', maxsplit = 1 )[ 0 ]
+        return pname, location.parent
     # Fallback location is current working directory.
-    return __.Path.cwd( ) # pragma: no cover
+    return __.absent, __.Path.cwd( ) # pragma: no cover
 
 
 def _locate_pyproject( project_anchor: __.Path ) -> __.Path:

@@ -44,6 +44,7 @@ async def prepare( # noqa: PLR0913
     distribution: __.Absential[ _distribution.Information ] = __.absent,
     environment: bool | __.NominativeDictionary = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
+    package: __.Absential[ str ] = __.absent,
 ) -> _state.Globals:
     ''' Prepares globals DTO for use with library functions.
 
@@ -60,7 +61,7 @@ async def prepare( # noqa: PLR0913
     if __.is_absent( distribution ):
         distribution = (
             await _distribution.Information.prepare(
-                package = __.package_name, exits = exits ) )
+                package = package, exits = exits ) )
     configuration = (
         await acquirer(
             application_name = application.name,

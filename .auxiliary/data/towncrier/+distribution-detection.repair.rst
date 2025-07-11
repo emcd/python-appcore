@@ -1,0 +1,1 @@
+Fix distribution detection to auto-detect calling package instead of incorrectly using appcore package location for configuration files.
