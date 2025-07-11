@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Appcore 1.0.2 (2025-07-10)
+==========================
+
+Repairs
+-------
+
+- Distribution: Do not skip packages in Python site packages directories when
+  detecting the caller.
+
+
 Appcore 1.0.1 (2025-07-10)
 ==========================
 
