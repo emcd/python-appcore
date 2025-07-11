@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Appcore 1.0.1 (2025-07-10)
+==========================
+
+Repairs
+-------
+
+- Fix configuration system to gracefully handle missing templates by returning empty dictionary instead of crashing.
+- Fix distribution detection to auto-detect calling package instead of incorrectly using appcore package location for configuration files.
+
+
 Appcore 1.0 (2025-07-09)
 ========================
 
