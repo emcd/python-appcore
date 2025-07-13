@@ -50,7 +50,7 @@ class Information( __.immut.DataclassObject ):
                 editable = False, location = location, name = name )
         if __.is_absent( package ):
             package, _ = _discover_invoker_location( )
-        if not __.is_absent( package ):
+        if not __.is_absent( package ): # pragma: no branch
             # TODO: Python 3.12: importlib.metadata
             from importlib_metadata import packages_distributions
             name = packages_distributions( ).get( package )
@@ -105,22 +105,26 @@ async def _acquire_pyinstaller_information( # pragma: no cover
     return await _acquire_development_information( anchor = anchor_ )
 
 
+def _detect_package_boundary( mname: str ) -> __.Absential[ str ]:
+    ''' Finds package boundary, including for namespace packages. '''
+    if not mname or mname == '__main__': return __.absent
+    components = mname.split( '.' )
+    # Work backwards through dotted name to find deepest package.
+    for i in range( len( components ), 0, -1 ):
+        candidate = '.'.join( components[ : i ] )
+        if candidate not in __.sys.modules: continue
+        module = __.sys.modules[ candidate ]
+        if hasattr( module, '__path__' ): # Is it a package?
+            return candidate
+    # Fallback to first component for edge cases.
+    return components[ 0 ]
+
+
 def _discover_invoker_location( ) -> tuple[ __.Absential[ str ], __.Path ]:
     ''' Discovers file path of caller for project root detection. '''
-    import inspect
-    import site
-    import sysconfig
     package_location = __.Path( __file__ ).parent.resolve( )
-    stdlib_locations = {
-        __.Path( sysconfig.get_path( 'stdlib' ) ).resolve( ),
-        __.Path( sysconfig.get_path( 'platstdlib' ) ).resolve( ),
-    }
-    sp_locations: set[ __.Path ] = set( )
-    for path in site.getsitepackages( ):
-        sp_locations.add( __.Path( path ).resolve( ) )
-    with __.ctxl.suppress( AttributeError ):
-        sp_locations.add( __.Path( site.getusersitepackages( ) ).resolve( ) )
-    frame = inspect.currentframe( )
+    stdlib_locations, sp_locations = _provide_standard_locations( )
+    frame = __.inspect.currentframe( )
     if frame is None: return __.absent, __.Path.cwd( )
     # Walk up the call stack to find frame outside of this package.
     while True:
@@ -130,26 +134,20 @@ def _discover_invoker_location( ) -> tuple[ __.Absential[ str ], __.Path ]:
         # Skip frames within this package
         if location.is_relative_to( package_location ): # pragma: no cover
             continue
-        # Allow site-packages even if they're under stdlib paths
         in_site_packages = any(
             location.is_relative_to( sp_location )
-            for sp_location in sp_locations
-        )
-        # Skip standard library paths (unless in site-packages)
-        if not in_site_packages and any(
+            for sp_location in sp_locations )
+        in_stdlib_locations = any(
             location.is_relative_to( stdlib_location )
-            for stdlib_location in stdlib_locations
-        ): continue
-        # Try __module__ first, fallback to __package__
-        mname = frame.f_globals.get( '__module__' )
-        package_name = frame.f_globals.get( '__package__' )
-        if mname:
-            pname = mname.split( '.', maxsplit = 1 )[ 0 ]
-        elif package_name:
-            pname = package_name.split( '.', maxsplit = 1 )[ 0 ]
-        else:
-            continue
-        return pname, location.parent
+            for stdlib_location in stdlib_locations )
+        # Skip standard library paths, unless in site-packages.
+        if not in_site_packages and in_stdlib_locations: continue
+        mname = frame.f_globals.get( '__name__' )
+        if not mname or mname == '__main__': continue
+        pname = _detect_package_boundary( mname )
+        if not __.is_absent( pname ):
+            return pname, location.parent
+        continue # pragma: no cover
     # Fallback location is current working directory.
     return __.absent, __.Path.cwd( ) # pragma: no cover
 
@@ -174,3 +172,18 @@ def _locate_pyproject( project_anchor: __.Path ) -> __.Path:
         current = current.parent
     raise _exceptions.FileLocateFailure(  # noqa: TRY003 # pragma: no cover
         'project root discovery', 'pyproject.toml' )
+
+
+def _provide_standard_locations( ) -> tuple[
+    frozenset[ __.Path ], frozenset[ __.Path ]
+]:
+    stdlib_locations = frozenset( (
+        __.Path( __.syscfg.get_path( 'stdlib' ) ).resolve( ),
+        __.Path( __.syscfg.get_path( 'platstdlib' ) ).resolve( ) ) )
+    sp_locations: set[ __.Path ] = set( )
+    for path in __.site.getsitepackages( ):
+        sp_locations.add( __.Path( path ).resolve( ) )
+    with __.ctxl.suppress( AttributeError ):
+        sp_locations.add(
+            __.Path( __.site.getusersitepackages( ) ).resolve( ) )
+    return frozenset( stdlib_locations ), frozenset( sp_locations )

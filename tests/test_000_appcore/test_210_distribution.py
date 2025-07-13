@@ -305,7 +305,7 @@ def test_500_discover_invoker_location_finds_caller( ):
         fs.create_file( caller_file, contents = '# test caller file' )
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( caller_file )
-        external_frame.f_globals = { '__module__': 'test.caller.module' }
+        external_frame.f_globals = { '__name__': 'test.caller.module' }
         external_frame.f_back = None
         appcore_frame = MagicMock( )
         appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
@@ -368,7 +368,7 @@ def test_517_discover_invoker_location_site_packages( ):
         fs.create_file( third_party_pkg, contents = '# third party package' )
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( third_party_pkg )
-        external_frame.f_globals = { '__module__': 'third_party.module' }
+        external_frame.f_globals = { '__name__': 'third_party.module' }
         external_frame.f_back = None
         appcore_frame = MagicMock( )
         appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
@@ -384,8 +384,8 @@ def test_517_discover_invoker_location_site_packages( ):
         assert anchor.samefile( site_packages / 'third_party' )
 
 
-def test_518_discover_invoker_location_package_fallback( ):
-    ''' Uses __package__ when __module__ is None. '''
+def test_518_discover_invoker_location_name_detection( ):
+    ''' Uses __name__ for package detection with boundary finding. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -396,38 +396,41 @@ def test_518_discover_invoker_location_package_fallback( ):
         fs.create_file( installed_pkg, contents = '# installed package' )
         external_frame = MagicMock( )
         external_frame.f_code.co_filename = str( installed_pkg )
-        # Simulate installed package: __module__ is None, __package__ has value
-        external_frame.f_globals = { 
-            '__module__': None, 
-            '__package__': 'installed_pkg.submodule' 
+        # Simulate installed package with __name__ attribute
+        external_frame.f_globals = {
+            '__name__': 'installed_pkg'
         }
         external_frame.f_back = None
         appcore_frame = MagicMock( )
         appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
         appcore_frame.f_back = external_frame
+        # Mock sys.modules to contain the package for boundary detection
+        mock_pkg = MagicMock(
+            __path__ = [ str( site_packages / 'installed_pkg' ) ] )
         with (
             patch( 'inspect.currentframe', return_value = appcore_frame ),
             patch( 'site.getsitepackages',
                    return_value = [ str( site_packages ) ] ),
             patch( 'site.getusersitepackages',
-                   return_value = '/fake/user/site' )
+                   return_value = '/fake/user/site' ),
+            patch.dict( module.__.sys.modules, { 'installed_pkg': mock_pkg } )
         ): package, anchor = module._discover_invoker_location( )
         assert package == 'installed_pkg'
         assert anchor.samefile( site_packages / 'installed_pkg' )
 
 
-def test_519_discover_invoker_location_no_module_or_package( ):
-    ''' Skips frames with no __module__ or __package__. '''
+def test_519_discover_invoker_location_no_name( ):
+    ''' Skips frames with no __name__ or __main__. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
         fs.create_dir( cwd )
-        # Create a frame with neither __module__ nor __package__
+        # Create a frame with no __name__ or __main__
         no_info_frame = MagicMock( )
         no_info_frame.f_code.co_filename = '/some/path/script.py'
-        no_info_frame.f_globals = { '__module__': None, '__package__': None }
+        no_info_frame.f_globals = { '__name__': None }
         no_info_frame.f_back = None
         appcore_frame = MagicMock( )
         appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
@@ -444,8 +447,189 @@ def test_519_discover_invoker_location_no_module_or_package( ):
         assert anchor.samefile( cwd )
 
 
-def test_520_locate_pyproject_finds_in_current_dir( ):
-    ''' _locate_pyproject finds pyproject.toml in current directory. '''
+def test_520_detect_package_boundary_simple_package( ):
+    ''' Can detect simple packages correctly. '''
+    with patch.dict( module.__.sys.modules, {
+        'collections': MagicMock( __path__ = [ '/fake/path' ] )
+    } ):
+        result = module._detect_package_boundary( 'collections.abc' )
+        assert result == 'collections'
+
+
+def test_521_detect_package_boundary_namespace_package( ):
+    ''' Can detect namespace packages correctly. '''
+    namespace_mock = MagicMock( )
+    del namespace_mock.__path__  # Namespace root has no __path__
+    subpkg_mock = MagicMock( __path__ = [ '/fake/namespace/subpkg' ] )
+    with patch.dict( module.__.sys.modules, {
+        'mynamespace': namespace_mock,
+        'mynamespace.subpkg': subpkg_mock
+    } ):
+        result = module._detect_package_boundary( 'mynamespace.subpkg.module' )
+        assert result == 'mynamespace.subpkg'
+
+
+def test_522_detect_package_boundary_main_module( ):
+    ''' Can detect __main__ module correctly. '''
+    result = module._detect_package_boundary( '__main__' )
+    assert module.__.is_absent( result )
+
+
+def test_523_detect_package_boundary_absent_name( ):
+    ''' Can handle null module names correctly. '''
+    result = module._detect_package_boundary( None )
+    assert module.__.is_absent( result )
+    result = module._detect_package_boundary( '' )
+    assert module.__.is_absent( result )
+
+
+def test_524_detect_package_boundary_fallback( ):
+    ''' Can handle unregistered modules. '''
+    with patch.dict( module.__.sys.modules, {}, clear = True ):
+        result = module._detect_package_boundary( 'unknown.package.module' )
+        assert result == 'unknown'
+
+
+def test_525_discover_invoker_location_main_module( ):
+    ''' Skips frames with __name__ set to __main__. '''
+    from pyfakefs.fake_filesystem_unittest import Patcher
+
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        cwd = Path( '/fake/cwd' )
+        fs.create_dir( cwd )
+        main_frame = MagicMock( )
+        main_frame.f_code.co_filename = '/some/path/script.py'
+        main_frame.f_globals = { '__name__': '__main__' }
+        main_frame.f_back = None
+        appcore_frame = MagicMock( )
+        appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
+        appcore_frame.f_back = main_frame
+        with (
+            patch( 'inspect.currentframe', return_value = appcore_frame ),
+            patch( 'pathlib.Path.cwd', return_value = cwd ),
+            patch( 'site.getsitepackages', return_value = [ '/fake/site' ] ),
+            patch( 'site.getusersitepackages',
+                   return_value = '/fake/user/site' )
+        ): package, anchor = module._discover_invoker_location( )
+        # Should fall back to cwd since __main__ is skipped
+        assert module.__.is_absent( package )
+        assert anchor.samefile( cwd )
+
+
+@pytest.mark.asyncio
+async def test_526_prepare_package_found_but_not_distributed( ):
+    ''' Correctly handles package found but not in distributions. '''
+    import tempfile
+    with tempfile.TemporaryDirectory( ) as temp_dir:
+        project_root = Path( temp_dir )
+        pyproject_path = project_root / 'pyproject.toml'
+        pyproject_content = '''
+[project]
+name = "found-not-distributed"
+version = "1.0.0"
+'''
+        pyproject_path.write_text( pyproject_content )
+        package_location = Path( module.__file__ ).parent.resolve( )
+        external_frame = MagicMock( )
+        external_frame.f_code.co_filename = str( project_root / 'caller.py' )
+        external_frame.f_globals = { '__name__': 'mypackage' }
+        external_frame.f_back = None
+        appcore_frame = MagicMock( )
+        appcore_frame.f_code.co_filename = str(
+            package_location / 'some_file.py' )
+        appcore_frame.f_back = external_frame
+        mock_pkg = MagicMock( __path__ = [ str( project_root ) ] )
+        with (
+            # Package found but not in distributions (returns empty dict)
+            patch( 'importlib_metadata.packages_distributions',
+                   return_value = {} ),
+            patch( 'inspect.currentframe', return_value = appcore_frame ),
+            patch.dict( module.__.sys.modules, { 'mypackage': mock_pkg } )
+        ):
+            exits = MagicMock( )
+            # This should find package but not in distributions, then go to dev
+            info = await module.Information.prepare(
+                exits, package = 'mypackage' )
+            # Should trigger development mode (line 53->65)
+            assert info.editable is True
+            assert info.name == 'found-not-distributed'
+            assert info.location.resolve( ) == project_root.resolve( )
+
+
+def test_527_discover_invoker_location_stdlib_continue( ):
+    ''' Skips stdlib frames that are not in site-packages. '''
+    from pyfakefs.fake_filesystem_unittest import Patcher
+
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        cwd = Path( '/fake/cwd' )
+        fs.create_dir( cwd )
+        # Create a frame from stdlib location (not in site-packages)
+        stdlib_frame = MagicMock( )
+        stdlib_frame.f_code.co_filename = '/usr/lib/python3.10/os.py'
+        stdlib_frame.f_globals = { '__name__': 'os' }
+        stdlib_frame.f_back = None
+        appcore_frame = MagicMock( )
+        appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
+        appcore_frame.f_back = stdlib_frame
+        with (
+            patch( 'inspect.currentframe', return_value = appcore_frame ),
+            patch( 'pathlib.Path.cwd', return_value = cwd ),
+            patch( 'site.getsitepackages', return_value = [ '/fake/site' ] ),
+            patch( 'site.getusersitepackages',
+                   return_value = '/fake/user/site' ),
+            patch( 'sysconfig.get_path',
+                   side_effect = lambda x: '/usr/lib/python3.10'
+                   if x in ('stdlib', 'platstdlib') else '/other' )
+        ): package, anchor = module._discover_invoker_location( )
+        # Should fall back to cwd since stdlib frame was skipped
+        assert module.__.is_absent( package )
+        assert anchor.samefile( cwd )
+
+
+def test_528_detect_package_boundary_absent_result( ):
+    ''' Correctly reflects unresolved package boundaries. '''
+    with patch.dict( module.__.sys.modules, {}, clear = True ):
+        fake_module = MagicMock( )
+        del fake_module.__path__  # Remove __path__ to make it not a package
+        with patch.dict(
+            module.__.sys.modules, { 'notapackage': fake_module }
+        ):
+            # This should return the fallback (first component)
+            result = module._detect_package_boundary( 'notapackage.submodule' )
+            assert result == 'notapackage'
+
+
+def test_529_discover_invoker_location_boundary_absent( ):
+    ''' Continues searching for package when not detected on stack frame. '''
+    from pyfakefs.fake_filesystem_unittest import Patcher
+
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        cwd = Path( '/fake/cwd' )
+        fs.create_dir( cwd )
+        absent_frame = MagicMock( )
+        absent_frame.f_code.co_filename = '/some/path/script.py'
+        absent_frame.f_globals = { '__name__': '__main__' }
+        absent_frame.f_back = None
+        appcore_frame = MagicMock( )
+        appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
+        appcore_frame.f_back = absent_frame
+        with (
+            patch( 'inspect.currentframe', return_value = appcore_frame ),
+            patch( 'pathlib.Path.cwd', return_value = cwd ),
+            patch( 'site.getsitepackages', return_value = [ '/fake/site' ] ),
+            patch( 'site.getusersitepackages',
+                   return_value = '/fake/user/site' )
+        ): package, anchor = module._discover_invoker_location( )
+        # Should fall back to cwd since boundary detection returned absent
+        assert module.__.is_absent( package )
+        assert anchor.samefile( cwd )
+
+
+def test_530_locate_pyproject_finds_in_current_dir( ):
+    ''' Finds pyproject.toml in current directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -463,7 +647,7 @@ version = "1.0.0"
 
 
 def test_530_locate_pyproject_finds_in_parent_dir( ):
-    ''' _locate_pyproject finds pyproject.toml in parent directory. '''
+    ''' Finds pyproject.toml in parent directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -483,7 +667,7 @@ version = "1.0.0"
 
 
 def test_540_locate_pyproject_handles_file_anchor( ):
-    ''' _locate_pyproject handles file path as anchor. '''
+    ''' Finds pyproject.toml from anchor as file path. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -504,7 +688,7 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_550_prepare_development_mode_without_anchor( ):
-    ''' Information.prepare works in development mode without anchor. '''
+    ''' Finds pyproject.toml in development mode without anchor. '''
     # Use real temporary directory for async file operations
     import tempfile
     with tempfile.TemporaryDirectory( ) as temp_dir:
@@ -648,7 +832,7 @@ version = "1.0.0"
 
 
 def test_590_locate_pyproject_with_git_ceiling_directories( ):
-    ''' _locate_pyproject respects GIT_CEILING_DIRECTORIES. '''
+    ''' Project location respects GIT_CEILING_DIRECTORIES. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -675,7 +859,7 @@ version = "1.0.0"
 
 
 def test_600_locate_pyproject_with_empty_ceiling_directories( ):
-    ''' _locate_pyproject handles empty GIT_CEILING_DIRECTORIES. '''
+    ''' Project location handles empty GIT_CEILING_DIRECTORIES. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -697,7 +881,7 @@ version = "1.0.0"
 
 
 def test_610_locate_pyproject_filesystem_root_traversal( ):
-    ''' _locate_pyproject raises FileLocateFailure at filesystem root. '''
+    ''' Project location raises FileLocateFailure at filesystem root. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
 
     with Patcher( ) as patcher:
@@ -712,7 +896,7 @@ def test_610_locate_pyproject_filesystem_root_traversal( ):
 
 @pytest.mark.asyncio
 async def test_615_prepare_with_auto_detection( ):
-    ''' Distribution.prepare with __.absent auto-detects calling package. '''
+    ''' Distribution preparation auto-detects calling package. '''
     __ = cache_import_module( f"{PACKAGE_NAME}.__" )
 
     async with __.ctxl.AsyncExitStack( ) as exits:

@@ -28,11 +28,14 @@ import collections.abc as   cabc
 import contextlib as        ctxl
 import dataclasses as       dcls
 import                      enum
+import                      inspect
 import                      io
 import itertools as         itert
 import                      os
 import                      shutil
+import                      site
 import                      sys
+import sysconfig as         syscfg
 import                      types
 
 from logging import getLogger as produce_scribe
