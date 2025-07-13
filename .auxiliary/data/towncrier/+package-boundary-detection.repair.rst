@@ -1,1 +1,0 @@
-Distribution: Improve package detection to properly handle namespace packages and installed packages using `__name__` attribute and sys.modules boundary detection instead of ineffective `__module__` checking.
