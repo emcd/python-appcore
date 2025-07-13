@@ -31,7 +31,61 @@ Package ``appcore``
 .. automodule:: appcore
 
 
+Module ``appcore.application``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.application
+
+
+Module ``appcore.distribution``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.distribution
+
+
+Module ``appcore.configuration``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.configuration
+
+
+Module ``appcore.state``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.state
+
+
+Module ``appcore.inscription``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.inscription
+
+
+Module ``appcore.preparation``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.preparation
+
+
 Module ``appcore.exceptions``
 -------------------------------------------------------------------------------
 
 .. automodule:: appcore.exceptions
+
+
+Module ``appcore.generics``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.generics
+
+
+Module ``appcore.io``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.io
+
+
+Module ``appcore.asyncf``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.asyncf
