@@ -131,18 +131,24 @@ def _discover_invoker_location( ) -> tuple[ __.Absential[ str ], __.Path ]:
         if location.is_relative_to( package_location ): # pragma: no cover
             continue
         # Allow site-packages even if they're under stdlib paths
-        if any(
+        in_site_packages = any(
             location.is_relative_to( sp_location )
             for sp_location in sp_locations
-        ): pass
-        # Skip standard library paths
-        elif any(
+        )
+        # Skip standard library paths (unless in site-packages)
+        if not in_site_packages and any(
             location.is_relative_to( stdlib_location )
             for stdlib_location in stdlib_locations
         ): continue
+        # Try __module__ first, fallback to __package__
         mname = frame.f_globals.get( '__module__' )
-        if not mname: continue
-        pname = mname.split( '.', maxsplit = 1 )[ 0 ]
+        package_name = frame.f_globals.get( '__package__' )
+        if mname:
+            pname = mname.split( '.', maxsplit = 1 )[ 0 ]
+        elif package_name:
+            pname = package_name.split( '.', maxsplit = 1 )[ 0 ]
+        else:
+            continue
         return pname, location.parent
     # Fallback location is current working directory.
     return __.absent, __.Path.cwd( ) # pragma: no cover

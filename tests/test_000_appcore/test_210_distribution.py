@@ -384,6 +384,66 @@ def test_517_discover_invoker_location_site_packages( ):
         assert anchor.samefile( site_packages / 'third_party' )
 
 
+def test_518_discover_invoker_location_package_fallback( ):
+    ''' Uses __package__ when __module__ is None. '''
+    from pyfakefs.fake_filesystem_unittest import Patcher
+
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        site_packages = Path( '/fake/venv/lib/python3.11/site-packages' )
+        fs.create_dir( site_packages )
+        installed_pkg = site_packages / 'installed_pkg' / 'module.py'
+        fs.create_file( installed_pkg, contents = '# installed package' )
+        external_frame = MagicMock( )
+        external_frame.f_code.co_filename = str( installed_pkg )
+        # Simulate installed package: __module__ is None, __package__ has value
+        external_frame.f_globals = { 
+            '__module__': None, 
+            '__package__': 'installed_pkg.submodule' 
+        }
+        external_frame.f_back = None
+        appcore_frame = MagicMock( )
+        appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
+        appcore_frame.f_back = external_frame
+        with (
+            patch( 'inspect.currentframe', return_value = appcore_frame ),
+            patch( 'site.getsitepackages',
+                   return_value = [ str( site_packages ) ] ),
+            patch( 'site.getusersitepackages',
+                   return_value = '/fake/user/site' )
+        ): package, anchor = module._discover_invoker_location( )
+        assert package == 'installed_pkg'
+        assert anchor.samefile( site_packages / 'installed_pkg' )
+
+
+def test_519_discover_invoker_location_no_module_or_package( ):
+    ''' Skips frames with no __module__ or __package__. '''
+    from pyfakefs.fake_filesystem_unittest import Patcher
+
+    with Patcher( ) as patcher:
+        fs = patcher.fs
+        cwd = Path( '/fake/cwd' )
+        fs.create_dir( cwd )
+        # Create a frame with neither __module__ nor __package__
+        no_info_frame = MagicMock( )
+        no_info_frame.f_code.co_filename = '/some/path/script.py'
+        no_info_frame.f_globals = { '__module__': None, '__package__': None }
+        no_info_frame.f_back = None
+        appcore_frame = MagicMock( )
+        appcore_frame.f_code.co_filename = '/fake/appcore/distribution.py'
+        appcore_frame.f_back = no_info_frame
+        with (
+            patch( 'inspect.currentframe', return_value = appcore_frame ),
+            patch( 'pathlib.Path.cwd', return_value = cwd ),
+            patch( 'site.getsitepackages', return_value = [ '/fake/site' ] ),
+            patch( 'site.getusersitepackages',
+                   return_value = '/fake/user/site' )
+        ): package, anchor = module._discover_invoker_location( )
+        # Should fall back to cwd since frame has no identifying info
+        assert module.__.is_absent( package )
+        assert anchor.samefile( cwd )
+
+
 def test_520_locate_pyproject_finds_in_current_dir( ):
     ''' _locate_pyproject finds pyproject.toml in current directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
