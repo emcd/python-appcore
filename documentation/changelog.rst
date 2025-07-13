@@ -23,6 +23,22 @@ Release Notes
 
 .. towncrier release notes start
 
+Appcore 1.1 (2025-07-13)
+========================
+
+Enhancements
+------------
+
+- Documentation: Cover all modules in the public API. (Forgot to do this during
+  initial release.)
+
+
+Repairs
+-------
+
+- Distribution: Improve package detection to properly handle namespace packages and installed packages using `__name__` attribute and sys.modules boundary detection instead of ineffective `__module__` checking.
+
+
 Appcore 1.0.2 (2025-07-10)
 ==========================
 

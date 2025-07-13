@@ -78,10 +78,23 @@ nitpick_ignore = [
       "v, remove specified key and return the corresponding value." ),
     # Type annotation weirdnesses.
     ( 'py:class', "Doc" ),
+    ( 'py:class', "absence.objects.AbsentSingleton" ),
+    ( 'py:class', "accretive.dictionaries.Dictionary" ),
+    ( 'py:class', "appcore.dictedits.Edit" ),
+    ( 'py:class', "appcore.generics.E" ),
+    ( 'py:class', "appcore.generics.T" ),
+    ( 'py:class', "appcore.generics.U" ),
     ( 'py:class', "builtins.NotImplementedType" ),
+    ( 'py:class', "frigid.classes.DataclassObject" ),
+    ( 'py:class', "frigid.classes.DataclassProtocol" ),
     ( 'py:class', "frigid.classes.Object" ),
+    ( 'py:class', "platformdirs.unix.Unix" ),
     ( 'py:class', "types.Annotated" ),
     ( 'py:class', "typing_extensions.Any" ),
+    ( 'py:class', "typing_extensions.Never" ),
+    ( 'py:class', "typing_extensions.Self" ),
+    ( 'py:obj', "appcore.generics.E" ),
+    ( 'py:obj', "appcore.generics.T" ),
 ]
 
 # -- Options for linkcheck builder -------------------------------------------
