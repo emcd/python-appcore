@@ -31,9 +31,9 @@ MODULE_QNAME = f"{PACKAGE_NAME}.application"
 module = cache_import_module( MODULE_QNAME )
 
 
-def test_100_information_default_creation( ):
-    ''' Information creates with package name as default. '''
-    app_info = module.Information( )
+def test_100_information_creation_requires_name( ):
+    ''' Information requires name to be explicitly provided. '''
+    app_info = module.Information( name = PACKAGE_NAME )
     assert app_info.name == PACKAGE_NAME
     assert app_info.publisher is None
     assert app_info.version is None

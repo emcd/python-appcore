@@ -31,13 +31,12 @@ from . import inscription as _inscription
 from . import state as _state
 
 
-_application_information = _application.Information( )
 _configuration_acquirer = _configuration.TomlAcquirer( )
 
 async def prepare( # noqa: PLR0913
     exits: __.ctxl.AsyncExitStack,
     acquirer: _configuration.AcquirerAbc = _configuration_acquirer,
-    application: _application.Information = _application_information,
+    application: __.Absential[ _application.Information ] = __.absent,
     configedits: _dictedits.Edits = ( ),
     configfile: __.Absential[ __.Path | __.io.TextIOBase ] = __.absent,
     directories: __.Absential[ __.pdirs.PlatformDirs ] = __.absent,
@@ -55,11 +54,14 @@ async def prepare( # noqa: PLR0913
         concurrently initialize other entities outside of the library, even
         though the library initialization, itself, is inherently sequential.
     '''
-    if __.is_absent( directories ):
-        directories = application.produce_platform_directories( )
     if __.is_absent( distribution ):
         distribution = (
             await _distribution.Information.prepare( exits = exits ) )
+    if __.is_absent( application ):
+        application = (
+            _application.Information( name = distribution.name ) )
+    if __.is_absent( directories ):
+        directories = application.produce_platform_directories( )
     configuration = (
         await acquirer(
             application_name = application.name,
