@@ -41,7 +41,7 @@ from .state import *
 
 
 __version__: str
-__version__ = '1.2a0'
+__version__ = '1.2'
 
 
 __.immut.finalize_module( __name__, recursive = True )
