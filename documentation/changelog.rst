@@ -23,6 +23,17 @@ Release Notes
 
 .. towncrier release notes start
 
+Appcore 1.2 (2025-07-15)
+========================
+
+Enhancements
+------------
+
+- Application: Require name if constructing application information object
+  directly. During preparation, construct absent application information object
+  using the distribution name as the application name.
+
+
 Appcore 1.1 (2025-07-13)
 ========================
 

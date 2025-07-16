@@ -57,14 +57,14 @@ async def test_100_prepare_minimal( ):
 name = "test"
     '''
     config_stream = io.StringIO( config_content )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         distribution = distribution,
         configfile = config_stream
     )
     assert isinstance( result, state_module.Globals )
     assert result.exits == exits
-    assert result.application.name == PACKAGE_NAME  # Default application
+    assert result.application.name == 'test-dist'  # From distribution
     assert 'app' in result.configuration
 
 
@@ -72,7 +72,7 @@ name = "test"
 async def test_110_prepare_with_custom_application( ):
     ''' prepare() accepts custom application information. '''
     exits = MagicMock( )
-    application = application_module.Information( 
+    application = application_module.Information(
         name = 'custom-app',
         publisher = 'Test Publisher'
     )
@@ -88,8 +88,8 @@ async def test_110_prepare_with_custom_application( ):
 name = "test"
     '''
     config_stream = io.StringIO( config_content )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         application = application,
         distribution = distribution,
         configfile = config_stream
@@ -118,8 +118,8 @@ async def test_120_prepare_with_custom_acquirer( ):
 value = "config"
     '''
     config_stream = io.StringIO( config_content )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         acquirer = acquirer,
         distribution = distribution,
         configfile = config_stream
@@ -151,8 +151,8 @@ name = "test"
 version = "1.0.0"
     '''
     config_stream = io.StringIO( config_content )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         configedits = edits,
         distribution = distribution,
         configfile = config_stream
@@ -178,8 +178,8 @@ version = "1.0.0"
         location = Path( '/test' ),
         editable = True
     )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         configfile = config_file,
         distribution = distribution
     )
@@ -207,8 +207,8 @@ async def test_150_prepare_with_custom_directories( ):
 name = "test"
     '''
     config_stream = io.StringIO( config_content )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         directories = directories,
         distribution = distribution,
         configfile = config_stream
@@ -232,8 +232,8 @@ async def test_160_prepare_with_custom_distribution( ):
 name = "test"
     '''
     config_stream = io.StringIO( config_content )
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         distribution = distribution,
         configfile = config_stream
     )
@@ -258,8 +258,8 @@ name = "test"
     '''
     config_stream = io.StringIO( config_content )
     # Test that prepare() completes successfully with environment=True
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         environment = True,
         distribution = distribution,
         configfile = config_stream
@@ -290,13 +290,13 @@ name = "test"
         patch.dict( 'os.environ', { }, clear = True )
         as mock_environ
     ):
-        await module.prepare( 
-            exits, 
+        await module.prepare(
+            exits,
             environment = environment,
             distribution = distribution,
             configfile = config_stream
         )
-        
+
         # Environment variables should be updated
         assert mock_environ[ 'TEST_VAR' ] == 'test_value'
         assert mock_environ[ 'OTHER_VAR' ] == 'other_value'
@@ -324,8 +324,8 @@ name = "test"
     '''
     config_stream = io.StringIO( config_content )
     # Test that prepare() completes successfully with custom inscription
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         inscription = inscription,
         distribution = distribution,
         configfile = config_stream
@@ -353,8 +353,8 @@ name = "test"
     '''
     config_stream = io.StringIO( config_content )
     # Test without providing directories - they should be auto-created
-    result = await module.prepare( 
-        exits, 
+    result = await module.prepare(
+        exits,
         application = application,
         distribution = distribution,
         configfile = config_stream
@@ -385,7 +385,7 @@ name = "test-app"
         )
         # Verify that distribution was auto-discovered and assigned
         assert result.distribution is not None
-        assert isinstance( result.distribution, 
+        assert isinstance( result.distribution,
                           distribution_module.Information )
         # Should discover this package (emcd-appcore)
         assert result.distribution.name == 'emcd-appcore'
@@ -408,7 +408,7 @@ name = "test"
     '''
     config_stream = io.StringIO( config_content )
     # Test that prepare() completes successfully
-    result = await module.prepare( 
+    result = await module.prepare(
         exits,
         distribution = distribution,
         configfile = config_stream
@@ -493,11 +493,8 @@ cache = "{user_home}/test-cache/{application_name}"
 
 def test_400_module_level_defaults( ):
     ''' Module has proper default instances. '''
-    assert hasattr( module, '_application_information' )
     assert hasattr( module, '_configuration_acquirer' )
-    assert isinstance( module._application_information, 
-                      application_module.Information )
-    assert isinstance( module._configuration_acquirer, 
+    assert isinstance( module._configuration_acquirer,
                       configuration_module.TomlAcquirer )
 
 
@@ -529,5 +526,5 @@ def test_410_inscribe_preparation_report( ):
         assert True
     except Exception as e:
         # If there's an error, fail the test
-        raise AssertionError( 
+        raise AssertionError(
             f"_inscribe_preparation_report raised: {e}" ) from e

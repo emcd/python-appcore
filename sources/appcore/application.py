@@ -30,7 +30,7 @@ class Information( __.immut.DataclassObject ):
     name: __.typx.Annotated[
         str,
         __.ddoc.Doc( "For derivation of platform directories." ),
-    ] = __.package_name
+    ]
     publisher: __.typx.Annotated[
         __.typx.Optional[ str ],
         __.ddoc.Doc( "For derivation of platform directories." ),
