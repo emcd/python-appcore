@@ -1,12 +1,15 @@
 # Inscription Path Support Enhancement
 
-**Date**: 2025-07-16  
-**Context**: Post-1.2 release - immediate improvement  
+**Date**: 2025-07-16
+**Context**: Post-1.2 release - immediate improvement
 **Status**: Design proposal
 
 ## Problem Statement
 
-Current inscription control objects expect `target` to be a stream (`TextIO`), but typical CLI usage involves specifying log file paths. This creates a burden where CLI applications must manually convert paths to streams before configuring inscription services.
+Current inscription control objects expect `target` to be a stream (`TextIO`),
+but typical CLI usage involves specifying log file paths. This creates a burden
+where CLI applications must manually convert paths to streams before
+configuring inscription services.
 
 **Pain Points:**
 1. CLI apps receive paths from command line args, configs, or environment variables
@@ -32,7 +35,7 @@ with log_file_path.open('w') as log_stream:
 
 **Option C** was chosen over alternatives:
 - **Option A** (bundled TargetControl): More complex nesting
-- **Option B** (separate attributes): Clutters Control class interface  
+- **Option B** (separate attributes): Clutters Control class interface
 - **Option C** (TargetDescriptor): ✅ Clean, backward compatible, compact
 
 **Key advantages of Option C:**
@@ -127,10 +130,10 @@ def prepare_scribes_logging(
     level_name = _discover_inscription_level_name( auxdata, control )
     level = getattr( _logging, level_name.upper( ) )
     formatter = _logging.Formatter( "%(name)s: %(message)s" )
-    
+
     # Resolve target to stream with lifecycle management
     target_stream = _resolve_target(control.target, auxdata.exits)
-    
+
     match control.mode:
         case Modes.Plain:
             _prepare_logging_plain( level, target_stream, formatter )
@@ -144,7 +147,7 @@ def prepare_scribes_logging(
 ```python
 class InscriptionTargetError( Omnierror, OSError ):
     """Failed to configure inscription target."""
-    
+
     def __init__(self, target: TargetDescriptor, cause: Exception):
         super().__init__(
             f"Failed to configure inscription target '{target.name}': {cause}"
@@ -247,8 +250,8 @@ class CliArgs:
 # Simple inscription setup
 def setup_logging(args: CliArgs) -> appcore.inscription.Control:
     target_mode = (
-        appcore.inscription.TargetModes.Append 
-        if args.log_append 
+        appcore.inscription.TargetModes.Append
+        if args.log_append
         else appcore.inscription.TargetModes.Truncate
     )
     return appcore.inscription.Control(

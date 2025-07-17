@@ -29,13 +29,19 @@ from . import exceptions
 
 from .application import Information as ApplicationInformation
 from .configuration import (
-    AcquirerAbc as ConfigurationAcquirerAbc,
-    EnablementTristate,
-    TomlAcquirer as TomlConfigurationAcquirer,
+    AcquirerAbc as      ConfigurationAcquirerAbc,
+                        EnablementTristate,
+    TomlAcquirer as     TomlConfigurationAcquirer,
 )
 from .distribution import Information as DistributionInformation
 from .environment import update as update_environment
-from .inscription import prepare as prepare_scribes
+from .inscription import (
+    Control as          InscriptionControl,
+    Presentations as    ScribePresentations,
+    TargetDescriptor as InscriptionTargetDescriptor,
+    TargetModes as      InscriptionTargetModes,
+    prepare as          prepare_scribes,
+)
 from .preparation import *
 from .state import *
 

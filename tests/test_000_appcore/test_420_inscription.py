@@ -77,7 +77,7 @@ def test_130_control_immutability( ):
 
 def test_140_control_equality( ):
     ''' Control instances with same data are equal. '''
-    control1 = module.Control( 
+    control1 = module.Control(
         mode = module.Modes.Rich,
         level = 'debug'
     )
@@ -107,7 +107,7 @@ def test_210_prepare_with_plain_mode( ):
     ''' prepare() configures logging with plain mode. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( 
+    control = module.Control(
         mode = module.Modes.Plain,
         level = 'debug',
         target = target_stream
@@ -120,14 +120,14 @@ def test_220_prepare_with_rich_mode_without_rich( ):
     ''' prepare() gracefully degrades when Rich unavailable. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( 
+    control = module.Control(
         mode = module.Modes.Rich,
         target = target_stream
     )
     # Mock Rich imports to fail
-    with patch.dict( 'sys.modules', { 
-        'rich.console': None, 
-        'rich.logging': None 
+    with patch.dict( 'sys.modules', {
+        'rich.console': None,
+        'rich.logging': None
     } ):
         # Should not raise an error (graceful fallback)
         module.prepare( globals_dto, control )
@@ -137,7 +137,7 @@ def test_230_prepare_with_stream_target( ):
     ''' prepare() accepts custom stream target. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( 
+    control = module.Control(
         mode = module.Modes.Plain,
         target = target_stream
     )
@@ -220,45 +220,46 @@ def test_350_discover_inscription_level_name_robust_normalization( ):
 
 
 def test_400_prepare_scribes_logging_plain( ):
-    ''' prepare_scribes_logging configures plain logging. '''
+    ''' Plain logging can be configured. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( 
+    control = module.Control(
         mode = module.Modes.Plain,
         level = 'debug',
-        target = target_stream
-    )
+        target = target_stream )
     # Should not raise an error
-    module.prepare_scribes_logging( globals_dto, control )
+    module._prepare_scribes_logging(
+        globals_dto, control, target = target_stream )
 
 
 def test_410_prepare_scribes_logging_rich_fallback( ):
-    ''' prepare_scribes_logging falls back when Rich unavailable. '''
+    ''' Rich logging falls back to plain logging, when unavailable. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( 
+    control = module.Control(
         mode = module.Modes.Rich,
-        target = target_stream
-    )
+        target = target_stream )
     # Mock Rich imports to fail
-    with patch.dict( 'sys.modules', { 
-        'rich.console': None, 
-        'rich.logging': None 
+    with patch.dict( 'sys.modules', {
+        'rich.console': None,
+        'rich.logging': None
     } ):
         # Should not raise an error (graceful fallback)
-        module.prepare_scribes_logging( globals_dto, control )
+        module._prepare_scribes_logging(
+            globals_dto, control, target = target_stream )
 
 
 def test_420_prepare_scribes_logging_null( ):
-    ''' prepare_scribes_logging handles null mode. '''
+    ''' Null logging can be configured. '''
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     control = module.Control( mode = module.Modes.Null )
     # Should not raise an error or configure logging
-    module.prepare_scribes_logging( globals_dto, control )
+    module._prepare_scribes_logging(
+        globals_dto, control, target = io.StringIO( ) )
 
 
 def test_500_prepare_logging_plain( ):
-    ''' _prepare_logging_plain configures basic logging. '''
+    ''' Plain logging configures root logger. '''
     target_stream = io.StringIO( )
     formatter = logging.Formatter( "%(name)s: %(message)s" )
     # Should not raise an error
@@ -269,7 +270,7 @@ def test_510_prepare_logging_rich_fallback( ):
     ''' Rich logging gracefully falls back when import fails. '''
     target_stream = io.StringIO( )
     formatter = logging.Formatter( "%(name)s: %(message)s" )
-    # Mock the import to raise ImportError 
+    # Mock the import to raise ImportError
     with patch( 'builtins.__import__', side_effect = ImportError( ) ):
         # Should not raise an error (graceful fallback)
         module._prepare_logging_rich( logging.INFO, target_stream, formatter )
