@@ -35,42 +35,49 @@ from . import __
 from . import state as _state
 
 
-class Modes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
-    ''' Format control modes. '''
+class Presentations( __.enum.Enum ): # TODO: Python 3.11: StrEnum
+    ''' Scribe presentation modes. '''
 
     Null =  'null'      # deferred to external management
     Plain = 'plain'     # standard
     Rich =  'rich'      # enhanced with Rich
 
+Modes = Presentations  # deprecated
+
+
+class TargetModes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
+    ''' Target file mode control. '''
+
+    Append =    'append'
+    Truncate =  'truncate'
+
+
+class TargetDescriptor( __.immut.DataclassObject ):
+    ''' Descriptor for file-based inscription targets. '''
+
+    location: bytes | str | __.os.PathLike[ bytes ] | __.os.PathLike[ str ]
+    mode: TargetModes = TargetModes.Truncate
+    codec: str = 'utf-8'
+
+
+Target: __.typx.TypeAlias = __.typx.Union[
+    __.io.TextIOWrapper, __.typx.TextIO, TargetDescriptor ]
+
 
 class Control( __.immut.DataclassObject ):
     ''' Application inscription configuration. '''
 
-    mode: Modes = Modes.Plain
+    mode: Presentations = Presentations.Plain
     level: __.typx.Literal[
         'debug', 'info', 'warn', 'error', 'critical'  # noqa: F821
     ] = 'info'
-    target: __.typx.TextIO = __.sys.stderr
+    target: Target = __.sys.stderr
 
 
 def prepare( auxdata: _state.Globals, /, control: Control ) -> None:
     ''' Prepares various scribes in a sensible manner. '''
-    prepare_scribes_logging( auxdata, control )
-
-
-def prepare_scribes_logging(
-    auxdata: _state.Globals, control: Control
-) -> None:
-    ''' Prepares Python standard logging system. '''
-    level_name = _discover_inscription_level_name( auxdata, control )
-    level = getattr( _logging, level_name.upper( ) )
-    formatter = _logging.Formatter( "%(name)s: %(message)s" )
-    match control.mode:
-        case Modes.Plain:
-            _prepare_logging_plain( level, control.target, formatter )
-        case Modes.Rich:
-            _prepare_logging_rich( level, control.target, formatter )
-        case _: pass
+    target = _process_target( auxdata, control )
+    _prepare_scribes_logging( auxdata, control, target )
 
 
 def _discover_inscription_level_name(
@@ -104,16 +111,48 @@ def _prepare_logging_rich(
         from rich.console import Console
         from rich.logging import RichHandler
     except ImportError:
-        # Gracefully degrade to plain mode
+        # Gracefully degrade to plain mode.
         _prepare_logging_plain( level, target, formatter )
         return
     console = Console( file = target )
     handler = RichHandler(
         console = console,
         rich_tracebacks = True,
-        show_time = True,
-        show_path = False
-    )
+        show_path = False, show_time = True )
     handler.setFormatter( formatter )
     _logging.basicConfig(
         force = True, level = level, handlers = ( handler, ) )
+
+
+def _prepare_scribes_logging(
+    auxdata: _state.Globals, control: Control, /, target: __.typx.TextIO
+) -> None:
+    level_name = _discover_inscription_level_name( auxdata, control )
+    level = getattr( _logging, level_name.upper( ) )
+    formatter = _logging.Formatter( "%(name)s: %(message)s" )
+    match control.mode:
+        case Presentations.Plain:
+            _prepare_logging_plain( level, target, formatter )
+        case Presentations.Rich:
+            _prepare_logging_rich( level, target, formatter )
+        case _: pass
+
+
+def _process_target(
+    auxdata: _state.Globals, control: Control
+) -> __.typx.TextIO:
+    target = control.target
+    if isinstance( target, __.typx.TextIO ): # pragma: no cover
+        return target
+    if isinstance( target, ( __.io.StringIO, __.io.TextIOWrapper ) ):
+        return target
+    location = target.location
+    if isinstance( location, __.os.PathLike ):
+        location = location.__fspath__( )
+    if isinstance( location, bytes ):
+        location = location.decode( )
+    location = __.Path( location )
+    location.parent.mkdir( exist_ok = True, parents = True )
+    mode = 'w' if target.mode is TargetModes.Truncate else 'a'
+    return auxdata.exits.enter_context( open(
+        location, mode = mode, encoding = target.codec ) )

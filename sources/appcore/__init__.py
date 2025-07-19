@@ -29,19 +29,25 @@ from . import exceptions
 
 from .application import Information as ApplicationInformation
 from .configuration import (
-    AcquirerAbc as ConfigurationAcquirerAbc,
-    EnablementTristate,
-    TomlAcquirer as TomlConfigurationAcquirer,
+    AcquirerAbc as      ConfigurationAcquirerAbc,
+                        EnablementTristate,
+    TomlAcquirer as     TomlConfigurationAcquirer,
 )
 from .distribution import Information as DistributionInformation
 from .environment import update as update_environment
-from .inscription import prepare as prepare_scribes
+from .inscription import (
+    Control as          InscriptionControl,
+    Presentations as    ScribePresentations,
+    TargetDescriptor as InscriptionTargetDescriptor,
+    TargetModes as      InscriptionTargetModes,
+    prepare as          prepare_scribes,
+)
 from .preparation import *
 from .state import *
 
 
 __version__: str
-__version__ = '1.2'
+__version__ = '1.3'
 
 
 __.immut.finalize_module( __name__, recursive = True )
