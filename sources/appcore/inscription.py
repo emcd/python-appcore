@@ -142,7 +142,8 @@ def _process_target(
     auxdata: _state.Globals, control: Control
 ) -> __.typx.TextIO:
     target = control.target
-    if isinstance( target, __.typx.TextIO ): return target
+    if isinstance( target, __.typx.TextIO ): # pragma: no cover
+        return target
     if isinstance( target, ( __.io.StringIO, __.io.TextIOWrapper ) ):
         return target
     location = target.location
@@ -150,8 +151,7 @@ def _process_target(
         location = location.__fspath__( )
     if isinstance( location, bytes ):
         location = location.decode( )
-    if isinstance( location, str ):
-        location = __.Path( location )
+    location = __.Path( location )
     location.parent.mkdir( exist_ok = True, parents = True )
     mode = 'w' if target.mode is TargetModes.Truncate else 'a'
     return auxdata.exits.enter_context( open(

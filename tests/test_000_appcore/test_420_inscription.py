@@ -290,3 +290,139 @@ def test_520_prepare_logging_rich_available( ):
     else:
         # Rich not available in test environment, skip this test
         pytest.skip( "Rich not available in test environment" )
+
+
+def test_600_target_descriptor_created_with_defaults( ):
+    ''' TargetDescriptor uses truncate mode and UTF-8 encoding by default. '''
+    descriptor = module.TargetDescriptor( location = "test.log" )
+    assert descriptor.location == "test.log"
+    assert descriptor.mode == module.TargetModes.Truncate
+    assert descriptor.codec == 'utf-8'
+
+
+def test_610_target_descriptor_accepts_custom_settings( ):
+    ''' TargetDescriptor accepts custom mode and encoding. '''
+    descriptor = module.TargetDescriptor(
+        location = "test.log",
+        mode = module.TargetModes.Append,
+        codec = 'latin-1'
+    )
+    assert descriptor.location == "test.log"
+    assert descriptor.mode == module.TargetModes.Append
+    assert descriptor.codec == 'latin-1'
+
+
+def test_620_target_modes_provide_append_and_truncate( ):
+    ''' TargetModes enum provides append and truncate options. '''
+    assert module.TargetModes.Append.value == 'append'
+    assert module.TargetModes.Truncate.value == 'truncate'
+
+
+def test_630_control_accepts_target_descriptor( ):
+    ''' Control accepts TargetDescriptor for file-based logging. '''
+    descriptor = module.TargetDescriptor( location = "test.log" )
+    control = module.Control( target = descriptor )
+    assert control.target == descriptor
+
+
+def test_640_textio_streams_used_directly( ):
+    ''' TextIO streams are used directly without conversion. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    control = module.Control( target = target_stream )
+    result = module._process_target( globals_dto, control )
+    assert result is target_stream
+
+
+def test_650_stringio_used_directly( ):
+    ''' StringIO instances are used directly without conversion. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    control = module.Control( target = target_stream )
+    result = module._process_target( globals_dto, control )
+    assert result is target_stream
+
+
+def test_660_string_location_creates_log_file( fs ):
+    ''' String file paths create log files when processed. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "test.log"
+    descriptor = module.TargetDescriptor( location = str( log_path ) )
+    control = module.Control( target = descriptor )
+    module.prepare( globals_dto, control )
+    assert fs.exists( str( log_path ) )
+
+
+def test_670_pathlike_location_creates_log_file( fs ):
+    ''' PathLike objects create log files when processed. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "test.log"
+    descriptor = module.TargetDescriptor( location = log_path )
+    control = module.Control( target = descriptor )
+    module.prepare( globals_dto, control )
+    assert fs.exists( str( log_path ) )
+
+
+def test_680_bytes_location_creates_log_file( fs ):
+    ''' Bytes file paths create log files when processed. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "test.log"
+    descriptor = module.TargetDescriptor(
+        location = str( log_path ).encode( ) )
+    control = module.Control( target = descriptor )
+    module.prepare( globals_dto, control )
+    assert fs.exists( str( log_path ) )
+
+
+def test_690_append_mode_preserves_existing_content( fs ):
+    ''' Append mode preserves existing file content. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "test.log"
+    fs.create_file( str( log_path ), contents = "existing content\n" )
+    descriptor = module.TargetDescriptor(
+        location = str( log_path ),
+        mode = module.TargetModes.Append
+    )
+    control = module.Control( target = descriptor )
+    module.prepare( globals_dto, control )
+    content = fs.get_object( str( log_path ) ).contents
+    assert "existing content" in content
+
+
+def test_700_truncate_mode_clears_existing_content( fs ):
+    ''' Truncate mode clears existing file content. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "test.log"
+    fs.create_file( str( log_path ), contents = "existing content\n" )
+    descriptor = module.TargetDescriptor(
+        location = str( log_path ),
+        mode = module.TargetModes.Truncate
+    )
+    control = module.Control( target = descriptor )
+    module.prepare( globals_dto, control )
+    content = fs.get_object( str( log_path ) ).contents
+    assert "existing content" not in content
+
+
+def test_710_parent_directories_created_automatically( fs ):
+    ''' Parent directories are created automatically for log files. '''
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "logs" / "subdir" / "test.log"
+    descriptor = module.TargetDescriptor( location = str( log_path ) )
+    control = module.Control( target = descriptor )
+    module.prepare( globals_dto, control )
+    assert fs.exists( str( log_path ) )
+    assert fs.exists( str( log_path.parent ) )
+    assert fs.exists( str( log_path.parent.parent ) )
+
+
+def test_720_pathlike_object_converted_to_path( fs ):
+    ''' PathLike objects are converted to Path instances for processing. '''
+    from pathlib import Path
+    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    log_path = temp_dir / "test.log"
+    path_obj = Path( str( log_path ) )
+    descriptor = module.TargetDescriptor( location = path_obj )
+    control = module.Control( target = descriptor )
+    module._process_target( globals_dto, control )
+    assert fs.exists( str( log_path ) )
