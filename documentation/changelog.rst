@@ -23,6 +23,18 @@ Release Notes
 
 .. towncrier release notes start
 
+Appcore 1.3 (2025-07-19)
+========================
+
+Enhancements
+------------
+
+- Support logfile paths, in addition to log streams, for logger preparation. A
+  ``TargetDescriptor`` includes a location, an optional open mode (append or
+  truncate; ``truncate`` by default), and an optional codec (``utf-8``, by
+  default).
+
+
 Appcore 1.2 (2025-07-15)
 ========================
 
