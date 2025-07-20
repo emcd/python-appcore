@@ -23,6 +23,24 @@ Release Notes
 
 .. towncrier release notes start
 
+Appcore 1.4 (2025-07-20)
+========================
+
+Enhancements
+------------
+
+- New helper functions with proper type guards on generics used with
+  ``gather_async`` when ``return_exceptions = True``: `is_error` and `is_value`.
+  Also, ``Result`` is now a protocol.
+
+
+Repairs
+-------
+
+- Proper function signature overloads for ``gather_async`` to use with type
+  narrowing when ``return_exceptions`` is ``True``.
+
+
 Appcore 1.3 (2025-07-19)
 ========================
 
