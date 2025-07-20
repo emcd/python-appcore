@@ -27,7 +27,7 @@ from . import generics as _generics
 
 
 @__.typx.overload
-async def gather_async(
+async def gather_async(  # pragma: no cover
     *operands: __.typx.Any,
     return_exceptions: __.typx.Literal[ True ],
     error_message: str = 'Failure of async operations.',
@@ -36,7 +36,7 @@ async def gather_async(
 
 
 @__.typx.overload
-async def gather_async(  # noqa: F811
+async def gather_async(  # noqa: F811  # pragma: no cover
     *operands: __.typx.Any,
     return_exceptions: __.typx.Literal[ False ] = False,
     error_message: str = 'Failure of async operations.',
@@ -129,7 +129,7 @@ async def _gather_async_strict(
     return await gather( *awaitables )
 
 
-if __.typx.TYPE_CHECKING:
+if __.typx.TYPE_CHECKING: # pragma: no cover
     async def _type_check_canary( ) -> None:
         ''' Canary function to verify overload type checking works correctly.
 
