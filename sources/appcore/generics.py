@@ -30,9 +30,8 @@ U = __.typx.TypeVar( 'U' ) # generic
 E = __.typx.TypeVar( 'E', bound = Exception ) # error
 
 
-class Result( __.immut.Object, __.typx.Generic[ T, E ] ):
+class Result( __.immut.Protocol, __.typx.Generic[ T, E ] ):
     ''' Either a value or an error. '''
-    # TODO: Protocol class.
 
     def is_error( self ) -> bool:
         ''' Returns ``True`` if error result. Else ``False``. '''
@@ -96,3 +95,13 @@ class Error( Result[ T, E ] ):
 
 
 GenericResult: __.typx.TypeAlias = Result[ __.typx.Any, Exception ]
+
+
+def is_error( result: Result[ T, E ] ) -> __.typx.TypeIs[ Error[ T, E ] ]:
+    ''' Type guard: Returns ``True`` if result is an error. '''
+    return isinstance( result, Error )
+
+
+def is_value( result: Result[ T, E ] ) -> __.typx.TypeIs[ Value[ T, E ] ]:
+    ''' Type guard: Returns ``True`` if result is a value. '''
+    return isinstance( result, Value )

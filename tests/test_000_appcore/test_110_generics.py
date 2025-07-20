@@ -165,3 +165,43 @@ def test_250_generic_result_type_alias( ):
     ''' GenericResult type alias exists. '''
     assert hasattr( module, 'GenericResult' )
     # Type alias should be available for type hints
+
+
+def test_260_is_error_function_with_error( ):
+    ''' Type guard function correctly identifies Error instances. '''
+    error = ValueError( 'test error' )
+    result = module.Error( error )
+    assert module.is_error( result )
+
+
+def test_270_is_error_function_with_value( ):
+    ''' Type guard function correctly identifies values as not errors. '''
+    result = module.Value( 42 )
+    assert not module.is_error( result )
+
+
+def test_280_is_value_function_with_value( ):
+    ''' Type guard function correctly identifies Value instances. '''
+    result = module.Value( 'test' )
+    assert module.is_value( result )
+
+
+def test_290_is_value_function_with_error( ):
+    ''' Type guard function correctly identifies errors as not values. '''
+    error = RuntimeError( 'test error' )
+    result = module.Error( error )
+    assert not module.is_value( result )
+
+
+def test_300_type_guards_with_different_types( ):
+    ''' Type guard functions work with various generic types. '''
+    string_value = module.Value( 'hello' )
+    int_error = module.Error( ValueError( 'int error' ) )
+    list_value = module.Value( [ 1, 2, 3 ] )
+
+    assert module.is_value( string_value )
+    assert not module.is_error( string_value )
+    assert module.is_error( int_error )
+    assert not module.is_value( int_error )
+    assert module.is_value( list_value )
+    assert not module.is_error( list_value )

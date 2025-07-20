@@ -28,8 +28,8 @@ Target release version: `$ARGUMENTS` (e.g., `1.6`, `2.0`)
 - Current version: !`hatch version`
 - Recent commits: !`git log --oneline -10`
 - Available towncrier fragments: !`ls .auxiliary/data/towncrier/*.rst 2>/dev/null || echo "No fragments found"`
-- Target release branch status: !`git branch -r --list "*release-$ARGUMENTS*" && echo "Release branch exists" || echo "Release branch not found - will create new"`
-- Local release branch status: !`git branch --list "*release-$ARGUMENTS*" && echo "Local release branch exists" || echo "No local release branch"`
+- Target release branch status: !`git branch -r --list "origin/release-$ARGUMENTS" | grep -q . && echo "Release branch exists" || echo "Release branch not found - will create new"`
+- Local release branch status: !`git branch --list "release-$ARGUMENTS" | grep -q . && echo "Local release branch exists" || echo "No local release branch"`
 
 ## Prerequisites
 
