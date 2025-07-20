@@ -26,7 +26,25 @@ from . import exceptions as _exceptions
 from . import generics as _generics
 
 
+@__.typx.overload
 async def gather_async(
+    *operands: __.typx.Any,
+    return_exceptions: __.typx.Literal[ True ],
+    error_message: str = 'Failure of async operations.',
+    ignore_nonawaitables: bool = False,
+) -> tuple[ _generics.GenericResult, ... ]: ...
+
+
+@__.typx.overload
+async def gather_async(  # noqa: F811
+    *operands: __.typx.Any,
+    return_exceptions: __.typx.Literal[ False ] = False,
+    error_message: str = 'Failure of async operations.',
+    ignore_nonawaitables: bool = False,
+) -> tuple[ __.typx.Any, ... ]: ...
+
+
+async def gather_async(  # noqa: F811
     *operands: __.typx.Any,
     return_exceptions: __.typx.Annotated[
         bool,
@@ -40,7 +58,6 @@ async def gather_async(
     ] = False,
 ) -> tuple[ __.typx.Any, ... ]:
     ''' Gathers results from invocables concurrently and asynchronously. '''
-    # TODO: Overload signature for 'return_exceptions'.
     from exceptiongroup import ExceptionGroup # TODO: Python 3.11: builtin
     if ignore_nonawaitables:
         results = await _gather_async_permissive( operands )
@@ -110,3 +127,26 @@ async def _gather_async_strict(
         awaitables.append( intercept_error_async( __.typx.cast( # noqa: PERF401
             __.cabc.Awaitable[ __.typx.Any ], operand ) ) )
     return await gather( *awaitables )
+
+
+if __.typx.TYPE_CHECKING:
+    async def _type_check_canary( ) -> None:
+        ''' Canary function to verify overload type checking works correctly.
+
+            This function is never executed but helps ensure that Pyright
+            correctly understands our gather_async overloads.
+        '''
+        async def dummy_operation( ) -> str: return "test"
+
+        operations = ( dummy_operation( ), dummy_operation( ) )
+        results = await gather_async( *operations, return_exceptions = True )
+        for result in results:
+            match result:
+                case _generics.Value( value ): _ = value
+                case _generics.Error( error ): _ = error
+                case _: pass
+        for result in results:
+            if _generics.is_error( result ): _ = result.error
+            else: _ = result.extract( )
+        values = await gather_async( *operations, return_exceptions = False )
+        for value in values: _ = str( value )

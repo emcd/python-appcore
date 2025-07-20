@@ -96,3 +96,13 @@ class Error( Result[ T, E ] ):
 
 
 GenericResult: __.typx.TypeAlias = Result[ __.typx.Any, Exception ]
+
+
+def is_error( result: Result[ T, E ] ) -> __.typx.TypeIs[ Error[ T, E ] ]:
+    ''' Type guard: Returns ``True`` if result is an error. '''
+    return isinstance( result, Error )
+
+
+def is_value( result: Result[ T, E ] ) -> __.typx.TypeIs[ Value[ T, E ] ]:
+    ''' Type guard: Returns ``True`` if result is a value. '''
+    return isinstance( result, Value )
