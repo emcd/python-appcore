@@ -91,12 +91,12 @@ class MyCli(CliFoundation):
 
 ## Migration Strategy
 
-### Phase 1: Foundation (1.3.0)
+### Phase 1: Foundation
 - Add `cli` optional dependency group
 - Implement basic `CliFoundation` class
 - Create CLI-specific preparation helpers
 
-### Phase 2: Enhancement (1.4.0)
+### Phase 2: Enhancement
 - Add common command patterns
 - Implement configuration integration
 - Add CLI-specific utilities
@@ -118,9 +118,3 @@ class MyCli(CliFoundation):
 - CLI becomes very complex (>3-4 modules)
 - Need to support multiple application frameworks beyond appcore
 - CLI dependencies become heavy (like GUI frameworks)
-
-## References
-
-- Post-1.2 release discussion
-- `icecream-truck` package architecture (recipes as optional dependencies)
-- Existing CLI applications using appcore patterns
