@@ -24,12 +24,13 @@
 import io
 import logging
 import sys
-import pytest
+
 from unittest.mock import patch
 
-from . import PACKAGE_NAME, cache_import_module
-from .fixtures import create_globals_with_temp_dirs
+import pytest
 
+from .__ import PACKAGE_NAME, cache_import_module
+from .fixtures import create_globals_with_temp_dirs
 
 MODULE_QNAME = f"{PACKAGE_NAME}.inscription"
 module = cache_import_module( MODULE_QNAME )
@@ -97,7 +98,7 @@ def test_150_control_inequality( ):
 
 def test_200_prepare_with_null_mode( ):
     ''' prepare() handles null mode (no configuration). '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     control = module.Control( mode = module.Modes.Null )
     # Should not raise an error or configure logging
     module.prepare( globals_dto, control )
@@ -105,7 +106,7 @@ def test_200_prepare_with_null_mode( ):
 
 def test_210_prepare_with_plain_mode( ):
     ''' prepare() configures logging with plain mode. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Plain,
@@ -118,7 +119,7 @@ def test_210_prepare_with_plain_mode( ):
 
 def test_220_prepare_with_rich_mode_without_rich( ):
     ''' prepare() gracefully degrades when Rich unavailable. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Rich,
@@ -135,7 +136,7 @@ def test_220_prepare_with_rich_mode_without_rich( ):
 
 def test_230_prepare_with_stream_target( ):
     ''' prepare() accepts custom stream target. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Plain,
@@ -147,7 +148,7 @@ def test_230_prepare_with_stream_target( ):
 
 def test_300_discover_inscription_level_name_default( ):
     ''' Level discovery defaults to control level when no override. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     control = module.Control( level = 'debug' )
     level_name = module._discover_inscription_level_name(
         globals_dto, control )
@@ -156,8 +157,7 @@ def test_300_discover_inscription_level_name_default( ):
 
 def test_310_discover_inscription_level_name_with_inscription_env( ):
     ''' INSCRIPTION environment variable overrides control level setting. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs(
-        app_name = 'test-app' )
+    globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, {
         'TEST_APP_INSCRIPTION_LEVEL': 'error'
@@ -169,8 +169,7 @@ def test_310_discover_inscription_level_name_with_inscription_env( ):
 
 def test_320_discover_inscription_level_name_with_log_env( ):
     ''' LOG environment variable provides alternative level override. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs(
-        app_name = 'test-app' )
+    globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, { 'TEST_APP_LOG_LEVEL': 'warning' } ):
         level_name = module._discover_inscription_level_name(
@@ -180,8 +179,7 @@ def test_320_discover_inscription_level_name_with_log_env( ):
 
 def test_330_discover_inscription_level_name_precedence( ):
     ''' _discover_inscription_level_name gives INSCRIPTION precedence. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs(
-        app_name = 'test-app' )
+    globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, {
         'TEST_APP_INSCRIPTION_LEVEL': 'debug',
@@ -194,7 +192,7 @@ def test_330_discover_inscription_level_name_precedence( ):
 
 def test_340_discover_inscription_level_name_normalizes_app_name( ):
     ''' _discover_inscription_level_name normalizes app name for env vars. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs(
+    globals_dto, _ = create_globals_with_temp_dirs(
         app_name = 'my-awesome app' )
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, {
@@ -207,7 +205,7 @@ def test_340_discover_inscription_level_name_normalizes_app_name( ):
 
 def test_350_discover_inscription_level_name_robust_normalization( ):
     ''' _discover_inscription_level_name handles special chars robustly. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs(
+    globals_dto, _ = create_globals_with_temp_dirs(
         app_name = 'my@app-2.0! (beta)' )
     control = module.Control( level = 'info' )
     # The expected normalized name: MY_APP_2_0___BETA_
@@ -221,7 +219,7 @@ def test_350_discover_inscription_level_name_robust_normalization( ):
 
 def test_400_prepare_scribes_logging_plain( ):
     ''' Plain logging can be configured. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Plain,
@@ -234,7 +232,7 @@ def test_400_prepare_scribes_logging_plain( ):
 
 def test_410_prepare_scribes_logging_rich_fallback( ):
     ''' Rich logging falls back to plain logging, when unavailable. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Rich,
@@ -251,7 +249,7 @@ def test_410_prepare_scribes_logging_rich_fallback( ):
 
 def test_420_prepare_scribes_logging_null( ):
     ''' Null logging can be configured. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     control = module.Control( mode = module.Modes.Null )
     # Should not raise an error or configure logging
     module._prepare_scribes_logging(
@@ -327,7 +325,7 @@ def test_630_control_accepts_target_descriptor( ):
 
 def test_640_textio_streams_used_directly( ):
     ''' TextIO streams are used directly without conversion. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control( target = target_stream )
     result = module._process_target( globals_dto, control )
@@ -336,7 +334,7 @@ def test_640_textio_streams_used_directly( ):
 
 def test_650_stringio_used_directly( ):
     ''' StringIO instances are used directly without conversion. '''
-    globals_dto, temp_dir = create_globals_with_temp_dirs( )
+    globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control( target = target_stream )
     result = module._process_target( globals_dto, control )

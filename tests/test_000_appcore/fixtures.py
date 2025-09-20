@@ -25,7 +25,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from . import PACKAGE_NAME, cache_import_module
+from .__ import PACKAGE_NAME, cache_import_module
 
 
 application_module = cache_import_module( f"{PACKAGE_NAME}.application" )
@@ -33,47 +33,37 @@ distribution_module = cache_import_module( f"{PACKAGE_NAME}.distribution" )
 state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
 
 
-def create_temp_directories_and_distribution( 
-    editable = False, 
+def create_temp_directories_and_distribution(
+    editable = False,
     config_locations = None,
     app_name = 'test-app',
     dist_name = 'test-dist'
 ):
     ''' Creates temporary directories with directories and distribution DTOs.
-    Returns:
-        tuple[directories, distribution, temp_dir]: Mock directories object,
-        real distribution object, and Path to temp directory for cleanup.
     '''
     temp_dir = Path( tempfile.mkdtemp( ) )
-    # Create directories mock with real paths
     directories = MagicMock( )
     directories.user_config_path = temp_dir / 'config'
     directories.user_config_path.mkdir( parents = True, exist_ok = True )
-    # Create real distribution with temp location
     distribution = distribution_module.Information(
         name = dist_name,
         location = temp_dir / 'project' if editable else temp_dir,
-        editable = editable
-    )
+        editable = editable )
     if editable:
         distribution.location.mkdir( parents = True, exist_ok = True )
     return directories, distribution, temp_dir
 
 
-def create_globals_with_temp_dirs( 
-    editable = False, 
+def create_globals_with_temp_dirs(
+    editable = False,
     config_locations = None,
-    app_name = 'test-env-app' 
+    app_name = 'test-env-app'
 ):
     ''' Creates Globals DTO with temporary directories for environment tests.
-    Returns:
-        tuple[Globals, temp_dir]: Globals DTO and Path to temp directory.
     '''
     directories, distribution, temp_dir = (
         create_temp_directories_and_distribution(
-            editable = editable, 
-            app_name = app_name
-        ) )
+            editable = editable, app_name = app_name ) )
     application = application_module.Information( name = app_name )
     configuration = { }
     if config_locations:
@@ -84,20 +74,15 @@ def create_globals_with_temp_dirs(
         configuration = configuration,
         directories = directories,
         distribution = distribution,
-        exits = exits
-    ), temp_dir
+        exits = exits ), temp_dir
 
 
-def create_config_template_files( 
-    distribution, 
+def create_config_template_files(
+    distribution,
     main_filename = 'general.toml',
-    content = None 
+    content = None
 ):
     ''' Creates configuration template files in distribution data location.
-    Args:
-        distribution: Distribution DTO with location
-        main_filename: Name of main config file 
-        content: TOML content string, defaults to basic app config
     '''
     if content is None:
         content = '''
@@ -105,22 +90,18 @@ def create_config_template_files(
 name = "template-app"
 version = "1.0.0"
         '''
-    # Create data/configuration directory structure
     config_dir = distribution.provide_data_location( 'configuration' )
     config_dir.mkdir( parents = True, exist_ok = True )
-    # Write template file
     template_file = config_dir / main_filename
     template_file.write_text( content )
     return template_file
 
 
-def create_fake_project_with_pyproject( 
+def create_fake_project_with_pyproject(
     project_name = 'test-project',
     project_version = '1.0.0'
 ):
     ''' Creates a temporary directory with a pyproject.toml file.
-    Returns:
-        tuple[Path, Path]: Project directory and pyproject.toml file path.
     '''
     temp_dir = Path( tempfile.mkdtemp( ) )
     pyproject_path = temp_dir / 'pyproject.toml'
@@ -137,24 +118,16 @@ build-backend = "setuptools.build_meta"
     return temp_dir, pyproject_path
 
 
-def create_nested_project_structure( 
+def create_nested_project_structure(
     project_name = 'nested-project',
     nesting_levels = 3
 ):
     ''' Creates a nested directory structure with pyproject.toml at the root.
-    Args:
-        project_name: Name for the project in pyproject.toml
-        nesting_levels: Number of subdirectories to create
-    Returns:
-        tuple[Path, Path]: Project root and deepest subdirectory.
     '''
-    project_root, pyproject_path = create_fake_project_with_pyproject(
+    project_root, _ = create_fake_project_with_pyproject(
         project_name = project_name )
-    
-    # Create nested subdirectories
     current_dir = project_root
     for i in range( nesting_levels ):
         current_dir = current_dir / f'level_{i}'
         current_dir.mkdir( parents = True, exist_ok = True )
-    
     return project_root, current_dir

@@ -4,6 +4,10 @@
       "command": "npx",
       "args": [ "-y", "@upstash/context7-mcp" ]
     },
+    "librovore": {
+      "command": "uvx",
+      "args": [ "librovore", "serve" ]
+    },
     "pyright": {
       "command": "mcp-language-server",
       "args": [
@@ -13,18 +17,6 @@
         ".",
         "--",
         "--stdio"
-      ]
-    },
-    "ruff": {
-       "command": "mcp-language-server",
-       "args": [
-         "--lsp",
-         "ruff",
-         "--workspace",
-         ".",
-         "--",
-         "server",
-         "--preview"
       ]
     }
   }
