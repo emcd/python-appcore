@@ -164,10 +164,22 @@ testers-documentation = [
       documentation .auxiliary/artifacts/sphinx-doctest""",
 ]
 testers-serotine = [ """coverage run -m pytest -m slow"""  ]
+testers-cli = [
+  'coverage run -m appcore configuration >/dev/null',
+  'coverage run -m appcore environment >/dev/null',
+  'coverage run -m appcore directories >/dev/null',
+  'coverage run -m appcore --help >/dev/null',
+  'coverage run -m appcore --display.presentation json configuration >/dev/null',
+  'coverage run -m appcore --display.presentation toml directories >/dev/null',
+  'coverage run -m appcore --display.presentation plain environment >/dev/null',
+  'coverage run -m appcore --display.presentation rich configuration >/dev/null',
+  'coverage run -m appcore --display.target-stream stdout directories >/dev/null',
+]
 testers-no-reports = [
   'coverage run',
   'testers-documentation',
   'testers-serotine',
+  'testers-cli',
 ]
 testers = [
   'coverage erase',

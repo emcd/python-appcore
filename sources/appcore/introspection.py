@@ -176,5 +176,34 @@ class Application( _cli.Application ):
 
 def execute_cli( ) -> None:
     ''' Synchronous entrypoint. '''
+    if _is_problematic_terminal( ) and any(
+        arg in ( '--help', '-h' ) for arg in __.sys.argv
+    ):
+        _show_git_bash_help_message( )
+        raise SystemExit( 0 )
     configuration = ( _tyro.conf.EnumChoicesFromValues, )
     __.asyncio.run( _tyro.cli( Application, config = configuration )( ) )
+
+
+def _is_problematic_terminal( ) -> bool:
+    ''' Detects Git Bash/Mintty terminals with Unicode limitations. '''
+    return (
+        __.sys.platform == 'win32'
+        and getattr( __.sys.stdout, 'encoding', '' ).lower( ) == 'cp1252' )
+
+
+def _show_git_bash_help_message( ) -> None:
+    ''' Shows user-friendly help message for Git Bash terminals. '''
+    encoding = getattr( __.sys.stdout, 'encoding', 'unknown' )
+    message = (
+        f"Help display is not available in this terminal "
+        f"(encoding: {encoding}).\n"
+        "Unicode characters required by the help system are not supported.\n\n"
+        "To view help, try running this command in:\n"
+        "- Windows Terminal\n"
+        "- PowerShell\n"
+        "- Command Prompt with UTF-8 support\n"
+        "- WSL\n\n"
+        "For basic usage: appcore <subcommand>\n"
+        "Available subcommands: configuration, environment, directories" )
+    print( message, file = __.sys.stderr )

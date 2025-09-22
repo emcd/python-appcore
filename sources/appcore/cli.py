@@ -168,7 +168,7 @@ class Application(
         _tyro.conf.arg( help = "Path to configuration file." ),
     ] = None
     environment: __.typx.Annotated[
-        bool, _tyro.conf.arg( help = "Read environment from dotfiles?" )
+        bool, _tyro.conf.arg( help = "Load environment from dotfiles?" )
     ] = True
     inscription: InscriptionControl = __.dcls.field(
         default_factory = InscriptionControl )
