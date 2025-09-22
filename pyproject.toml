@@ -51,7 +51,7 @@ name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
 [project.optional-dependencies]
 rich = [ 'rich' ]
-cli = [ 'tyro~=0.9.0', 'rich~=13.0' ]
+cli = [ 'tyro~=0.9.0', 'rich~=13.0', 'tomli-w~=1.2.0' ]
 [project.scripts]
 appcore = 'appcore.introspection:execute_cli'
 [project.urls]

@@ -32,6 +32,10 @@ try: import rich
 except ImportError as _error:
     raise _exceptions.DependencyAbsence( 'rich', 'CLI' ) from _error
 else: del rich
+try: import tomli_w
+except ImportError as _error:
+    raise _exceptions.DependencyAbsence( 'tomli-w', 'CLI' ) from _error
+else: del tomli_w
 try: import tyro as _tyro
 except ImportError as _error:
     raise _exceptions.DependencyAbsence( 'tyro', 'CLI' ) from _error

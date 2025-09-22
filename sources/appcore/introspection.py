@@ -32,6 +32,9 @@ from . import state as _state
 try: import rich.console as _rich_console
 except ImportError as _error:
     raise _exceptions.DependencyAbsence( 'rich', 'CLI' ) from _error
+try: import tomli_w as _tomli_w
+except ImportError as _error:
+    raise _exceptions.DependencyAbsence( 'tomli-w', 'CLI' ) from _error
 try: import tyro as _tyro
 except ImportError as _error:
     raise _exceptions.DependencyAbsence( 'tyro', 'CLI' ) from _error
@@ -43,6 +46,7 @@ class Presentations( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Json    = 'json'
     Plain   = 'plain'
     Rich    = 'rich'
+    Toml    = 'toml'
 
 
 class DisplayOptions( _cli.DisplayOptions ):
@@ -68,6 +72,9 @@ class DisplayOptions( _cli.DisplayOptions ):
                     if self.determine_colorization( target ):
                         self._render_rich( data, target)
                     else: self._render_plain( data, target )
+                case Presentations.Toml:
+                    content = _tomli_w.dumps( data )
+                    print( content, file = target )
 
     def _render_plain(
         self, objct: __.typx.Any, target: __.typx.TextIO
