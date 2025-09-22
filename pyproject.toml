@@ -51,6 +51,9 @@ name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
 [project.optional-dependencies]
 rich = [ 'rich' ]
+cli = [ 'tyro~=0.9.0', 'rich~=13.0' ]
+[project.scripts]
+appcore = 'appcore.introspection:execute_cli'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-appcore'
 'Documentation' = 'https://emcd.github.io/python-appcore'
@@ -108,6 +111,7 @@ description = ''' Development environment. '''
 dependencies = [
   'Jinja2',
   'coverage[toml]',
+  'emcd-appcore[cli]',
   'furo',
   'isort',
   'packaging',
@@ -117,7 +121,6 @@ dependencies = [
   'pytest',
   'pytest-asyncio',
   'pytest-mock',
-  'rich',
   'ruff',
   'sphinx',
   'sphinx-copybutton',

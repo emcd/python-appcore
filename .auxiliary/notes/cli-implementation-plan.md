@@ -1,9 +1,9 @@
 # CLI Implementation Plan
 
 **Date**: 2025-07-16
-**Updated**: 2025-09-20
+**Updated**: 2025-09-21
 **Context**: Post-1.2 release planning
-**Status**: Active Development Plan
+**Status**: Architecture Revised - Implementation in Progress
 
 ## Background & Decision Summary
 
@@ -18,6 +18,16 @@
 **Current CLI patterns for reference:**
 - `../ai-experiments/sources/aiwb/libcore/cli.py` (older approach)
 - `../python-librovore/sources/librovore/cli.py` (preferred direction)
+
+## **ARCHITECTURE REVISED** - See `.auxiliary/notes/cli-discussion.md`
+
+**Key Changes from Original Plan:**
+- **Protocol Design**: Uses `isinstance()` type guards instead of generic protocols to handle `Globals` subclasses
+- **Snowball Pattern**: Display options and other data accumulate into enriched `Globals` subclasses rather than separate parameters
+- **Template Method**: Commands use `prepare_base_globals()` and `execute()` with omissible `auxdata` parameter for composition
+- **Type Safety**: Maintains LSP compliance while enabling specialized command types
+
+**Original Architecture Below** (for reference):
 
 ## Architecture Overview
 

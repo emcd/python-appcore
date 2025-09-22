@@ -56,6 +56,22 @@ class AsyncAssertionFailure( Omnierror, AssertionError, TypeError ):
         super( ).__init__( f"Entity must be awaitable: {entity!r}" )
 
 
+class ContextInvalidity( Omnierror, TypeError, ValueError ):
+
+    def __init__( self, auxdata: __.typx.Any ):
+        # TODO: Add module name to fully-qualified name.
+        fqname = type( auxdata ).__qualname__
+        super( ).__init__( f"Invalid context object type: {fqname}" )
+
+
+class DependencyAbsence( Omnierror, ImportError ):
+
+    def __init__( self, dependency: str, feature: str ):
+        super( ).__init__(
+            f"Optional dependency {dependency!r} missing "
+            f"feature {feature!r}." )
+
+
 class EntryAssertionFailure( Omnierror, AssertionError, KeyError ):
     ''' Assertion of entry in dictionary failed. '''
 

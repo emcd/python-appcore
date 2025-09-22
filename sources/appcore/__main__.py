@@ -18,38 +18,9 @@
 #============================================================================#
 
 
-''' Common imports used throughout the package. '''
-
-# ruff: noqa: F401
+''' Entrypoint. '''
 
 
-import                      abc
-import                      asyncio
-import collections.abc as   cabc
-import contextlib as        ctxl
-import dataclasses as       dcls
-import                      enum
-import                      inspect
-import                      io
-import itertools as         itert
-import                      os
-import                      shutil
-import                      site
-import                      sys
-import sysconfig as         syscfg
-import                      types
+from appcore.introspection import execute_cli
 
-from logging import getLogger as produce_scribe
-from pathlib import Path
-
-import accretive as         accret
-import                      aiofiles
-import dynadoc as           ddoc
-import frigid as            immut
-import platformdirs as      pdirs
-import                      tomli
-import typing_extensions as typx
-# --- BEGIN: Injected by Copier ---
-# --- END: Injected by Copier ---
-
-from absence import Absential, absent, is_absent
+if __name__ == '__main__': execute_cli( )
