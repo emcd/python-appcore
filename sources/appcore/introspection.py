@@ -30,13 +30,13 @@ from . import state as _state
 
 
 try: import rich.console as _rich_console
-except ImportError as _error:
+except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'rich', 'CLI' ) from _error
 try: import tomli_w as _tomli_w
-except ImportError as _error:
+except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'tomli-w', 'CLI' ) from _error
 try: import tyro as _tyro
-except ImportError as _error:
+except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'tyro', 'CLI' ) from _error
 
 
@@ -176,26 +176,22 @@ class Application( _cli.Application ):
 
 def execute_cli( ) -> None:
     ''' Synchronous entrypoint. '''
-    if (
-        any( arg in ( '--help', '-h' ) for arg in __.sys.argv )
-        and _handle_windows_unicode_help_limitation( )
-    ):
-        return
+    if (    any( arg in ( '--help', '-h' ) for arg in __.sys.argv )
+        and _avoid_non_utf_terminals( )
+    ): return
     configuration = ( _tyro.conf.EnumChoicesFromValues, )
     __.asyncio.run( _tyro.cli( Application, config = configuration )( ) )
 
 
-def _handle_windows_unicode_help_limitation( ) -> bool:
-    ''' Handles Git Bash/Mintty terminals with cp1252 encoding limitations.
+def _avoid_non_utf_terminals( ) -> bool:
+    ''' Avoids terminals which do not support UTF charset encoding.
 
-    Returns True if help was displayed with mitigation, False if normal
-    help should proceed.
+        E.g., Git Bash Mintty terminals with cp1252 charset encoding.
     '''
     is_windows_cp1252 = (
         __.sys.platform == 'win32'
         and getattr( __.sys.stdout, 'encoding', '' ).lower( ) == 'cp1252' )
-    if not is_windows_cp1252:
-        return False
+    if not is_windows_cp1252: return False
     encoding = getattr( __.sys.stdout, 'encoding', 'unknown' )
     message = (
         f"Help display is not available in this terminal "

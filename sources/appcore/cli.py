@@ -29,15 +29,15 @@ from . import state as _state
 
 
 try: import rich
-except ImportError as _error:
+except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'rich', 'CLI' ) from _error
 else: del rich
 try: import tomli_w
-except ImportError as _error:
+except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'tomli-w', 'CLI' ) from _error
 else: del tomli_w
 try: import tyro as _tyro
-except ImportError as _error:
+except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'tyro', 'CLI' ) from _error
 
 
@@ -150,7 +150,7 @@ class Command(
     @__.abc.abstractmethod
     async def execute( self, auxdata: _state.Globals ) -> None:
         ''' Executes command. '''
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     async def prepare( self, auxdata: _state.Globals ) -> _state.Globals:
         ''' Prepares session context. '''
@@ -182,7 +182,7 @@ class Application(
     @__.abc.abstractmethod
     async def execute( self, auxdata: _state.Globals ) -> None:
         ''' Executes command. '''
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     async def prepare( self, exits: __.ctxl.AsyncExitStack ) -> _state.Globals:
         ''' Prepares session context. '''

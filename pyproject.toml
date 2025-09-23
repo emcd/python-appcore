@@ -158,12 +158,6 @@ packagers = [
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
-testers-documentation = [
-  """coverage run -m sphinx.cmd.build \
-      -E -b doctest -d .auxiliary/caches/sphinx --quiet \
-      documentation .auxiliary/artifacts/sphinx-doctest""",
-]
-testers-serotine = [ """coverage run -m pytest -m slow"""  ]
 testers-cli = [
   'coverage run -m appcore configuration >/dev/null',
   'coverage run -m appcore environment >/dev/null',
@@ -174,12 +168,27 @@ testers-cli = [
   'coverage run -m appcore --display.presentation plain environment >/dev/null',
   'coverage run -m appcore --display.presentation rich configuration >/dev/null',
   'coverage run -m appcore --display.target-stream stdout directories >/dev/null',
+  """coverage run -m appcore \
+      --display.no-colorize --display.presentation rich configuration \
+      >/dev/null""",
+  """coverage run -m appcore \
+      --display.target-file .auxiliary/tempfiles/test-output.txt \
+      --inscription.target-file .auxiliary/tempfiles/test-log.txt \
+      configuration >/dev/null""",
+]
+testers-documentation = [
+  """coverage run -m sphinx.cmd.build \
+      -E -b doctest -d .auxiliary/caches/sphinx --quiet \
+      documentation .auxiliary/artifacts/sphinx-doctest""",
+]
+testers-serotine = [
+  """coverage run -m pytest -m slow""",
+  'testers-cli',
 ]
 testers-no-reports = [
   'coverage run',
   'testers-documentation',
   'testers-serotine',
-  'testers-cli',
 ]
 testers = [
   'coverage erase',
