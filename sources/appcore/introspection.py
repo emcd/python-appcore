@@ -77,24 +77,22 @@ class DisplayOptions( _cli.DisplayOptions ):
                     print( content, file = target )
 
     def _render_plain(
-        self, objct: __.typx.Any, target: __.typx.TextIO
+        self, data: __.typx.Any, target: __.typx.TextIO
     ) -> None:
         ''' Renders object in plain text format. '''
-        if isinstance( objct, __.cabc.Mapping ):
-            for key, value in objct.items( ):  # pyright: ignore
+        if isinstance( data, __.cabc.Mapping ):
+            for key, value in data.items( ):  # pyright: ignore
                 print( f"{key}: {value}", file = target )
-        else: print( objct, file = target )
+        else: print( data, file = target )  # pragma: no cover
 
     def _render_rich(
-        self, objct: __.typx.Any, target: __.typx.TextIO
+        self, data: __.typx.Any, target: __.typx.TextIO
     ) -> None:
         ''' Renders object using Rich formatting. '''
         console = _rich_console.Console(
             file = target,
             color_system = 'auto' if self.colorize else None )
-        if isinstance( objct, __.cabc.Mapping ):
-            console.print( objct )
-        else: console.print( str( objct ) )
+        console.print( data )
 
 
 class ApplicationGlobals( _state.Globals ):
@@ -107,7 +105,7 @@ class IntrospectConfigurationCommand( _cli.Command ):
     ''' Shows finalized application configuration. '''
 
     async def execute( self, auxdata: _state.Globals ) -> None:
-        if not isinstance( auxdata, ApplicationGlobals ):
+        if not isinstance( auxdata, ApplicationGlobals ):  # pragma: no cover
             raise _exceptions.ContextInvalidity( auxdata )
         data = dict( auxdata.configuration )
         await auxdata.display.render( data )
@@ -117,7 +115,7 @@ class IntrospectDirectoriesCommand( _cli.Command ):
     ''' Shows application and package directories. '''
 
     async def execute( self, auxdata: _state.Globals ):
-        if not isinstance( auxdata, ApplicationGlobals ):
+        if not isinstance( auxdata, ApplicationGlobals ):  # pragma: no cover
             raise _exceptions.ContextInvalidity( auxdata )
         directories = {
             'application-cache': str( auxdata.provide_cache_location( ) ),
@@ -134,7 +132,7 @@ class IntrospectEnvironmentCommand( _cli.Command ):
     ''' Shows application-specific environment variables. '''
 
     async def execute( self, auxdata: _state.Globals ) -> None:
-        if not isinstance( auxdata, ApplicationGlobals ):
+        if not isinstance( auxdata, ApplicationGlobals ):  # pragma: no cover
             raise _exceptions.ContextInvalidity( auxdata )
         name = auxdata.application.name.upper( )
         envvars = {

@@ -159,22 +159,30 @@ packagers = [
   # --- END: Injected by Copier ---
 ]
 testers-cli = [
-  'coverage run -m appcore configuration >/dev/null',
-  'coverage run -m appcore environment >/dev/null',
-  'coverage run -m appcore directories >/dev/null',
-  'coverage run -m appcore --help >/dev/null',
-  'coverage run -m appcore --display.presentation json configuration >/dev/null',
-  'coverage run -m appcore --display.presentation toml directories >/dev/null',
-  'coverage run -m appcore --display.presentation plain environment >/dev/null',
-  'coverage run -m appcore --display.presentation rich configuration >/dev/null',
-  'coverage run -m appcore --display.target-stream stdout directories >/dev/null',
+  """coverage run -m appcore --help >/dev/null""",
+  """coverage run -m appcore --display.presentation json \
+      configuration >/dev/null""",
+  """coverage run -m appcore --display.presentation toml \
+      directories >/dev/null""",
+  """coverage run -m appcore --display.presentation plain \
+      environment >/dev/null""",
+  """coverage run -m appcore --display.presentation rich \
+      configuration >/dev/null""",
   """coverage run -m appcore \
-      --display.no-colorize --display.presentation rich configuration \
-      >/dev/null""",
+      --display.target-stream stderr --inscription.target-stream stdout \
+      environment >/dev/null 2>&1""",
   """coverage run -m appcore \
+      --configfile tests/data/configuration.toml \
       --display.target-file .auxiliary/tempfiles/test-output.txt \
       --inscription.target-file .auxiliary/tempfiles/test-log.txt \
       configuration >/dev/null""",
+  """coverage run -m appcore \
+      --display.assume-rich-terminal --display.no-colorize \
+      --display.presentation rich \
+      configuration >/dev/null""",
+  """coverage run -m appcore \
+      --display.assume-rich-terminal --display.presentation rich \
+      directories >/dev/null""",
 ]
 testers-documentation = [
   """coverage run -m sphinx.cmd.build \

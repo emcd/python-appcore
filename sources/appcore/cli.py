@@ -73,9 +73,17 @@ class DisplayOptions( __.immut.DataclassObject ):
         _tyro.conf.DisallowNone,
         _tyro.conf.arg( help = "Render output on stdout or stderr." ),
     ] = TargetStreams.Stdout
+    assume_rich_terminal: __.typx.Annotated[
+        bool,
+        _tyro.conf.arg(
+            aliases = ( '--force-tty', ),
+            help = "Assume Rich terminal capabilities regardless of TTY." ),
+    ] = False
 
     def determine_colorization( self, stream: __.typx.TextIO ) -> bool:
         ''' Determines whether to use colorized output. '''
+        if self.assume_rich_terminal:
+            return self.colorize
         return (
                 self.colorize
             and hasattr( stream, 'isatty' )
