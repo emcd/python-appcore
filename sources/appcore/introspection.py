@@ -176,24 +176,26 @@ class Application( _cli.Application ):
 
 def execute_cli( ) -> None:
     ''' Synchronous entrypoint. '''
-    if _is_problematic_terminal( ) and any(
-        arg in ( '--help', '-h' ) for arg in __.sys.argv
+    if (
+        any( arg in ( '--help', '-h' ) for arg in __.sys.argv )
+        and _handle_windows_unicode_help_limitation( )
     ):
-        _show_git_bash_help_message( )
-        raise SystemExit( 0 )
+        return
     configuration = ( _tyro.conf.EnumChoicesFromValues, )
     __.asyncio.run( _tyro.cli( Application, config = configuration )( ) )
 
 
-def _is_problematic_terminal( ) -> bool:
-    ''' Detects Git Bash/Mintty terminals with Unicode limitations. '''
-    return (
+def _handle_windows_unicode_help_limitation( ) -> bool:
+    ''' Handles Git Bash/Mintty terminals with cp1252 encoding limitations.
+
+    Returns True if help was displayed with mitigation, False if normal
+    help should proceed.
+    '''
+    is_windows_cp1252 = (
         __.sys.platform == 'win32'
         and getattr( __.sys.stdout, 'encoding', '' ).lower( ) == 'cp1252' )
-
-
-def _show_git_bash_help_message( ) -> None:
-    ''' Shows user-friendly help message for Git Bash terminals. '''
+    if not is_windows_cp1252:
+        return False
     encoding = getattr( __.sys.stdout, 'encoding', 'unknown' )
     message = (
         f"Help display is not available in this terminal "
@@ -207,3 +209,4 @@ def _show_git_bash_help_message( ) -> None:
         "For basic usage: appcore <subcommand>\n"
         "Available subcommands: configuration, environment, directories" )
     print( message, file = __.sys.stderr )
+    raise SystemExit( 0 )
