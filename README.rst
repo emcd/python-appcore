@@ -164,6 +164,33 @@ Configure logging with Rich support and environment overrides:
 >>> # asyncio.run( setup_logging( ) )
 
 
+Building CLI Applications 🔧
+-------------------------------------------------------------------------------
+
+Build command-line applications using the ``appcore.cli`` module:
+
+>>> import asyncio
+>>> from appcore import cli, state
+>>> class HelloCommand( cli.Command ):
+...     async def execute( self, auxdata: state.Globals ) -> None:
+...         print( f"Hello from {auxdata.application.name}!" )
+>>> class MyApplication( cli.Application ):
+...     async def execute( self, auxdata: state.Globals ) -> None:
+...         command = HelloCommand( )
+...         await command( auxdata )
+>>> # asyncio.run( MyApplication( )( ) )
+
+The ``appcore`` CLI tool demonstrates these capabilities in action - inspect configuration, environment variables, and platform directories:
+
+::
+
+    $ python -m appcore configuration --display.presentation json
+    $ python -m appcore environment
+    $ python -m appcore directories --display.target-file dirs.txt
+
+For a comprehensive implementation example, see ``sources/appcore/introspection.py`` which shows advanced patterns including subcommands, display options, and presentation formats.
+
+
 Dependencies & Architecture 🏛️
 ===============================================================================
 
