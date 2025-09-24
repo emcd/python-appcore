@@ -18,7 +18,27 @@
 #============================================================================#
 
 
-''' Family of exceptions for package API. '''
+''' Family of exceptions for package API.
+
+    This module defines a comprehensive exception hierarchy for the appcore
+    library, providing specific exception types for different failure modes
+    while maintaining a consistent interface for error handling and debugging.
+
+    Exception Hierarchy
+    ===================
+
+    The exception hierarchy follows a two-tier design:
+
+    * :class:`Omniexception` - Base for all package exceptions
+    * :class:`Omnierror` - Base for error exceptions, inherits from both
+      ``Omniexception`` and ``Exception``
+
+    Usage
+    =====
+
+    Catch all package errors with :class:`Omnierror` or with built-in exception
+    types. See class inheritance for details.
+'''
 
 
 from . import __

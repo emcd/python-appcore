@@ -18,7 +18,99 @@
 #============================================================================#
 
 
-''' Application for configuration introspection. '''
+''' Application for configuration introspection.
+
+    This module provides a complete CLI application for introspecting
+    configuration, environment variables, and platform directories. It serves
+    as both a practical utility and a comprehensive example of building CLI
+    applications with the :mod:`appcore.cli` framework.
+
+    Command-Line Interface
+    ======================
+
+    The ``appcore`` command provides three main introspection capabilities:
+
+    Configuration Inspection
+    ------------------------
+    Display finalized application configuration from TOML files::
+
+        appcore configuration                    # Default rich format
+        appcore --display.presentation json configuration
+        appcore --display.presentation toml configuration
+
+    Environment Variables
+    ---------------------
+    Show application-specific environment variables::
+
+        appcore environment                      # All APPCORE_* variables
+        appcore --display.presentation plain environment
+
+    Platform Directories
+    ---------------------
+    Display platform-specific directories for the application::
+
+        appcore directories                      # Show all directory paths
+        appcore --display.target-file dirs.txt directories
+
+    Presentation Formats
+    ====================
+
+    Multiple output formats are supported through the presentation option:
+
+    * ``rich`` (default) - Rich formatted output with syntax highlighting
+    * ``json`` - JSON format for programmatic consumption
+    * ``toml`` - TOML format matching input configuration files
+    * ``plain`` - Plain text format for simple displays
+
+    Output Routing
+    ==============
+
+    Flexible output destinations:
+
+    Stream Routing
+    --------------
+    * ``--display.target-stream stdout`` (default) - Main output to stdout
+    * ``--display.target-stream stderr`` - Main output to stderr
+    * ``--inscription.target-stream stderr`` (default) - Logging to stderr
+    * ``--inscription.target-stream stdout`` - Logging to stdout
+
+    File Output
+    -----------
+    * ``--display.target-file path`` - Save main output to file
+    * ``--inscription.target-file path`` - Save logging to file
+
+    Terminal Control
+    ================
+
+    Rich terminal behavior can be controlled:
+
+    * ``--display.colorize`` / ``--display.no-colorize`` - Control colorization
+    * ``--display.assume-rich-terminal`` - Force Rich capabilities (testing)
+
+    Implementation Architecture
+    ===========================
+
+    Command Structure
+    -----------------
+    * :class:`IntrospectConfigurationCommand` - Configuration introspection
+    * :class:`IntrospectEnvironmentCommand` - Environment variable inspection
+    * :class:`IntrospectDirectoriesCommand` - Platform directories inspection
+    * :class:`ApplicationGlobals` - Extended state for CLI context
+
+    Usage as Implementation Example
+    ================================
+
+    This module demonstrates comprehensive CLI application patterns:
+
+    * Command inheritance from :class:`appcore.cli.Command`
+    * Async execution with proper error handling
+    * Integration with appcore preparation and configuration systems
+    * File and stream output routing capabilities
+    * Rich terminal integration with automatic capability detection
+
+    The source code serves as a reference implementation for building similar
+    CLI applications with the appcore framework.
+'''
 
 
 import json as _json

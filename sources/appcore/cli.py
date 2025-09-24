@@ -18,7 +18,32 @@
 #============================================================================#
 
 
-''' CLI foundation classes and interfaces. '''
+''' CLI foundation classes and interfaces.
+
+    This module provides the core infrastructure for building command-line
+    interfaces. It offers a comprehensive framework for creating CLI
+    applications with rich presentation options, flexible output routing, and
+    integrated logging capabilities.
+
+    Key Components
+    ==============
+
+    Command Framework
+    -----------------
+    * :class:`Command` - Abstract base class for CLI command implementations
+    * :class:`Application` dataclass for command-line application configuration
+    * Rich integration with tyro for automatic argument parsing and help
+      generation
+
+    Display and Output Control
+    --------------------------
+    * :class:`DisplayOptions` - Configuration for output presentation and
+      routing
+    * :class:`InscriptionControl` - Configuration for logging and diagnostic
+      output
+    * Stream routing (stdout/stderr) and file output capabilities
+    * Rich terminal detection with colorization control
+'''
 
 
 from . import __

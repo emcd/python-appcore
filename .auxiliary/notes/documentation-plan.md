@@ -1,0 +1,143 @@
+# Documentation Enhancement Plan for Next Release
+
+## Overview
+
+This plan outlines documentation improvements to showcase the comprehensive CLI module capabilities and ensure complete API coverage for the next release. The focus is on practical usage patterns rather than feature highlighting.
+
+## Current Documentation Assessment
+
+### Strengths ✅
+- Well-structured README.rst with clear feature overview and installation
+- Comprehensive API documentation using Sphinx automodule
+- Examples section covering basic usage, configuration, and environments
+- Professional formatting with consistent licensing headers
+- Good badge coverage (tests, coverage will show 100% on Windows CI runners)
+
+### Enhancement Areas 🎯
+
+## Phase 1: README Improvements (High Priority)
+
+### CLI Module Usage Focus
+- **Primary Goal**: Show succinct example of using the `cli` module to build CLI applications
+- **Secondary Goal**: Briefly mention the `appcore` CLI tool (not main focus)
+- **Reference Approach**: Point developers to `introspection` module sources as complete example
+- **Exclusions**: No `--assume-rich-terminal` documentation (belongs in examples), no coverage achievement highlighting
+
+### Implementation Plan
+1. Add "Building CLI Applications" section with minimal `cli` module example
+2. Brief mention of `appcore` CLI tool as demonstration of `cli` module capabilities
+3. Point to `sources/appcore/introspection.py` as comprehensive implementation reference
+
+## Phase 2: Examples Expansion (Medium Priority)
+
+### New Document: Building CLI Applications
+**Target**: `documentation/examples/cli-applications.rst`
+
+**Content Structure**:
+1. **Using the CLI Module**: How to build applications with `appcore.cli`
+   - Basic CLI application structure
+   - Command definition patterns
+   - Display and inscription options
+   - File output capabilities
+
+2. **Demonstration: The appcore CLI**: Show what an application built with `cli` module looks like
+   - Usage examples of `appcore configuration`, `appcore environment`, `appcore directories`
+   - Different presentation formats (json, toml, rich, plain)
+   - Stream and file output options
+   - Purpose: demonstrate CLI module capabilities, not document the tool itself
+
+### Enhanced Configuration Examples
+**Enhance**: `documentation/examples/configuration.rst`
+
+**Add TOML Configuration Examples**:
+- Complex configurations with includes (inspired by `~/.config/aiwb/general.toml`)
+- Template variable usage (`{application_name}`, `{user_configuration}`)
+- Hierarchical configuration patterns
+- Integration with platform directories
+
+### TOML Configuration Inspiration
+From `~/.config/aiwb/general.toml`:
+```toml
+includes = [
+    '/path/to/shared/config/{application_name}/feature.toml',
+]
+
+[locations]
+cache = '/shared/cache/{application_name}'
+data = '/shared/data/{application_name}'
+environment = '{user_configuration}/environment'
+```
+
+## Phase 3: API Documentation Completion (Medium Priority) ✅ COMPLETE
+
+### Missing Module Coverage
+**Target**: `documentation/api.rst`
+
+**Add Missing Modules**:
+- `Module appcore.cli` with automodule directive
+- `Module appcore.introspection` with automodule directive
+
+### Module Documentation Analysis
+**CLI Module Documentation Needs**:
+- Command base class patterns and inheritance
+- DisplayOptions and InscriptionControl configuration
+- Stream routing and file output capabilities
+- Rich terminal detection and colorization logic
+- Type annotation patterns for CLI arguments
+
+**Introspection Module Documentation Needs**:
+- ApplicationGlobals context management
+- Command implementation patterns (configuration, environment, directories)
+- Presentation format rendering (json, toml, rich, plain)
+- Integration between CLI framework and introspection commands
+
+### Exception Documentation Enhancement
+**Target**: `sources/appcore/exceptions.py` module docstring
+
+**Add Comprehensive Documentation**:
+- Exception hierarchy overview (Omniexception → Omnierror → specific exceptions)
+- Usage patterns for catching package-specific exceptions
+- Exception chaining examples with `from` clauses
+- Integration with CLI error handling
+
+## Phase 4: Infrastructure Documentation (Lower Priority)
+
+### Stub File Completion
+**Purpose**: Support other potential maintainers and future development
+
+**Files to Complete**:
+- `documentation/contribution.rst` (referenced in index.rst but missing)
+- `documentation/prd.rst` (currently TODO placeholder)
+- Architecture decision records in `documentation/architecture/decisions/`
+
+**Content Focus**:
+- Development workflow and testing practices
+- Code quality standards and coverage expectations
+- Contribution guidelines for CLI and configuration features
+- Architectural decisions around immutability and async patterns
+
+## Implementation Priority
+
+### Immediate Actions (Next Release)
+1. **README**: Add CLI module usage example and brief tool mention
+2. **Examples**: Create `cli-applications.rst` with comprehensive CLI building guide
+3. **API**: Add missing automodule directives for `cli` and `introspection`
+
+### Follow-up Actions (Future Releases)
+4. **Configuration**: Enhance examples with complex TOML patterns
+5. **Exceptions**: Expand module docstring with hierarchy and usage patterns
+6. **Infrastructure**: Complete contribution and architecture documentation
+
+## Success Metrics
+
+- **Discoverability**: Developers can quickly understand how to build CLI applications
+- **Completeness**: All public modules documented in API reference
+- **Usability**: Clear examples for common configuration and CLI patterns
+- **Maintainability**: Infrastructure documentation supports future development
+
+## Notes
+
+- The `appcore` CLI tool serves primarily as a demonstration of `cli` module capabilities
+- Advanced features like `--assume-rich-terminal` belong in examples documentation
+- Coverage achievements don't need highlighting (CI badges provide current status)
+- Focus on practical usage patterns rather than feature marketing
