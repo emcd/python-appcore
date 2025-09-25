@@ -105,30 +105,10 @@ The simplest way to initialize your application:
 >>> import appcore
 >>> async def main( ):
 ...     async with contextlib.AsyncExitStack( ) as exits:
-...         # Initialize application core with auto-detection
 ...         auxdata = await appcore.prepare( exits )
 ...         print( f"App: {auxdata.application.name}" )
-...         print( f"Mode: {'dev' if auxdata.distribution.editable else 'prod'}" )
 ...         return auxdata.configuration
 >>> # asyncio.run( main( ) )  # Returns configuration dictionary
-
-
-Configuration Access ⚙️
--------------------------------------------------------------------------------
-
-Access your application's TOML configuration:
-
->>> async def show_config( ):
-...     async with contextlib.AsyncExitStack( ) as exits:
-...         auxdata = await appcore.prepare( exits )
-...         config = auxdata.configuration
-...         # Configuration loaded from general.toml in user config directory
-...         print( f"Available sections: {list( config.keys( ) )}" )
-...         # Access nested configuration values
-...         if 'app' in config:
-...             print( f"App name: {config[ 'app' ].get( 'name', 'Unknown' )}" )
-...         return config
->>> # asyncio.run( show_config( ) )
 
 
 Platform Directories 📁
@@ -136,32 +116,16 @@ Platform Directories 📁
 
 Access platform-specific directories for your application:
 
->>> async def show_directories( ):
+>>> async def display_directories( ):
 ...     async with contextlib.AsyncExitStack( ) as exits:
-...         app_info = appcore.ApplicationInformation(
+...         application = appcore.ApplicationInformation(
 ...             name = 'my-app', publisher = 'MyCompany' )
-...         auxdata = await appcore.prepare( exits, application = app_info )
+...         auxdata = await appcore.prepare( exits, application = application )
 ...         dirs = auxdata.directories
 ...         print( f"Config: {dirs.user_config_path}" )
 ...         print( f"Data: {dirs.user_data_path}" )
 ...         print( f"Cache: {dirs.user_cache_path}" )
->>> # asyncio.run( show_directories( ) )
-
-Logging Configuration 📝
--------------------------------------------------------------------------------
-
-Configure logging with Rich support and environment overrides:
-
->>> import appcore
->>> async def setup_logging( ):
-...     async with contextlib.AsyncExitStack( ) as exits:
-...         # Rich logging with environment variable support
-...         inscription = appcore.inscription.Control(
-...             mode = appcore.inscription.Modes.Rich, level = 'debug' )
-...         auxdata = await appcore.prepare( exits, inscription = inscription )
-...         # Logging level can be overridden via MY_APP_INSCRIPTION_LEVEL
-...         return "Logging configured"
->>> # asyncio.run( setup_logging( ) )
+>>> # asyncio.run( display_directories( ) )
 
 
 Building CLI Applications 🔧
