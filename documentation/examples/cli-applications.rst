@@ -48,15 +48,18 @@ CLI applications in appcore follow a consistent pattern using ``Command`` and
     import asyncio
 
     class GreetCommand( cli.Command ):
+
         async def execute( self, auxdata: state.Globals ) -> None:
             if not isinstance( auxdata, GreetGlobals ):
                 raise TypeError( "GreetCommand requires GreetGlobals" )
             print( f"Hello, {auxdata.username}!" )
 
     class GreetGlobals( state.Globals ):
+
         username: str
 
     class GreetApplication( cli.Application ):
+
         username: str = "World"
 
         async def execute( self, auxdata: state.Globals ) -> None:
@@ -86,22 +89,23 @@ The ``DisplayOptions`` class provides standardized output configuration:
     import json
 
     class DataGlobals( state.Globals ):
+
         display: cli.DisplayOptions
 
     class ShowDataCommand( cli.Command ):
+
         async def execute( self, auxdata: state.Globals ) -> None:
             if not isinstance( auxdata, DataGlobals ):
                 raise TypeError( "ShowDataCommand requires DataGlobals" )
-
             data = {
                 "application": auxdata.application.name,
                 "platform": auxdata.directories.user_data_path.as_posix( ),
                 "config_keys": list( auxdata.configuration.keys( ) )
             }
-
             await auxdata.display.render( data )
 
     class DataApplication( cli.Application ):
+
         display: cli.DisplayOptions = cli.DisplayOptions( )
 
         async def execute( self, auxdata: state.Globals ) -> None:
@@ -132,23 +136,23 @@ Commands can route output to different streams or files:
     from pathlib import Path
 
     class LoggingGlobals( state.Globals ):
+
         display: cli.DisplayOptions
 
     class DiagnosticCommand( cli.Command ):
+
         async def execute( self, auxdata: state.Globals ) -> None:
             if not isinstance( auxdata, LoggingGlobals ):
                 raise TypeError( "DiagnosticCommand requires LoggingGlobals" )
-
             diagnostic_data = {
                 "memory_usage": "45MB",
                 "active_connections": 12,
                 "cache_hits": 234
             }
-
-            # Output goes to configured stream or file
             await auxdata.display.render( diagnostic_data )
 
     class DiagnosticApplication( cli.Application ):
+
         display: cli.DisplayOptions = cli.DisplayOptions( )
 
         async def execute( self, auxdata: state.Globals ) -> None:
@@ -185,9 +189,11 @@ For applications with multiple commands, use tyro's subcommand annotations:
     from typing import Union, Annotated
 
     class StatusGlobals( state.Globals ):
+
         display: cli.DisplayOptions
 
     class StatusCommand( cli.Command ):
+
         async def execute( self, auxdata: state.Globals ) -> None:
             if not isinstance( auxdata, StatusGlobals ):
                 raise TypeError( "StatusCommand requires StatusGlobals" )
@@ -195,6 +201,7 @@ For applications with multiple commands, use tyro's subcommand annotations:
             await auxdata.display.render( status_info )
 
     class StatsCommand( cli.Command ):
+
         async def execute( self, auxdata: state.Globals ) -> None:
             if not isinstance( auxdata, StatusGlobals ):
                 raise TypeError( "StatsCommand requires StatusGlobals" )
@@ -202,6 +209,7 @@ For applications with multiple commands, use tyro's subcommand annotations:
             await auxdata.display.render( stats_info )
 
     class MonitorApplication( cli.Application ):
+
         display: cli.DisplayOptions = cli.DisplayOptions( )
         command: Union[
             Annotated[
@@ -216,9 +224,7 @@ For applications with multiple commands, use tyro's subcommand annotations:
 
         async def execute( self, auxdata: state.Globals ) -> None:
             enriched_auxdata = StatusGlobals(
-                display = self.display,
-                **auxdata.__dict__
-            )
+                display = self.display, **auxdata.__dict__ )
             await self.command.execute( enriched_auxdata )
 
 This creates a CLI with subcommands accessible as ``python -m myapp status`` and ``python -m myapp stats``.
