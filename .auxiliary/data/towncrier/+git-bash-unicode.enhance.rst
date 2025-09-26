@@ -1,0 +1,1 @@
+CLI: Add graceful handling for Git Bash/Mintty terminals with Unicode limitations, displaying user-friendly guidance instead of crashing on help requests.

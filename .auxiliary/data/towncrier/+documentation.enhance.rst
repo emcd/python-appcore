@@ -1,0 +1,1 @@
+Documentation: Add comprehensive CLI applications guide, complete API documentation for all modules, architecture overview with ADRs, and enhanced README with practical usage examples.

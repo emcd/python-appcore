@@ -1,0 +1,1 @@
+Compatibility: Improve PyPy support with enhanced exception handling patterns.
