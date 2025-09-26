@@ -63,9 +63,22 @@ The main Python package follows the standard ``sources/`` directory pattern:
     │   │   ├── imports.py           # External library imports
     │   │   └── nomina.py            # python-appcore-specific naming constants
     │   ├── __init__.py              # Package entry point
+    │   ├── __main__.py              # CLI entry point (python -m appcore)
     │   ├── py.typed                 # Type checking marker
     │   ├── exceptions.py            # Package exception hierarchy
-    │   └── [modules].py             # Feature-specific modules
+    │   ├── preparation.py           # Single-point async initialization
+    │   ├── state.py                 # Immutable global state management
+    │   ├── application.py           # Application metadata and platform directories
+    │   ├── configuration.py         # Hierarchical TOML configuration system
+    │   ├── dictedits.py             # Configuration editing utilities
+    │   ├── environment.py           # Environment variable processing
+    │   ├── distribution.py          # Development vs production detection
+    │   ├── cli.py                   # CLI command framework
+    │   ├── introspection.py         # Self-inspection CLI commands
+    │   ├── inscription.py           # Logging and diagnostic output
+    │   ├── io.py                    # Cross-platform I/O utilities
+    │   ├── asyncf.py                # Async utilities and patterns
+    │   └── generics.py              # Result types and generic utilities
     
 
 All package modules use the standard ``__`` import pattern as documented
@@ -74,20 +87,71 @@ in the common architecture guide.
 Component Integration
 ===============================================================================
 
-Exception Organization
+Module Organization
 -------------------------------------------------------------------------------
+
+**Core Foundation Modules**
+  - ``preparation.py`` - Single async ``prepare()`` function for application initialization
+  - ``state.py`` - ``Globals`` dataclass for immutable application state
+  - ``application.py`` - Application metadata and platform directory integration
+
+**Configuration System**
+  - ``configuration.py`` - TOML configuration with ``AcquirerAbc`` protocol
+  - ``dictedits.py`` - Configuration merging and editing utilities
+  - ``environment.py`` - Environment variable processing and integration
+
+**CLI Framework**
+  - ``cli.py`` - ``Command`` and ``Application`` base classes with rich output
+  - ``introspection.py`` - Self-inspection commands (configuration, environment, directories)
+  - ``inscription.py`` - Integrated logging and diagnostic output control
+
+**Platform and Infrastructure**
+  - ``distribution.py`` - Development vs production deployment detection
+  - ``io.py`` - Cross-platform I/O utilities and helpers
+  - ``asyncf.py`` - Async utilities and exception handling patterns
+  - ``generics.py`` - Result types and generic programming utilities
+
+**Exception Organization**
 
 Package-wide exceptions are centralized in ``sources/appcore/exceptions.py``
 following the standard hierarchy patterns documented in the `common practices guide
 <https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/practices.rst>`_.
 
+The exception hierarchy follows ``Omniexception`` → ``Omnierror`` → specific exceptions
+with consistent naming patterns (``*Failure``, ``*Invalidity``, ``*Absence``).
+
+Architecture Patterns
+===============================================================================
+
+The project implements several key architectural patterns:
+
+**Single Point of Initialization**
+  - The ``prepare()`` function in ``preparation.py`` coordinates all framework setup
+  - Async design allows concurrent external initialization
+  - Returns immutable ``Globals`` dataclass with all framework state
+
+**Immutable Data Architecture**
+  - All state management through immutable dataclasses
+  - Configuration stored as accretive dictionary objects (immutable after assignment)
+  - Thread-safe by design, prevents accidental mutation
+
+**Extensible Configuration Protocol**
+  - ``AcquirerAbc`` protocol enables pluggable configuration sources
+  - Default TOML implementation with hierarchical loading
+  - Template variables and environment overrides
+
+**CLI Command Routing**
+  - ``isinstance()`` type guards for command discovery
+  - Rich terminal integration with automatic format detection
+  - Stream routing to stdout, stderr, or files
+
 Architecture Evolution
 ===============================================================================
 
-This filesystem organization provides a foundation that architect agents can
-evolve as the project grows. For questions about organizational principles,
-subpackage patterns, or testing strategies, refer to the comprehensive common
-documentation:
+This filesystem organization provides a foundation that can evolve as the
+project grows. The modular structure supports future expansion while maintaining
+clear separation of concerns. For organizational principles and patterns,
+refer to the comprehensive common documentation:
 
 * `Architecture Patterns <https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/architecture.rst>`_
 * `Development Practices <https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/practices.rst>`_

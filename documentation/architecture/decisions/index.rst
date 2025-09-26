@@ -24,8 +24,10 @@ Architectural Decision Records
 .. toctree::
    :maxdepth: 2
 
-
-.. todo:: Add architectural decision records to toctree.
+   001-async-first-design
+   002-immutable-state-management
+   003-extensible-configuration-protocol
+   004-cli-command-routing
 
 For ADR format and guidance, see the `architecture documentation guide
 <https://emcd.github.io/python-project-common/stable/sphinx-html/common/architecture.html>`_.
