@@ -49,6 +49,18 @@ Module ``appcore.configuration``
 .. automodule:: appcore.configuration
 
 
+Module ``appcore.cli``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.cli
+
+
+Module ``appcore.introspection``
+-------------------------------------------------------------------------------
+
+.. automodule:: appcore.introspection
+
+
 Module ``appcore.state``
 -------------------------------------------------------------------------------
 

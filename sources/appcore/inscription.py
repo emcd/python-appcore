@@ -35,6 +35,10 @@ from . import __
 from . import state as _state
 
 
+Levels: __.typx.TypeAlias = __.typx.Literal[
+    'debug', 'info', 'warn', 'error', 'critical' ]
+
+
 class Presentations( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     ''' Scribe presentation modes. '''
 
@@ -68,9 +72,7 @@ class Control( __.immut.DataclassObject ):
     ''' Application inscription configuration. '''
 
     mode: Presentations = Presentations.Plain
-    level: __.typx.Literal[
-        'debug', 'info', 'warn', 'error', 'critical'  # noqa: F821
-    ] = 'info'
+    level: Levels = 'info'
     target: Target = __.sys.stderr
 
 

@@ -22,13 +22,13 @@
 
 
 import os
-import pytest
+
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-# patchfs import removed - using Patcher context manager instead
+from unittest.mock import MagicMock, patch
 
-from . import PACKAGE_NAME, cache_import_module
+import pytest
 
+from .__ import PACKAGE_NAME, cache_import_module
 
 MODULE_QNAME = f"{PACKAGE_NAME}.distribution"
 module = cache_import_module( MODULE_QNAME )

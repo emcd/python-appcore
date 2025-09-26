@@ -21,14 +21,15 @@
 ''' Application preparation and integration tests. '''
 
 
-import pytest
+import contextlib
+import io
+
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-import io
-import contextlib
 
-from . import PACKAGE_NAME, cache_import_module
+import pytest
 
+from .__ import PACKAGE_NAME, cache_import_module
 
 MODULE_QNAME = f"{PACKAGE_NAME}.preparation"
 module = cache_import_module( MODULE_QNAME )

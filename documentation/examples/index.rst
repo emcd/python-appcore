@@ -27,3 +27,4 @@ Examples
    basic-usage
    configuration
    environments
+   cli-applications

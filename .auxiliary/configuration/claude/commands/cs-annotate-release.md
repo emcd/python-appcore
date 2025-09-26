@@ -12,14 +12,15 @@ You are tasked with creating Towncrier news fragments for user-facing changes
 since the last release cleanup. This command analyzes recent commits and
 generates appropriate changelog entries.
 
-Special instructions: `$ARGUMENTS`
+Special instructions: $ARGUMENTS
 (If above line is empty, then no special instructions were given by the user.)
 
 ## Context
 
 The project uses Towncrier to manage changelogs. News fragments are stored in
 `.auxiliary/data/towncrier/` and follow specific naming and formatting
-conventions detailed in `documentation/common/releases.rst`.
+conventions detailed in the [releases
+guide](https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/releases.rst).
 
 ## Process
 

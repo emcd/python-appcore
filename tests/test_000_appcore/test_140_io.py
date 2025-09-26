@@ -22,11 +22,12 @@
 
 
 import tempfile
-import pytest
+
 from pathlib import Path
 
-from . import PACKAGE_NAME, cache_import_module
+import pytest
 
+from .__ import PACKAGE_NAME, cache_import_module
 
 MODULE_QNAME = f"{PACKAGE_NAME}.io"
 module = cache_import_module( MODULE_QNAME )

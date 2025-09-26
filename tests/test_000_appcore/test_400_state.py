@@ -21,13 +21,14 @@
 ''' Global state DTO and directory management tests. '''
 
 
-import pytest
-from pathlib import Path
-from unittest.mock import MagicMock
 import dataclasses
 
-from . import PACKAGE_NAME, cache_import_module
+from pathlib import Path
+from unittest.mock import MagicMock
 
+import pytest
+
+from .__ import PACKAGE_NAME, cache_import_module
 
 MODULE_QNAME = f"{PACKAGE_NAME}.state"
 module = cache_import_module( MODULE_QNAME )
@@ -409,12 +410,12 @@ def test_440_globals_dataclass_fields( ):
     ''' Globals has proper dataclass field definitions. '''
     fields = dataclasses.fields( module.Globals )
     # Filter out frigid internal fields
-    user_field_names = { 
-        field.name for field in fields 
+    user_field_names = {
+        field.name for field in fields
         if not field.name.startswith( '_frigid' )
     }
-    expected_fields = { 
-        'application', 'configuration', 'directories', 
-        'distribution', 'exits' 
+    expected_fields = {
+        'application', 'configuration', 'directories',
+        'distribution', 'exits'
     }
     assert user_field_names == expected_fields

@@ -21,16 +21,19 @@
 ''' Configuration acquirer and management tests. '''
 
 
+import io
 import tempfile
-import pytest
+
 from pathlib import Path
 from unittest.mock import MagicMock
-import io
 
-from . import PACKAGE_NAME, cache_import_module
+import pytest
+
+from .__ import PACKAGE_NAME, cache_import_module
 from .fixtures import (
-    create_temp_directories_and_distribution, create_config_template_files )
-
+    create_config_template_files,
+    create_temp_directories_and_distribution,
+)
 
 MODULE_QNAME = f"{PACKAGE_NAME}.configuration"
 module = cache_import_module( MODULE_QNAME )
@@ -143,7 +146,7 @@ debug = true
     try:
         directories = MagicMock( )
         distribution = MagicMock( )
-        
+
         acquirer = module.TomlAcquirer( )
         result = await acquirer(
             'path-app',
@@ -151,7 +154,7 @@ debug = true
             distribution,
             file = tmp_file_path
         )
-        
+
         assert result[ 'app' ][ 'name' ] == 'path-app'
         assert result[ 'app' ][ 'debug' ] is True
     finally:
@@ -198,30 +201,30 @@ name = "discovered-app"
 version = "1.0.0"
     '''
     # Create template file in distribution data location
-    create_config_template_files( 
-        distribution, 
+    create_config_template_files(
+        distribution,
         main_filename = 'general.toml',
-        content = template_content 
+        content = template_content
     )
     try:
         acquirer = module.TomlAcquirer( )
-        
+
         result = await acquirer(
             'test-app',
             directories,
             distribution,
             file = module.__.absent
         )
-        
+
         # Verify configuration was loaded from discovered template
         assert result[ 'app' ][ 'name' ] == 'discovered-app'
         assert result[ 'app' ][ 'version' ] == '1.0.0'
-        
+
         # Verify template was copied to user config directory
         user_config_file = directories.user_config_path / 'general.toml'
         assert user_config_file.exists( )
         assert 'discovered-app' in user_config_file.read_text( )
-        
+
     finally:
         # Clean up temp directory
         import shutil
@@ -250,8 +253,8 @@ includes = [
         distribution,
         file = file_io
     )
-    
-    # The includes configuration is parsed but won't be processed 
+
+    # The includes configuration is parsed but won't be processed
     # since no actual include files exist
     assert 'includes' in result[ 'app' ]
 
@@ -260,30 +263,30 @@ includes = [
 async def test_340_toml_acquirer_discover_copy_template( ):
     ''' Configuration acquirer discovers and copies template file. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         temp_path = Path( '/fake/config' )
         fs.create_dir( temp_path )
-        
+
         directories = MagicMock( )
         directories.user_config_path = temp_path
-        
+
         distribution = MagicMock( )
         distribution.provide_data_location.return_value = (
             temp_path / 'template.toml' )
-        
+
         # Create template file
         template_file = temp_path / 'template.toml'
         fs.create_file( template_file, contents = '''
 [app]
 name = "template-app"
         ''' )
-        
+
         acquirer = module.TomlAcquirer( )
         result_path = acquirer._discover_copy_template(
             directories, distribution )
-        
+
         assert result_path.samefile( temp_path / 'general.toml' )
         assert result_path.exists( )
         content = result_path.read_text( )
@@ -296,23 +299,23 @@ async def test_345_toml_acquirer_call_with_no_template( ):
     # Create temp directories and distribution WITHOUT template file
     directories, distribution, temp_dir = (
         create_temp_directories_and_distribution( ) )
-    
+
     try:
         acquirer = module.TomlAcquirer( )
-        
+
         result = await acquirer(
             'test-app',
             directories,
             distribution
         )
-        
+
         # Should return empty configuration when no template exists
         assert len( result ) == 0
-        
+
         # User config file should not be created when no template exists
         config_file = directories.user_config_path / 'general.toml'
         assert not config_file.exists( )
-        
+
     finally:
         import shutil
         shutil.rmtree( temp_dir )
@@ -322,28 +325,28 @@ async def test_345_toml_acquirer_call_with_no_template( ):
 async def test_350_toml_acquirer_discover_existing_file( ):
     ''' Configuration acquirer uses existing file when it exists. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-    
+
     with Patcher( ) as patcher:
         fs = patcher.fs
         temp_path = Path( '/fake/config' )
         fs.create_dir( temp_path )
-        
+
         directories = MagicMock( )
         directories.user_config_path = temp_path
-        
+
         distribution = MagicMock( )
-        
+
         # Create existing file
         existing_file = temp_path / 'general.toml'
         fs.create_file( existing_file, contents = '''
 [app]
 name = "existing-app"
         ''' )
-        
+
         acquirer = module.TomlAcquirer( )
         result_path = acquirer._discover_copy_template(
             directories, distribution )
-        
+
         assert result_path == existing_file
         # Distribution should not be called since file exists
         distribution.provide_data_location.assert_not_called( )
@@ -354,35 +357,35 @@ async def test_360_toml_acquirer_acquire_includes_with_files( ):
     ''' TomlAcquirer._acquire_includes processes file specifications. '''
     with tempfile.TemporaryDirectory( ) as temp_dir:
         temp_path = Path( temp_dir )
-        
+
         # Create include files
         include1 = temp_path / 'include1.toml'
         include1.write_text( '''
 [database]
 host = "db1.example.com"
         ''' )
-        
+
         include2 = temp_path / 'include2.toml'
         include2.write_text( '''
 [cache]
 host = "cache.example.com"
         ''' )
-        
+
         directories = MagicMock( )
         directories.user_config_path = temp_path
-        
+
         specs = ( str( temp_path ), )
-        
+
         acquirer = module.TomlAcquirer( )
         result = await acquirer._acquire_includes(
             'test-app', directories, specs )
-        
+
         assert len( result ) == 2
         # Check that both includes were processed
         combined = { }
         for include in result:
             combined.update( include )
-        
+
         assert 'database' in combined
         assert 'cache' in combined
         assert combined[ 'database' ][ 'host' ] == 'db1.example.com'
@@ -394,37 +397,37 @@ async def test_370_toml_acquirer_acquire_includes_with_directories( ):
     ''' TomlAcquirer._acquire_includes processes directory specifications. '''
     with tempfile.TemporaryDirectory( ) as temp_dir:
         temp_path = Path( temp_dir )
-        
+
         # Create include directory with files
         include_dir = temp_path / 'includes'
         include_dir.mkdir( )
-        
+
         ( include_dir / 'config1.toml' ).write_text( '''
 [service]
 name = "service1"
         ''' )
-        
+
         ( include_dir / 'config2.toml' ).write_text( '''
 [service]
 port = 8080
         ''' )
-        
+
         directories = MagicMock( )
         directories.user_config_path = temp_path
-        
+
         # Use directory spec
         specs = ( str( include_dir ), )
-        
+
         acquirer = module.TomlAcquirer( )
         result = await acquirer._acquire_includes(
             'test-app', directories, specs )
-        
+
         assert len( result ) == 2
         # Verify both files were processed
         combined = { }
         for include in result:
             combined.update( include )
-        
+
         assert 'service' in combined
         assert (
             'name' in combined[ 'service' ] or
@@ -438,10 +441,10 @@ async def test_380_toml_acquirer_acquire_includes_with_formatting( ):
     with tempfile.TemporaryDirectory( ) as temp_dir:
         temp_path = Path( temp_dir )
         # home_path = Path.home( )  # Not used
-        
+
         directories = MagicMock( )
         directories.user_config_path = temp_path
-        
+
         # Create a file using formatted path
         formatted_dir = temp_path / 'test-app'
         formatted_dir.mkdir( )
@@ -450,14 +453,14 @@ async def test_380_toml_acquirer_acquire_includes_with_formatting( ):
 [formatted]
 value = "success"
         ''' )
-        
+
         # Use formatted specification
         specs = ( '{user_configuration}/test-app/app.toml', )
-        
+
         acquirer = module.TomlAcquirer( )
         result = await acquirer._acquire_includes(
             'test-app', directories, specs )
-        
+
         assert len( result ) == 1
         assert result[ 0 ][ 'formatted' ][ 'value' ] == 'success'
 
@@ -476,7 +479,7 @@ def test_400_acquirer_abc_protocol( ):
     # Check that the protocol defines the expected abstract method
     import inspect
     assert inspect.isabstract( module.AcquirerAbc )
-    
+
     # Verify protocol structure
     assert '__call__' in module.AcquirerAbc.__abstractmethods__
 
@@ -491,7 +494,7 @@ def test_410_toml_acquirer_immutability( ):
 
 def test_420_toml_acquirer_equality( ):
     ''' TomlAcquirer instances with same data are equal. '''
-    acquirer1 = module.TomlAcquirer( 
+    acquirer1 = module.TomlAcquirer(
         main_filename = 'test.toml',
         includes_name = 'test_includes'
     )

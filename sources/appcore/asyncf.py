@@ -58,7 +58,7 @@ async def gather_async(  # noqa: F811
     ] = False,
 ) -> tuple[ __.typx.Any, ... ]:
     ''' Gathers results from invocables concurrently and asynchronously. '''
-    from exceptiongroup import ExceptionGroup # TODO: Python 3.11: builtin
+    from exceptiongroup import ExceptionGroup  # TODO: Python 3.11: builtin
     if ignore_nonawaitables:
         results = await _gather_async_permissive( operands )
     else:
@@ -96,7 +96,7 @@ async def intercept_error_async(
 async def _gather_async_permissive(
     operands: __.cabc.Sequence[ __.typx.Any ]
 ) -> __.cabc.Sequence[ __.typx.Any ]:
-    from asyncio import gather # TODO? Python 3.11: TaskGroup
+    from asyncio import gather  # TODO? Python 3.11: TaskGroup
     awaitables: dict[ int, __.cabc.Awaitable[ __.typx.Any ] ] = { }
     results: list[ _generics.GenericResult ] = [ ]
     for i, operand in enumerate( operands ):
@@ -115,8 +115,8 @@ async def _gather_async_permissive(
 async def _gather_async_strict(
     operands: __.cabc.Sequence[ __.typx.Any ]
 ) -> __.cabc.Sequence[ __.typx.Any ]:
+    from asyncio import gather  # TODO? Python 3.11: TaskGroup
     from inspect import isawaitable, iscoroutine
-    from asyncio import gather # TODO? Python 3.11: TaskGroup
     awaitables: list[ __.cabc.Awaitable[ __.typx.Any ] ] = [ ]
     for operand in operands: # Sanity check.
         if isawaitable( operand ): continue

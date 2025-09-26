@@ -1,0 +1,12 @@
+# Test configuration file for CLI coverage testing
+[test]
+setting = "test_value"
+enabled = true
+
+[app]
+name = "test-app"
+version = "1.0.0"
+
+[features]
+logging = true
+debug = false

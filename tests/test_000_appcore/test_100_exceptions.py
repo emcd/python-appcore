@@ -22,7 +22,7 @@
 
 
 
-from . import PACKAGE_NAME, cache_import_module
+from .__ import PACKAGE_NAME, cache_import_module
 
 
 MODULE_QNAME = f"{PACKAGE_NAME}.exceptions"
@@ -81,6 +81,21 @@ def test_160_operation_invalidity_hierarchy( ):
     assert isinstance( error, RuntimeError )
 
 
+def test_170_context_invalidity_hierarchy( ):
+    ''' ContextInvalidity has appropriate bases. '''
+    error = module.ContextInvalidity( { 'invalid': 'context' } )
+    assert isinstance( error, module.Omnierror )
+    assert isinstance( error, TypeError )
+    assert isinstance( error, ValueError )
+
+
+def test_180_dependency_absence_hierarchy( ):
+    ''' DependencyAbsence has appropriate bases. '''
+    error = module.DependencyAbsence( 'rich', 'CLI' )
+    assert isinstance( error, module.Omnierror )
+    assert isinstance( error, ImportError )
+
+
 def test_200_address_locate_failure_message( ):
     ''' AddressLocateFailure formats error message correctly. '''
     error = module.AddressLocateFailure(
@@ -119,11 +134,27 @@ def test_240_operation_invalidity_message( ):
     assert str( error ) == expected
 
 
+def test_250_context_invalidity_message( ):
+    ''' ContextInvalidity formats error message correctly. '''
+    error = module.ContextInvalidity( { 'test': 'data' } )
+    message = str( error )
+    assert "Invalid context object type: dict" in message
+
+
+def test_260_dependency_absence_message( ):
+    ''' DependencyAbsence formats error message correctly. '''
+    error = module.DependencyAbsence( 'rich', 'CLI' )
+    expected = "Optional dependency 'rich' missing feature 'CLI'."
+    assert str( error ) == expected
+
+
 def test_300_all_errors_catchable_by_omnierror( ):
     ''' All package errors are catchable by Omnierror. '''
     errors = [
         module.AddressLocateFailure( 'test', [ 'a' ], 'a' ),
         module.AsyncAssertionFailure( 'test' ),
+        module.ContextInvalidity( { 'test': 'data' } ),
+        module.DependencyAbsence( 'rich', 'CLI' ),
         module.EntryAssertionFailure( 'test', 'key' ),
         module.FileLocateFailure( 'test', 'file' ),
         module.OperationInvalidity( 'test', 'op' ),

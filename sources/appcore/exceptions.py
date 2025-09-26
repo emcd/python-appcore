@@ -18,7 +18,27 @@
 #============================================================================#
 
 
-''' Family of exceptions for package API. '''
+''' Family of exceptions for package API.
+
+    This module defines a comprehensive exception hierarchy for the appcore
+    library, providing specific exception types for different failure modes
+    while maintaining a consistent interface for error handling and debugging.
+
+    Exception Hierarchy
+    ===================
+
+    The exception hierarchy follows a two-tier design:
+
+    * :class:`Omniexception` - Base for all package exceptions
+    * :class:`Omnierror` - Base for error exceptions, inherits from both
+      ``Omniexception`` and ``Exception``
+
+    Usage
+    =====
+
+    Catch all package errors with :class:`Omnierror` or with built-in exception
+    types. See class inheritance for details.
+'''
 
 
 from . import __
@@ -26,10 +46,9 @@ from . import __
 
 class Omniexception(
     __.immut.Object, BaseException,
-    instances_mutables = ( '__cause__', ), # for PyPy
+    instances_mutables = ( '__cause__', '__context__' ),
     instances_visibles = (
-        '__cause__', '__context__',
-        __.immut.is_public_identifier ),
+        '__cause__', '__context__', __.immut.is_public_identifier ),
 ):
     ''' Base for all exceptions raised by package API. '''
 
@@ -54,6 +73,22 @@ class AsyncAssertionFailure( Omnierror, AssertionError, TypeError ):
 
     def __init__( self, entity: __.typx.Any ):
         super( ).__init__( f"Entity must be awaitable: {entity!r}" )
+
+
+class ContextInvalidity( Omnierror, TypeError, ValueError ):
+
+    def __init__( self, auxdata: __.typx.Any ):
+        # TODO: Add module name to fully-qualified name.
+        fqname = type( auxdata ).__qualname__
+        super( ).__init__( f"Invalid context object type: {fqname}" )
+
+
+class DependencyAbsence( Omnierror, ImportError ):
+
+    def __init__( self, dependency: str, feature: str ):
+        super( ).__init__(
+            f"Optional dependency {dependency!r} missing "
+            f"feature {feature!r}." )
 
 
 class EntryAssertionFailure( Omnierror, AssertionError, KeyError ):

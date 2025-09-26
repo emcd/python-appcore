@@ -77,22 +77,19 @@ nitpick_ignore = [
     ( 'py:class',
       "v, remove specified key and return the corresponding value." ),
     # Type annotation weirdnesses.
-    ( 'py:class', "Doc" ),
-    ( 'py:class', "absence.objects.AbsentSingleton" ),
-    ( 'py:class', "accretive.dictionaries.Dictionary" ),
+    ( 'py:class', "_io.TextIOWrapper" ),
     ( 'py:class', "appcore.dictedits.Edit" ),
     ( 'py:class', "appcore.generics.E" ),
     ( 'py:class', "appcore.generics.T" ),
     ( 'py:class', "appcore.generics.U" ),
     ( 'py:class', "builtins.NotImplementedType" ),
-    ( 'py:class', "frigid.classes.DataclassObject" ),
-    ( 'py:class', "frigid.classes.DataclassProtocol" ),
-    ( 'py:class', "frigid.classes.Object" ),
+    ( 'py:class', "E" ),
     ( 'py:class', "platformdirs.unix.Unix" ),
-    ( 'py:class', "types.Annotated" ),
     ( 'py:class', "typing_extensions.Any" ),
     ( 'py:class', "typing_extensions.Never" ),
     ( 'py:class', "typing_extensions.Self" ),
+    ( 'py:class', "typing_extensions.TypeIs" ),
+    ( 'py:class', "U" ),
     ( 'py:obj', "appcore.generics.E" ),
     ( 'py:obj', "appcore.generics.T" ),
 ]
@@ -111,6 +108,8 @@ linkcheck_ignore = [
     r'https://pypi.org/project/appcore/',
     # Github aggressively rate-limits access to certain blobs.
     r'https://github\.com/.*/.*/blob/.*',
+    # Avoid timeouts for slow sites.
+    r'http://www\.catb\.org/~esr/faqs/smart-questions\.html',
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -142,6 +141,12 @@ autodoc_use_type_comments = False
 # https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration
 
 intersphinx_mapping = {
+    'absence': (
+        'https://emcd.github.io/python-absence/stable/sphinx-html', None),
+    'accretive': (
+        'https://emcd.github.io/python-accretive/stable/sphinx-html', None),
+    'frigid': (
+        'https://emcd.github.io/python-frigid/stable/sphinx-html', None),
     'python': (
         'https://docs.python.org/3', None),
     'typing-extensions': (

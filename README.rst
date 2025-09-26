@@ -105,30 +105,10 @@ The simplest way to initialize your application:
 >>> import appcore
 >>> async def main( ):
 ...     async with contextlib.AsyncExitStack( ) as exits:
-...         # Initialize application core with auto-detection
 ...         auxdata = await appcore.prepare( exits )
 ...         print( f"App: {auxdata.application.name}" )
-...         print( f"Mode: {'dev' if auxdata.distribution.editable else 'prod'}" )
 ...         return auxdata.configuration
 >>> # asyncio.run( main( ) )  # Returns configuration dictionary
-
-
-Configuration Access ⚙️
--------------------------------------------------------------------------------
-
-Access your application's TOML configuration:
-
->>> async def show_config( ):
-...     async with contextlib.AsyncExitStack( ) as exits:
-...         auxdata = await appcore.prepare( exits )
-...         config = auxdata.configuration
-...         # Configuration loaded from general.toml in user config directory
-...         print( f"Available sections: {list( config.keys( ) )}" )
-...         # Access nested configuration values
-...         if 'app' in config:
-...             print( f"App name: {config[ 'app' ].get( 'name', 'Unknown' )}" )
-...         return config
->>> # asyncio.run( show_config( ) )
 
 
 Platform Directories 📁
@@ -136,32 +116,43 @@ Platform Directories 📁
 
 Access platform-specific directories for your application:
 
->>> async def show_directories( ):
+>>> async def display_directories( ):
 ...     async with contextlib.AsyncExitStack( ) as exits:
-...         app_info = appcore.ApplicationInformation(
+...         application = appcore.ApplicationInformation(
 ...             name = 'my-app', publisher = 'MyCompany' )
-...         auxdata = await appcore.prepare( exits, application = app_info )
+...         auxdata = await appcore.prepare( exits, application = application )
 ...         dirs = auxdata.directories
 ...         print( f"Config: {dirs.user_config_path}" )
 ...         print( f"Data: {dirs.user_data_path}" )
 ...         print( f"Cache: {dirs.user_cache_path}" )
->>> # asyncio.run( show_directories( ) )
+>>> # asyncio.run( display_directories( ) )
 
-Logging Configuration 📝
+
+Building CLI Applications 🔧
 -------------------------------------------------------------------------------
 
-Configure logging with Rich support and environment overrides:
+Build command-line applications using the ``appcore.cli`` module:
 
->>> import appcore
->>> async def setup_logging( ):
-...     async with contextlib.AsyncExitStack( ) as exits:
-...         # Rich logging with environment variable support
-...         inscription = appcore.inscription.Control(
-...             mode = appcore.inscription.Modes.Rich, level = 'debug' )
-...         auxdata = await appcore.prepare( exits, inscription = inscription )
-...         # Logging level can be overridden via MY_APP_INSCRIPTION_LEVEL
-...         return "Logging configured"
->>> # asyncio.run( setup_logging( ) )
+>>> import asyncio
+>>> from appcore import cli, state
+>>> class HelloCommand( cli.Command ):
+...     async def execute( self, auxdata: state.Globals ) -> None:
+...         print( f"Hello from {auxdata.application.name}!" )
+>>> class MyApplication( cli.Application ):
+...     async def execute( self, auxdata: state.Globals ) -> None:
+...         command = HelloCommand( )
+...         await command( auxdata )
+>>> # asyncio.run( MyApplication( )( ) )
+
+The ``appcore`` CLI tool demonstrates these capabilities in action - inspect configuration, environment variables, and platform directories:
+
+::
+
+    $ python -m appcore configuration --display.presentation json
+    $ python -m appcore environment
+    $ python -m appcore directories --display.target-file dirs.txt
+
+For a comprehensive implementation example, see ``sources/appcore/introspection.py`` which shows advanced patterns including subcommands, display options, and presentation formats.
 
 
 Dependencies & Architecture 🏛️
@@ -209,7 +200,7 @@ For development guidance and standards, please see the `development guide
 <https://emcd.github.io/python-appcore/stable/sphinx-html/contribution.html#development>`_.
 
 
-`More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
+Additional Indicia
 ===============================================================================
 
 .. image:: https://img.shields.io/github/last-commit/emcd/python-appcore
