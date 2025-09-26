@@ -23,6 +23,19 @@ Release Notes
 
 .. towncrier release notes start
 
+appcore 1.5 (2025-09-26)
+========================
+
+Enhancements
+------------
+
+- CLI: Add comprehensive CLI application framework with Command and Application base classes, supporting JSON, Plain, Rich, and TOML output formats, file and stream routing, and built-in introspection commands for configuration, environment, and directories.
+- CLI: Add graceful handling for Git Bash/Mintty terminals with Unicode limitations, displaying user-friendly guidance instead of crashing on help requests.
+- Compatibility: Improve PyPy support with enhanced exception handling patterns.
+- Dependencies: Add compatible version constraints to all production dependencies for more predictable and reproducible installations.
+- Documentation: Add comprehensive CLI applications guide, complete API documentation for all modules, architecture overview with ADRs, and enhanced README with practical usage examples.
+
+
 Appcore 1.4 (2025-07-20)
 ========================
 
