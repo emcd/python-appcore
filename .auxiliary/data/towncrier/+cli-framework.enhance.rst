@@ -1,1 +1,0 @@
-CLI: Add comprehensive CLI application framework with Command and Application base classes, supporting JSON, Plain, Rich, and TOML output formats, file and stream routing, and built-in introspection commands for configuration, environment, and directories.
