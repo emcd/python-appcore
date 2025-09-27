@@ -109,9 +109,12 @@ class DisplayOptions( __.immut.DataclassObject ):
         ''' Determines whether to use colorized output. '''
         if self.assume_rich_terminal:
             return self.colorize
+        if not self.colorize:
+            return False
+        if __.os.environ.get( 'NO_COLOR' ):
+            return False
         return (
-                self.colorize
-            and hasattr( stream, 'isatty' )
+            hasattr( stream, 'isatty' )
             and stream.isatty( ) )
 
     async def provide_stream(
