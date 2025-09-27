@@ -90,6 +90,20 @@ Or, install via ``pip``:
 
     pip install emcd-appcore
 
+**Optional Dependencies** ⚙️
+
+For CLI applications, install the ``cli`` extra which includes Tyro and Rich:
+
+::
+
+    pip install emcd-appcore[cli]
+
+For enhanced console output without CLI framework:
+
+::
+
+    pip install emcd-appcore[rich]
+
 
 Examples 💡
 ===============================================================================
