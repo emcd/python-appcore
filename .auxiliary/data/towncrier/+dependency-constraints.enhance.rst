@@ -1,1 +1,0 @@
-Dependencies: Add compatible version constraints to all production dependencies for more predictable and reproducible installations.

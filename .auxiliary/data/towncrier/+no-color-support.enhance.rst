@@ -1,0 +1,1 @@
+CLI: Add NO_COLOR environment variable support to disable colorized output.

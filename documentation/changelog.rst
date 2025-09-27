@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+appcore 1.6 (2025-09-27)
+========================
+
+Enhancements
+------------
+
+- CLI: Add NO_COLOR environment variable support to disable colorized output.
+- Documentation: Enhance CLI framework documentation with practical examples and optional dependency installation instructions.
+
+
 appcore 1.5 (2025-09-26)
 ========================
 

@@ -43,6 +43,51 @@
       output
     * Stream routing (stdout/stderr) and file output capabilities
     * Rich terminal detection with colorization control
+
+    Example Usage
+    =============
+
+    Basic CLI application with custom display options and subcommands::
+
+        from appcore import cli, state
+
+        class MyDisplayOptions( cli.DisplayOptions ):
+            format: str = 'table'
+
+        class MyGlobals( state.Globals ):
+            display: MyDisplayOptions
+
+        class StatusCommand( cli.Command ):
+            async def execute( self, auxdata: state.Globals ) -> None:
+                if isinstance( auxdata, MyGlobals ):
+                    format_val = auxdata.display.format
+                    print( f"Status: Running (format: {format_val})" )
+
+        class InfoCommand( cli.Command ):
+            async def execute( self, auxdata: state.Globals ) -> None:
+                print( f"App: {auxdata.application.name}" )
+
+        class MyApplication( cli.Application ):
+            display: MyDisplayOptions = __.dcls.field(
+                default_factory = MyDisplayOptions )
+            command: __.typx.Union[
+                __.typx.Annotated[
+                    StatusCommand,
+                    _tyro.conf.subcommand( 'status', prefix_name = False ),
+                ],
+                __.typx.Annotated[
+                    InfoCommand,
+                    _tyro.conf.subcommand( 'info', prefix_name = False ),
+                ],
+            ] = __.dcls.field( default_factory = StatusCommand )
+
+            async def execute( self, auxdata: state.Globals ) -> None:
+                await self.command( auxdata )
+
+            async def prepare( self, exits ) -> state.Globals:
+                auxdata_base = await super( ).prepare( exits )
+                return MyGlobals(
+                    display = self.display, **auxdata_base.__dict__ )
 '''
 
 
@@ -78,7 +123,14 @@ class TargetStreams( __.enum.Enum ): # TODO: Python 3.11: StrEnum
 
 
 class DisplayOptions( __.immut.DataclassObject ):
-    ''' Standardized display configuration for CLI applications. '''
+    ''' Standardized display configuration for CLI applications.
+
+    Example::
+
+        class MyDisplayOptions( DisplayOptions ):
+            format: str = 'table'
+            compact: bool = False
+    '''
 
     colorize: __.typx.Annotated[
         bool,
@@ -107,12 +159,10 @@ class DisplayOptions( __.immut.DataclassObject ):
 
     def determine_colorization( self, stream: __.typx.TextIO ) -> bool:
         ''' Determines whether to use colorized output. '''
-        if self.assume_rich_terminal:
-            return self.colorize
-        return (
-                self.colorize
-            and hasattr( stream, 'isatty' )
-            and stream.isatty( ) )
+        if self.assume_rich_terminal: return self.colorize
+        if not self.colorize: return False
+        if __.os.environ.get( 'NO_COLOR' ): return False
+        return hasattr( stream, 'isatty' ) and stream.isatty( )
 
     async def provide_stream(
         self, exits: __.ctxl.AsyncExitStack
@@ -174,7 +224,14 @@ class Command(
     __.immut.DataclassProtocol, __.typx.Protocol,
     decorators = ( __.typx.runtime_checkable, ),
 ):
-    ''' Standard interface for command implementations. '''
+    ''' Standard interface for command implementations.
+
+    Example::
+
+        class StatusCommand( Command ):
+            async def execute( self, auxdata: state.Globals ) -> None:
+                print( f"Application: {auxdata.application.name}" )
+    '''
 
     async def __call__( self, auxdata: _state.Globals ) -> None:
         ''' Prepares session context and executes command. '''
@@ -194,7 +251,17 @@ class Application(
     __.immut.DataclassProtocol, __.typx.Protocol,
     decorators = ( __.typx.runtime_checkable, ),
 ):
-    ''' Common infrastructure and standard interface for applications. '''
+    ''' Common infrastructure and standard interface for applications.
+
+    Example::
+
+        class MyApplication( Application ):
+            display: DisplayOptions = __.dcls.field(
+                default_factory = DisplayOptions )
+
+            async def execute( self, auxdata: state.Globals ) -> None:
+                print( f"Application: {auxdata.application.name}" )
+    '''
 
     configfile: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
