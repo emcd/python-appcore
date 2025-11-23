@@ -20,3 +20,7 @@ Null
 Modes
 Append
 as_dictionary
+
+rich
+intercept_errors
+render_and_print

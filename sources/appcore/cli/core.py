@@ -20,10 +20,9 @@
 
 ''' CLI foundation classes and interfaces.
 
-    This module provides the core infrastructure for building command-line
-    interfaces. It offers a comprehensive framework for creating CLI
-    applications with rich presentation options, flexible output routing, and
-    integrated logging capabilities.
+    Core infrastructure for building command-line interfaces. Comprehensive
+    framework for creating CLI applications with rich presentation options,
+    flexible output routing, and integrated logging capabilities.
 
     Key Components
     ==============
@@ -32,7 +31,7 @@
     -----------------
     * :class:`Command` - Abstract base class for CLI command implementations
     * :class:`Application` dataclass for command-line application configuration
-    * Rich integration with tyro for automatic argument parsing and help
+    * Rich integration with Tyro for automatic argument parsing and help
       generation
 
     Display and Output Control
@@ -73,11 +72,11 @@
             command: __.typx.Union[
                 __.typx.Annotated[
                     StatusCommand,
-                    _tyro.conf.subcommand( 'status', prefix_name = False ),
+                    __.tyro.conf.subcommand( 'status', prefix_name = False ),
                 ],
                 __.typx.Annotated[
                     InfoCommand,
-                    _tyro.conf.subcommand( 'info', prefix_name = False ),
+                    __.tyro.conf.subcommand( 'info', prefix_name = False ),
                 ],
             ] = __.dcls.field( default_factory = StatusCommand )
 
@@ -92,27 +91,10 @@
 
 
 from . import __
-from . import exceptions as _exceptions
-from . import inscription as _inscription
-from . import preparation as _preparation
-from . import state as _state
 
 
-try: import rich
-except ImportError as _error:  # pragma: no cover
-    raise _exceptions.DependencyAbsence( 'rich', 'CLI' ) from _error
-else: del rich
-try: import tomli_w
-except ImportError as _error:  # pragma: no cover
-    raise _exceptions.DependencyAbsence( 'tomli-w', 'CLI' ) from _error
-else: del tomli_w
-try: import tyro as _tyro
-except ImportError as _error:  # pragma: no cover
-    raise _exceptions.DependencyAbsence( 'tyro', 'CLI' ) from _error
-
-
-_DisplayTargetMutex = _tyro.conf.create_mutex_group( required = False )
-_InscriptionTargetMutex = _tyro.conf.create_mutex_group( required = False )
+_DisplayTargetMutex = __.tyro.conf.create_mutex_group( required = False )
+_InscriptionTargetMutex = __.tyro.conf.create_mutex_group( required = False )
 
 
 class TargetStreams( __.enum.Enum ): # TODO: Python 3.11: StrEnum
@@ -123,36 +105,36 @@ class TargetStreams( __.enum.Enum ): # TODO: Python 3.11: StrEnum
 
 
 class DisplayOptions( __.immut.DataclassObject ):
-    ''' Standardized display configuration for CLI applications.
+    ''' Base display configuration for CLI applications.
 
-    Example::
+        Example::
 
-        class MyDisplayOptions( DisplayOptions ):
-            format: str = 'table'
-            compact: bool = False
+            class MyDisplayOptions( DisplayOptions ):
+                format: str = 'table'
+                compact: bool = False
     '''
 
     colorize: __.typx.Annotated[
         bool,
-        _tyro.conf.arg(
+        __.tyro.conf.arg(
             aliases = ( '--ansi-sgr', ),
             help = "Enable colored output and terminal formatting." ),
     ] = True
     target_file: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
         _DisplayTargetMutex,
-        _tyro.conf.DisallowNone,
-        _tyro.conf.arg( help = "Render output to specified file." ),
+        __.tyro.conf.DisallowNone,
+        __.tyro.conf.arg( help = "Render output to specified file." ),
     ] = None
     target_stream: __.typx.Annotated[
         __.typx.Optional[ TargetStreams ],
         _DisplayTargetMutex,
-        _tyro.conf.DisallowNone,
-        _tyro.conf.arg( help = "Render output on stdout or stderr." ),
+        __.tyro.conf.DisallowNone,
+        __.tyro.conf.arg( help = "Render output on stdout or stderr." ),
     ] = TargetStreams.Stdout
     assume_rich_terminal: __.typx.Annotated[
         bool,
-        _tyro.conf.arg(
+        __.tyro.conf.arg(
             aliases = ( '--force-tty', ),
             help = "Assume Rich terminal capabilities regardless of TTY." ),
     ] = False
@@ -178,32 +160,38 @@ class DisplayOptions( __.immut.DataclassObject ):
             case TargetStreams.Stderr: return __.sys.stderr
 
 
+class Globals( __.Globals ):
+    ''' Application state with display options. '''
+
+    display: DisplayOptions = __.dcls.field( default_factory = DisplayOptions )
+
+
 class InscriptionControl( __.immut.DataclassObject ):
     ''' Inscription (logging, debug prints) control. '''
 
     level: __.typx.Annotated[
-        _inscription.Levels, _tyro.conf.arg( help = "Log verbosity." )
+        __.inscription.Levels, __.tyro.conf.arg( help = "Log verbosity." )
     ] = 'info'
     presentation: __.typx.Annotated[
-        _inscription.Presentations,
-        _tyro.conf.arg( help = "Log presentation mode (format)." ),
-    ] = _inscription.Presentations.Plain
+        __.inscription.Presentations,
+        __.tyro.conf.arg( help = "Log presentation mode (format)." ),
+    ] = __.inscription.Presentations.Plain
     target_file: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
         _InscriptionTargetMutex,
-        _tyro.conf.DisallowNone,
-        _tyro.conf.arg( help = "Log to specified file." ),
+        __.tyro.conf.DisallowNone,
+        __.tyro.conf.arg( help = "Log to specified file." ),
     ] = None
     target_stream: __.typx.Annotated[
         __.typx.Optional[ TargetStreams ],
         _InscriptionTargetMutex,
-        _tyro.conf.DisallowNone,
-        _tyro.conf.arg( help = "Log to stdout or stderr." ),
+        __.tyro.conf.DisallowNone,
+        __.tyro.conf.arg( help = "Log to stdout or stderr." ),
     ] = TargetStreams.Stderr
 
     def as_control(
         self, exits: __.ctxl.AsyncExitStack
-    ) -> _inscription.Control:
+    ) -> __.inscription.Control:
         ''' Produces compatible inscription control for appcore. '''
         if self.target_file is not None:
             target_location = self.target_file.resolve( )
@@ -214,7 +202,7 @@ class InscriptionControl( __.immut.DataclassObject ):
             match target_stream_:
                 case TargetStreams.Stdout: target_stream = __.sys.stdout
                 case TargetStreams.Stderr: target_stream = __.sys.stderr
-        return _inscription.Control(
+        return __.inscription.Control(
             mode = self.presentation,
             level = self.level,
             target = target_stream )
@@ -233,16 +221,16 @@ class Command(
                 print( f"Application: {auxdata.application.name}" )
     '''
 
-    async def __call__( self, auxdata: _state.Globals ) -> None:
+    async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Prepares session context and executes command. '''
         await self.execute( await self.prepare( auxdata ) )
 
     @__.abc.abstractmethod
-    async def execute( self, auxdata: _state.Globals ) -> None:
+    async def execute( self, auxdata: __.Globals ) -> None:
         ''' Executes command. '''
         raise NotImplementedError  # pragma: no cover
 
-    async def prepare( self, auxdata: _state.Globals ) -> _state.Globals:
+    async def prepare( self, auxdata: __.Globals ) -> __.Globals:
         ''' Prepares session context. '''
         return auxdata
 
@@ -256,6 +244,7 @@ class Application(
     Example::
 
         class MyApplication( Application ):
+
             display: DisplayOptions = __.dcls.field(
                 default_factory = DisplayOptions )
 
@@ -265,10 +254,10 @@ class Application(
 
     configfile: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
-        _tyro.conf.arg( help = "Path to configuration file." ),
+        __.tyro.conf.arg( help = "Path to configuration file." ),
     ] = None
     environment: __.typx.Annotated[
-        bool, _tyro.conf.arg( help = "Load environment from dotfiles?" )
+        bool, __.tyro.conf.arg( help = "Load environment from dotfiles?" )
     ] = True
     inscription: InscriptionControl = __.dcls.field(
         default_factory = InscriptionControl )
@@ -280,15 +269,15 @@ class Application(
             await self.execute( auxdata )
 
     @__.abc.abstractmethod
-    async def execute( self, auxdata: _state.Globals ) -> None:
+    async def execute( self, auxdata: __.Globals ) -> None:
         ''' Executes command. '''
         raise NotImplementedError  # pragma: no cover
 
-    async def prepare( self, exits: __.ctxl.AsyncExitStack ) -> _state.Globals:
+    async def prepare( self, exits: __.ctxl.AsyncExitStack ) -> __.Globals:
         ''' Prepares session context. '''
         nomargs: __.NominativeArguments = dict(
             environment = self.environment,
             inscription = self.inscription.as_control( exits ) )
         if self.configfile is not None:
             nomargs[ 'configfile' ] = self.configfile
-        return await _preparation.prepare( exits, **nomargs )
+        return await __.prepare( exits, **nomargs )
