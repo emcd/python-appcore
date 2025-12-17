@@ -24,3 +24,7 @@ as_dictionary
 rich
 intercept_errors
 render_and_print
+
+active_flavors
+ictr_alias
+trace_levels

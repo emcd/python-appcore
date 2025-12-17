@@ -169,6 +169,17 @@ class Globals( __.Globals ):
 class InscriptionControl( __.immut.DataclassObject ):
     ''' Inscription (logging, debug prints) control. '''
 
+    # TODO: Way to activate/deactivate all flavors (globally or per-address).
+    #       Format: --activate-all-flavors
+    #       Format: --activate-all-flavors-for <address>
+    #       Format: --deactivate-all-flavors
+    #       Format: --deactivate-all-flavors-for <address>
+    # TODO: Way to activate particular flavors (globally or per-address).
+    #       Format: --active-flavor <name>
+    #       Format: --active-flavor <address>:<name>
+    # TODO: Way to assign trace levels (globally or per-address).
+    #       Format: --trace-level <n>
+    #       Format: --trace-level <address>:<n>
     level: __.typx.Annotated[
         __.inscription.Levels, __.tyro.conf.arg( help = "Log verbosity." )
     ] = 'info'
