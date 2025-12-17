@@ -109,13 +109,13 @@ strict-naming = false
 python = '3.10'
 [tool.hatch.envs.develop]
 description = ''' Development environment. '''
+builder = true
 dependencies = [
-  'Jinja2',
   'coverage[toml]',
   'emcd-appcore[cli]',
   'furo',
   'isort',
-  'packaging',
+  'myst-parser',
   'pre-commit',
   'pyfakefs',
   'pyright',
@@ -148,6 +148,7 @@ docsgen = [
 ]
 linters = [
   """ruff check --quiet sources documentation tests""",
+  """vibelinter check""",
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
   """isort --check-only --diff sources tests""",
@@ -395,6 +396,10 @@ showcontent = true
 directory = 'repair'
 name = 'Repairs'
 showcontent = true
+
+[tool.vibelinter]
+context = 3
+exclude_paths = [ '.auxiliary/**', '.venv/**', 'tests/**',  ]
 
 [tool.vulture]
 paths = [ '.auxiliary/configuration/vulturefood.py', 'sources' ]
