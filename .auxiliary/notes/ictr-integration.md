@@ -301,8 +301,63 @@ dependencies = [
 
 1. Add `ictr >= 1.0a1` to dependencies
 
+## Presentation Integration
+
+The `ictr` package now provides `Presentation` protocol and concrete implementations
+(`PlaintextPresentation`, `JsonPresentation`, `MarkdownPresentation`) for rendering
+objects that implement the corresponding renderable protocols.
+
+### Display Architecture Decision
+
+**DisplayOptions removed from Globals/auxdata**: Commands return renderable results that
+bubble up to the `Application` instance. The application handles presentation using its
+own `DisplayOptions`, eliminating the need to thread display context through command
+execution.
+
+```python
+# Application handles rendering
+class Application:
+    display: DisplayOptions
+
+    async def execute_command(self, command: Command) -> None:
+        result = await command.execute(auxdata)  # No display options needed
+        await self.render_result(result)  # Application controls presentation
+
+    async def render_result(self, obj: object) -> None:
+        # Select presentation based on display options
+        presentation = self._select_presentation()
+
+        # Create linearizer state from printer
+        printer = self._create_printer()
+        control = printer.provide_textualization_control()
+        auxdata = ictr.standard.LinearizerState.from_configuration(
+            ictr.standard.LinearizerConfiguration(), control)
+
+        # Render
+        text = presentation.render(auxdata, obj)
+        await self._write_output(text)
+```
+
+### Progress Reporting
+
+For commands that need progress updates, the application provides a callback:
+
+```python
+class Globals:
+    progress_reporter: Optional[Callable[[str], None]] = None
+
+class Application:
+    def create_progress_reporter(self) -> Callable[[str], None]:
+        """Creates progress callback bound to application's display settings."""
+        def report(message: str) -> None:
+            if self.display.colorize:
+                # Use ictr or rich formatting
+                ictr('note')(message)
+            else:
+                print(message, file=self.display.target)
+        return report
+```
+
 ## Open Questions
 
-1. **CLI flavor syntax**: The proposal uses `tuple[ str, ... ]` which Tyro handles as
-   repeated flags (e.g., `--active-flavors note --active-flavors error`). This should
-   work correctly without any special parsing.
+None - architecture aligned with ictr Presentation pattern.

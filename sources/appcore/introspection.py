@@ -113,102 +113,51 @@
 '''
 
 
-import json as _json
-
 from . import __
 from . import cli as _cli
 from . import exceptions as _exceptions
 from . import state as _state
 
 
-try: import rich.console as _rich_console
-except ImportError as _error:  # pragma: no cover
-    raise _exceptions.DependencyAbsence( 'rich', 'CLI' ) from _error
-try: import tomli_w as _tomli_w
-except ImportError as _error:  # pragma: no cover
-    raise _exceptions.DependencyAbsence( 'tomli-w', 'CLI' ) from _error
 try: import tyro as _tyro
 except ImportError as _error:  # pragma: no cover
     raise _exceptions.DependencyAbsence( 'tyro', 'CLI' ) from _error
 
 
-class Presentations( __.enum.Enum ): # TODO: Python 3.11: StrEnum
-    ''' Presentation mode (format) for CLI output. '''
+class ConfigurationResult( _cli.Result ):
+    ''' Result from configuration introspection. '''
 
-    Json    = 'json'
-    Plain   = 'plain'
-    Rich    = 'rich'
-    Toml    = 'toml'
+    configuration: dict[ str, __.typx.Any ]
 
 
-class DisplayOptions( _cli.DisplayOptions ):
-    ''' Display options, including presentation mode. '''
+class DirectoriesResult( _cli.Result ):
+    ''' Result from directories introspection. '''
 
-    presentation: __.typx.Annotated[
-        Presentations,
-        _tyro.conf.arg( help = "Output presentation mode (format)." ),
-    ] = Presentations.Rich
-
-    async def render( self, data: __.typx.Any ) -> None:
-        ''' Renders data according to display options. '''
-        async with __.ctxl.AsyncExitStack( ) as exits:
-            target = await self.provide_stream( exits )
-            match self.presentation:
-                case Presentations.Json:
-                    content = _json.dumps(
-                        data, indent = 2, ensure_ascii = False )
-                    print( content, file = target )
-                case Presentations.Plain:
-                    self._render_plain( data, target )
-                case Presentations.Rich:
-                    if self.determine_colorization( target ):
-                        self._render_rich( data, target)
-                    else: self._render_plain( data, target )
-                case Presentations.Toml:
-                    content = _tomli_w.dumps( data )
-                    print( content, file = target )
-
-    def _render_plain(
-        self, data: __.typx.Any, target: __.typx.TextIO
-    ) -> None:
-        ''' Renders object in plain text format. '''
-        if isinstance( data, __.cabc.Mapping ):
-            for key, value in data.items( ):  # pyright: ignore
-                print( f"{key}: {value}", file = target )
-        else: print( data, file = target )  # pragma: no cover
-
-    def _render_rich(
-        self, data: __.typx.Any, target: __.typx.TextIO
-    ) -> None:
-        ''' Renders object using Rich formatting. '''
-        console = _rich_console.Console(
-            file = target,
-            color_system = 'auto' if self.colorize else None )
-        console.print( data )
+    directories: dict[ str, __.typx.Any ]
+    # application_cache: str
+    # application_data: str
+    # application_state: str
+    # package_data: str
 
 
-class Globals( _state.Globals ):
-    ''' Includes display options. '''
+class EnvironmentResult( _cli.Result ):
+    ''' Result from environment introspection. '''
 
-    display: DisplayOptions = __.dcls.field( default_factory = DisplayOptions )
+    environment: dict[ str, __.typx.Any ]
 
 
 class IntrospectConfigurationCommand( _cli.Command ):
     ''' Shows finalized application configuration. '''
 
-    async def execute( self, auxdata: _state.Globals ) -> None:
-        if not isinstance( auxdata, Globals ):  # pragma: no cover
-            raise _exceptions.ContextInvalidity( auxdata )
-        data = dict( auxdata.configuration )
-        await auxdata.display.render( data )
+    async def __call__( self, auxdata: _state.Globals ) -> object:
+        return ConfigurationResult(
+            configuration = dict( auxdata.configuration ) )
 
 
 class IntrospectDirectoriesCommand( _cli.Command ):
     ''' Shows application and package directories. '''
 
-    async def execute( self, auxdata: _state.Globals ):
-        if not isinstance( auxdata, Globals ):  # pragma: no cover
-            raise _exceptions.ContextInvalidity( auxdata )
+    async def __call__( self, auxdata: _state.Globals ) -> object:
         directories = {
             'application-cache': str( auxdata.provide_cache_location( ) ),
             'application-data': str( auxdata.provide_data_location( ) ),
@@ -217,26 +166,23 @@ class IntrospectDirectoriesCommand( _cli.Command ):
                 auxdata.distribution.provide_data_location( )
             ),
         }
-        await auxdata.display.render( directories )
+        return DirectoriesResult( directories = directories )
 
 
 class IntrospectEnvironmentCommand( _cli.Command ):
     ''' Shows application-specific environment variables. '''
 
-    async def execute( self, auxdata: _state.Globals ) -> None:
-        if not isinstance( auxdata, Globals ):  # pragma: no cover
-            raise _exceptions.ContextInvalidity( auxdata )
+    async def __call__( self, auxdata: _state.Globals ) -> object:
         name = auxdata.application.name.upper( )
         envvars = {
             k: v for k, v in __.os.environ.items( )
             if k.startswith( f"{name}_" ) }
-        await auxdata.display.render( envvars )
+        return EnvironmentResult( environment = envvars )
 
 
 class Application( _cli.Application ):
     ''' Application for introspection of configuration. '''
 
-    display: DisplayOptions = __.dcls.field( default_factory = DisplayOptions )
     command: __.typx.Union[
         __.typx.Annotated[
             IntrospectConfigurationCommand,
@@ -254,14 +200,6 @@ class Application( _cli.Application ):
 
     async def execute( self, auxdata: _state.Globals ) -> None:
         await self.command( auxdata )
-
-    async def prepare( self, exits: __.ctxl.AsyncExitStack ) -> _state.Globals:
-        auxdata_base = await super( ).prepare( exits )
-        nomargs = {
-            field.name: getattr( auxdata_base, field.name )
-            for field in __.dcls.fields( auxdata_base )
-            if not field.name.startswith( '_' ) }
-        return Globals( display = self.display, **nomargs )
 
 
 def execute_cli( ) -> None:

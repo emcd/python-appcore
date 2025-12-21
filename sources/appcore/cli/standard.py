@@ -21,91 +21,40 @@
 ''' Standard renderers for basic CLI display presentation modes. '''
 
 
-import json as _json
-
 from . import __
 from . import core as _core
 
 
-class Presentations( __.enum.Enum ): # TODO: Python 3.11: StrEnum
-    ''' Basic presentation modes (formats). '''
-
-    Json        = 'json'
-    Markdown    = 'markdown'
-    Toml        = 'toml'
-
-
-class DisplayOptions( _core.DisplayOptions ):
-    ''' Display options with presentation modes. '''
-
-    compact: __.typx.Annotated[
-        bool, __.ddoc.Doc( ''' Display CLI results compactly? ''' ),
-    ] = False
-    presentation: __.typx.Annotated[
-        Presentations,
-        __.ddoc.Doc( ''' Presentation mode for CLI display. ''' ),
-    ] = Presentations.Markdown
-
-
-class Globals( __.Globals ):
-    ''' Application state with display options. '''
-
-    display: DisplayOptions = __.dcls.field( default_factory = DisplayOptions )
-
-
-class Renderable(
-    __.immut.DataclassProtocol, __.typx.Protocol,
-    decorators = ( __.typx.runtime_checkable, ),
-):
-    ''' Base class for objects which can render themselves. '''
-
-    @__.abc.abstractmethod
-    def render_dictionary( self ) -> dict[ str, __.typx.Any ]:
-        ''' Returns dictionary representation of object attributes. '''
-        raise NotImplementedError
-
-    def render_json( self, compact: bool = False, indent: int = 2 ) -> str:
-        ''' Renders object as JSON into string. '''
-        dictionary = self.render_dictionary( )
-        if compact:
-            return _json.dumps(
-                dictionary, ensure_ascii = False, separators = ( ',', ':' ) )
-        return _json.dumps( dictionary, ensure_ascii = False, indent = indent )
-
-    def render_markdown( self, display: DisplayOptions ) -> tuple[ str, ... ]:
-        ''' Renders object as Markdown into sequence of lines. '''
-        # TODO: Implement.
-        return ( )
-
-    def render_toml( self ) -> str:
-        ''' Renders object as TOML into string. '''
-        return __.tomli_w.dumps( self.render_dictionary( ) )
-
-
 @__.ctxl.asynccontextmanager
 async def intercept_errors(
-    auxdata: Globals
+    application: _core.Application, auxdata: __.Globals
 ) -> __.cabc.AsyncIterator[ None ]:
     # TODO? Utilize mapping of exceptions to exit codes.
     ''' Context manager which intercepts and renders exceptions. '''
     try: yield
-    # TODO: Handle renderable exceptions.
     except ( KeyboardInterrupt, SystemExit ): raise
     except BaseException as exc:
-        # TODO: Implement.
+        await render_and_print( application, auxdata, exc )
         raise SystemExit( 1 ) from exc
 
 
-async def render_and_print( auxdata: Globals, renderable: Renderable ) -> None:
+async def render_and_print(
+    application: _core.Application, auxdata: __.Globals, entity: object
+) -> None:
     ''' Renders and prints object according to display options. '''
-    display = auxdata.display
     exits = auxdata.exits
-    stream = await display.provide_stream( exits )
-    match display.presentation:
-        case Presentations.Json:
-            text = renderable.render_json( compact = display.compact )
-        case Presentations.Markdown:
-            text = '\n'.join( renderable.render_markdown( display ) )
-        case Presentations.Toml:
-            text = renderable.render_toml( )
-    print( text, file = stream )
+    printer = await application.clioptions.provide_printer( exits )
+    control = printer.provide_textualization_control( )
+    if not control: raise RuntimeError  # TODO: Appropriate error.
+    presentation_name = application.clioptions.presentation
+    try: presentation_ = _core.presentations_registry[ presentation_name ]
+    except LookupError as exc:
+        raise ValueError from exc  # TODO: Appropriate error.
+    presentation = (
+        getattr( application, presentation_ )
+        if isinstance( presentation_, str )
+        else presentation_( ) )
+    state = __.ictrstd.LinearizerState.from_configuration(
+        __.ictrstd.LinearizerConfiguration( ), control )
+    text = presentation.render( state, entity )
+    printer( text )

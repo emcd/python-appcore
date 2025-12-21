@@ -72,7 +72,7 @@ class Control( __.immut.DataclassObject ):
     ''' Application inscription configuration. '''
 
     active_flavors: __.Absential[ __.ictr.ActiveFlavorsArgument ] = __.absent
-    ictr_alias: __.Absential[ str ] = __.absent
+    dispatcher_alias: __.Absential[ str ] = __.absent
     level: Levels = 'info'
     mode: Presentations = Presentations.Plain
     target: Target = __.sys.stderr
@@ -82,6 +82,7 @@ class Control( __.immut.DataclassObject ):
 def prepare( auxdata: _state.Globals, /, control: Control ) -> None:
     ''' Prepares various scribes in a sensible manner. '''
     target = _process_target( auxdata, control )
+    _prepare_scribes_ictr( auxdata, control, target )
     _prepare_scribes_logging( auxdata, control, target )
 
 
@@ -128,6 +129,27 @@ def _prepare_logging_rich(
     _logging.basicConfig(
         force = True, level = level, handlers = ( handler, ) )
 
+
+def _prepare_scribes_ictr(
+    auxdata: _state.Globals, control: Control, /, target: __.typx.TextIO
+) -> None:
+    # TODO? Register application address. Maybe not necessary.
+    # TODO: Pull 'colorize' boolean directly through from CLI.
+    colorize = control.mode is Presentations.Rich
+    application_name = ''.join(
+        c.upper( ) if c.isalnum( ) else '_'
+        for c in auxdata.application.name )
+    evname_active_flavors = f"{application_name}_ACTIVE_FLAVORS"
+    evname_trace_levels = f"{application_name}_TRACE_LEVELS"
+    __.ictr.install(
+        active_flavors = control.active_flavors,
+        alias = control.dispatcher_alias,
+        evname_active_flavors = evname_active_flavors,
+        evname_trace_levels = evname_trace_levels,
+        printer_factories = (
+            __.ictr.produce_printer_factory_default(
+                target, colorize = colorize ) ),
+        trace_levels = control.trace_levels )
 
 def _prepare_scribes_logging(
     auxdata: _state.Globals, control: Control, /, target: __.typx.TextIO

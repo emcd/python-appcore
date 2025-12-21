@@ -17,7 +17,8 @@ requires-python = '>= 3.10'
 dependencies = [
   'aiofiles ~= 24.1.0',
   'exceptiongroup ~= 1.3.0',
-  'ictr',  # TODO: Constrain version after stable release.
+  # TODO: Constrain `ictr` published version after integration complete.
+  'ictr @ git+https://github.com/emcd/python-ictr.git@master',
   'importlib-metadata ~= 8.7.0',
   'importlib-resources ~= 6.5.2',
   'platformdirs ~= 4.4.0',
@@ -52,7 +53,7 @@ name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
 [project.optional-dependencies]
 rich = [ 'rich ~= 13.0' ]
-cli = [ 'tyro ~= 0.9.0', 'rich ~= 13.0', 'tomli-w ~= 1.2.0' ]
+cli = [ 'tyro ~= 1.0.2', 'rich ~= 13.0', 'tomli-w ~= 1.2.0' ]
 [project.scripts]
 appcore = 'appcore.introspection:execute_cli'
 [project.urls]
@@ -226,6 +227,8 @@ python = [
     'pypy3.10',
     'pypy3.11',
 ]
+[tool.hatch.metadata]
+allow-direct-references = true
 [tool.hatch.version]
 path = 'sources/appcore/__init__.py'
 
