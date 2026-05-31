@@ -1,9 +1,9 @@
 # Changes here will be overwritten by Copier
-_commit: v1.0a7-34-g6ee43bb
+_commit: v1.0a10-10-g97ab89c
 _src_path: gh:emcd/agents-common
 coders:
 - claude
-- gemini
+- codex
 - opencode
 instructions_sources:
 -   files:
@@ -13,5 +13,7 @@ instructions_sources:
 instructions_target: .auxiliary/instructions
 languages:
 - python
+project_bundle_name: python-foundation
 project_name: python-appcore
 provide_instructions: true
+support_local_models: true
