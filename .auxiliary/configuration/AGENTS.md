@@ -9,10 +9,19 @@
 - Check README files in directories you're working with for insights about architecture, constraints, and TODO items.
 
 ## Purpose
-[Describe your project's purpose and goals]
+
+Appcore is a Python library providing application foundation components:
+streamlined async initialization, configuration management, platform directories,
+logging setup, and environment handling for Python applications.
 
 ## Tech Stack
-[List your primary technologies]
+
+- **Language**: Python 3.10+ (CPython, PyPy)
+- **Build**: Hatch (hatchling backend)
+- **Linting**: Ruff, Pyright, isort, vulture, vibelinter
+- **Testing**: pytest, pytest-asyncio, pytest-mock, pyfakefs, coverage
+- **Documentation**: Sphinx (Furo theme, MyST parser)
+- **Key dependencies**: platformdirs, aiofiles, tomli, python-dotenv, importlib-metadata, ictr, absence, dynadoc, frigid
 
 # Development Standards
 
@@ -141,4 +150,13 @@ Use `openspec/AGENTS.md` to learn:
 # Project Notes
 
 <!-- This section accumulates project-specific knowledge, constraints, and deviations.
-     For structured items, use documentation/architecture/decisions/ and `nb`. -->
+     For structured items, use documentation/architecture/openspec/ and `nb`. -->
+
+## nb Component Folders
+
+- `engine` — core preparation, state, application foundation
+- `configuration` — TOML acquirer, dictedits, environment
+- `cli` — command framework, display options, rendering
+- `inscription` — logging, ictr integration, diagnostic output
+- `exceptions` — exception hierarchy, rendering methods
+- `tests` — test suite organization and coverage
