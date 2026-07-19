@@ -91,7 +91,6 @@ async def _acquire_production_location(
 ) -> __.Path:
     # TODO: Python 3.12: importlib.resources
     from importlib_resources import as_file, files  # pyright: ignore
-
     # Extract package contents to temporary directory, if necessary.
     return exits.enter_context(
         as_file( files( package ) ) ) # pyright: ignore

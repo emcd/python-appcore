@@ -44,13 +44,48 @@
 from . import __
 
 
-class Omniexception(
-    __.immut.Object, BaseException,
-    instances_mutables = ( '__cause__', '__context__' ),
-    instances_visibles = (
-        '__cause__', '__context__', __.immut.is_public_identifier ),
-):
+class Omniexception( __.immut.exceptions.Omniexception ):
     ''' Base for all exceptions raised by package API. '''
+
+    def render_dictionary( self ) -> dict[ str, __.typx.Any ]:
+        ''' Returns dictionary representation of exception. '''
+        return render_dictionary( self )
+
+    def render_json( self, compact: bool = False, indent: int = 2 ) -> str:
+        ''' Renders exception as JSON into string. '''
+        dictionary = self.render_dictionary( )
+        from json import dumps
+        if compact:
+            return dumps(
+                dictionary, ensure_ascii = False, separators = ( ',', ':' ) )
+        return dumps( dictionary, ensure_ascii = False, indent = indent )
+
+    def render_markdown( self ) -> tuple[ str, ... ]:
+        # TODO: Properly handle exception groups.
+        # TODO: Optionally handle tracebacks.
+        ''' Renders exception as Markdown into sequence of lines. '''
+        dictionary = self.render_dictionary( )
+        summary = "[**{fqclass}**] {message}".format(
+            fqclass = dictionary[ 'fqclass' ],
+            message = dictionary[ 'message' ] )
+        return ( summary, )
+
+    def render_toml( self ) -> str:
+        ''' Renders exception as TOML into string. '''
+        from tomli_w import dumps
+        return dumps( self.render_dictionary( ) )
+
+
+def render_dictionary( exception: BaseException ) -> dict[ str, __.typx.Any ]:
+    # TODO? Handle via third-party library.
+    # TODO: Properly handle exception groups.
+    # TODO: Optionally handle tracebacks.
+    ''' Returns dictionary representation of exception. '''
+    class_ = type( exception )
+    return {
+        'class': class_.__name__,
+        'fqclass': f"{class_.__module__}.{class_.__qualname__}",
+        'message': str( exception ), }
 
 
 class Omnierror( Omniexception, Exception ):

@@ -23,6 +23,21 @@ Release Notes
 
 .. towncrier release notes start
 
+appcore 1.7 (2026-07-18)
+========================
+
+No significant changes.
+
+
+appcore 1.6.1 (2026-07-18)
+==========================
+
+Repairs
+-------
+
+- Bump ``tyro`` dependency to 1.0.15 to fix Unicode encoding errors on non-UTF-8 consoles (Windows).
+
+
 appcore 1.6 (2025-09-27)
 ========================
 

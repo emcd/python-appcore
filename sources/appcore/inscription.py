@@ -71,9 +71,12 @@ Target: __.typx.TypeAlias = __.typx.Union[
 class Control( __.immut.DataclassObject ):
     ''' Application inscription configuration. '''
 
-    mode: Presentations = Presentations.Plain
+    active_flavors: __.Absential[ __.ictr.ActiveFlavorsArgument ] = __.absent
+    ictr_alias: __.Absential[ str ] = __.absent
     level: Levels = 'info'
+    mode: Presentations = Presentations.Plain
     target: Target = __.sys.stderr
+    trace_levels: __.Absential[ __.ictr.TraceLevelsArgument ] = __.absent
 
 
 def prepare( auxdata: _state.Globals, /, control: Control ) -> None:

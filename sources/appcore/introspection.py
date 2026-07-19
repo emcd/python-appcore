@@ -95,7 +95,7 @@
     * :class:`IntrospectConfigurationCommand` - Configuration introspection
     * :class:`IntrospectEnvironmentCommand` - Environment variable inspection
     * :class:`IntrospectDirectoriesCommand` - Platform directories inspection
-    * :class:`ApplicationGlobals` - Extended state for CLI context
+    * :class:`Globals` - Extended state for CLI context
 
     Usage as Implementation Example
     ================================
@@ -187,7 +187,7 @@ class DisplayOptions( _cli.DisplayOptions ):
         console.print( data )
 
 
-class ApplicationGlobals( _state.Globals ):
+class Globals( _state.Globals ):
     ''' Includes display options. '''
 
     display: DisplayOptions = __.dcls.field( default_factory = DisplayOptions )
@@ -197,7 +197,7 @@ class IntrospectConfigurationCommand( _cli.Command ):
     ''' Shows finalized application configuration. '''
 
     async def execute( self, auxdata: _state.Globals ) -> None:
-        if not isinstance( auxdata, ApplicationGlobals ):  # pragma: no cover
+        if not isinstance( auxdata, Globals ):  # pragma: no cover
             raise _exceptions.ContextInvalidity( auxdata )
         data = dict( auxdata.configuration )
         await auxdata.display.render( data )
@@ -207,7 +207,7 @@ class IntrospectDirectoriesCommand( _cli.Command ):
     ''' Shows application and package directories. '''
 
     async def execute( self, auxdata: _state.Globals ):
-        if not isinstance( auxdata, ApplicationGlobals ):  # pragma: no cover
+        if not isinstance( auxdata, Globals ):  # pragma: no cover
             raise _exceptions.ContextInvalidity( auxdata )
         directories = {
             'application-cache': str( auxdata.provide_cache_location( ) ),
@@ -224,7 +224,7 @@ class IntrospectEnvironmentCommand( _cli.Command ):
     ''' Shows application-specific environment variables. '''
 
     async def execute( self, auxdata: _state.Globals ) -> None:
-        if not isinstance( auxdata, ApplicationGlobals ):  # pragma: no cover
+        if not isinstance( auxdata, Globals ):  # pragma: no cover
             raise _exceptions.ContextInvalidity( auxdata )
         name = auxdata.application.name.upper( )
         envvars = {
@@ -261,7 +261,7 @@ class Application( _cli.Application ):
             field.name: getattr( auxdata_base, field.name )
             for field in __.dcls.fields( auxdata_base )
             if not field.name.startswith( '_' ) }
-        return ApplicationGlobals( display = self.display, **nomargs )
+        return Globals( display = self.display, **nomargs )
 
 
 def execute_cli( ) -> None:

@@ -49,12 +49,10 @@ Development
 Architecture
 -------------------------------------------------------------------------------
 
-* The :doc:`Product Requirements Document <prd>` is a good starting point to
-  understand the motivations and rationale for the project. This should be
-  reviewed and updated, as necessary, when making changes that affect product
-  functionality or user experience. See the `requirements documentation guide
-  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/requirements.html>`_
-  for PRD format and best practices.
+* The :doc:`capability specifications <specifications/index>` provide a good
+  starting point to understand the requirements and motivations for the project.
+  These should be reviewed and updated through the Openspec workflow when making
+  changes that affect product functionality or user experience.
 
 * The :doc:`system architecture overview <architecture/summary>` should be
   reviewed to understand the structure and operational patterns of the project.
@@ -66,8 +64,9 @@ Architecture
   <https://emcd.github.io/python-project-common/stable/sphinx-html/common/architecture.html>`_
   for ADR format and best practices.
 
-* Document interface specifications, schemas, and algorithms in the
-  ``architecture/designs/`` directory to guide implementation efforts.
+* Document technical design specifications for Python interfaces, module
+  organization, and implementation patterns in :doc:`design documents
+  <architecture/designs/index>` to guide implementation efforts.
 
 Guidance and Standards
 -------------------------------------------------------------------------------
@@ -129,6 +128,35 @@ Resources
 .. toctree::
    :maxdepth: 2
 
-   prd
+   Code of Conduct <https://emcd.github.io/python-project-common/stable/sphinx-html/common/conduct.html>
+   specifications/index
    architecture/index
    devapi
+   Environment Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/environment.html>
+   Practices Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/practices.html>
+   Code Style Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/style.html>
+   Testing Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/tests.html>
+   Nomenclature Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/nomenclature.html>
+   Germanic Nomenclature Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/nomenclature-germanic.html>
+   Validation Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/validation.html>
+   Release Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/releases.html>
+   Maintenance Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/maintenance.html>
+   Architecture Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/architecture.html>
+   Requirements Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/requirements.html>
+
+.. Language-specific guides stay in a hidden toctree so Sphinx includes them
+   in the site graph without adding renderer-specific navigation glue to the
+   portable common Markdown sources.
+.. toctree::
+   :hidden:
+
+   Python Environment Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/environment-python.html>
+   Python Architecture Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/architecture-python.html>
+   Python Development Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/practices-python.html>
+   Rust Development Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/practices-rust.html>
+   TOML Configuration Practices <https://emcd.github.io/python-project-common/stable/sphinx-html/common/practices-toml.html>
+   Latin-derived Verb Vocabulary <https://emcd.github.io/python-project-common/stable/sphinx-html/common/nomenclature-latin.html>
+   Python Automatic Formatting <https://emcd.github.io/python-project-common/stable/sphinx-html/common/python-autoformat.html>
+   Python Testing Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/tests-python.html>
+   Python Validation Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/validation-python.html>
+   Python Release Guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/releases-python.html>

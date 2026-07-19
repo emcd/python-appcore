@@ -1,1 +1,0 @@
-Documentation: Enhance CLI framework documentation with practical examples and optional dependency installation instructions.
