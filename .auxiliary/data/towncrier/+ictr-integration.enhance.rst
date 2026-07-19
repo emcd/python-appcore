@@ -1,0 +1,1 @@
+Commence integration with ``ictr`` as first-class inscription system. Adds ``ictr``-related fields to inscription ``Control`` dataclass (``active_flavors``, ``ictr_alias``, ``trace_levels``). Full ictr initialization deferred to subsequent release.
