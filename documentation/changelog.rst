@@ -23,6 +23,12 @@ Release Notes
 
 .. towncrier release notes start
 
+appcore 1.7 (2026-07-18)
+========================
+
+No significant changes.
+
+
 appcore 1.6.1 (2026-07-18)
 ==========================
 
