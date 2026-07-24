@@ -1,5 +1,9 @@
 # CLI Framework
 
+## Purpose
+
+Provides a type-safe CLI framework with command routing, display options, and integration with the tyro argument parser for Python applications.
+
 ## Requirements
 
 ### Requirement: Command Base Class
