@@ -29,22 +29,18 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-MODULE_QNAME = f"{PACKAGE_NAME}.preparation"
-module = cache_import_module( MODULE_QNAME )
-
-application_module = cache_import_module( f"{PACKAGE_NAME}.application" )
-configuration_module = cache_import_module( f"{PACKAGE_NAME}.configuration" )
-dictedits_module = cache_import_module( f"{PACKAGE_NAME}.dictedits" )
-distribution_module = cache_import_module( f"{PACKAGE_NAME}.distribution" )
-inscription_module = cache_import_module( f"{PACKAGE_NAME}.inscription" )
-state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
+from appcore import application as application_module
+from appcore import configuration as configuration_module
+from appcore import dictedits as dictedits_module
+from appcore import distribution as distribution_module
+from appcore import inscription as inscription_module
+from appcore import preparation as module
+from appcore import state as state_module
 
 
 @pytest.mark.asyncio
 async def test_100_prepare_minimal( ):
-    ''' prepare() works with minimal arguments. '''
+    ''' Preparation works with minimal arguments. '''
     exits = MagicMock( )
     # Create real distribution information
     distribution = distribution_module.Information(
@@ -71,7 +67,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_110_prepare_with_custom_application( ):
-    ''' prepare() accepts custom application information. '''
+    ''' Preparation accepts custom application information. '''
     exits = MagicMock( )
     application = application_module.Information(
         name = 'custom-app',
@@ -101,7 +97,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_120_prepare_with_custom_acquirer( ):
-    ''' prepare() accepts custom configuration acquirer. '''
+    ''' Preparation accepts custom configuration acquirer. '''
     exits = MagicMock( )
     acquirer = configuration_module.TomlAcquirer(
         main_filename = 'custom.toml',
@@ -131,7 +127,7 @@ value = "config"
 
 @pytest.mark.asyncio
 async def test_130_prepare_with_config_edits( ):
-    ''' prepare() applies configuration edits. '''
+    ''' Preparation applies configuration edits. '''
     exits = MagicMock( )
     edits = (
         dictedits_module.SimpleEdit(
@@ -165,7 +161,7 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_140_prepare_with_config_file( ):
-    ''' prepare() accepts custom configuration file. '''
+    ''' Preparation accepts custom configuration file. '''
     exits = MagicMock( )
     config_content = '''
 [app]
@@ -191,7 +187,7 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_150_prepare_with_custom_directories( ):
-    ''' prepare() accepts custom platform directories. '''
+    ''' Preparation accepts custom platform directories. '''
     exits = MagicMock( )
     directories = MagicMock( )
     directories.user_config_path = Path( '/custom/config' )
@@ -220,7 +216,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_160_prepare_with_custom_distribution( ):
-    ''' prepare() accepts custom distribution information. '''
+    ''' Preparation accepts custom distribution information. '''
     exits = MagicMock( )
     distribution = distribution_module.Information(
         name = 'custom-dist',
@@ -244,7 +240,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_170_prepare_with_environment_bool( ):
-    ''' prepare() accepts environment=True parameter. '''
+    ''' Preparation accepts environment enablement flag. '''
     exits = MagicMock( )
     # Create real distribution information
     distribution = distribution_module.Information(
@@ -272,7 +268,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_180_prepare_with_environment_mapping( ):
-    ''' prepare() updates environment with mapping. '''
+    ''' Preparation updates environment from a mapping. '''
     exits = MagicMock( )
     environment = { 'TEST_VAR': 'test_value', 'OTHER_VAR': 'other_value' }
     # Create real distribution information
@@ -297,7 +293,6 @@ name = "test"
             distribution = distribution,
             configfile = config_stream
         )
-
         # Environment variables should be updated
         assert mock_environ[ 'TEST_VAR' ] == 'test_value'
         assert mock_environ[ 'OTHER_VAR' ] == 'other_value'
@@ -305,7 +300,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_190_prepare_with_custom_inscription( ):
-    ''' prepare() accepts custom inscription control. '''
+    ''' Preparation accepts custom inscription control. '''
     exits = MagicMock( )
     # Create real inscription control
     inscription = inscription_module.Control(
@@ -338,7 +333,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_200_prepare_auto_directories( ):
-    ''' prepare() auto-creates directories when not provided. '''
+    ''' Preparation auto-creates directories when not provided. '''
     exits = MagicMock( )
     application = application_module.Information( name = 'auto-dir-app' )
     # Create real distribution information
@@ -394,7 +389,7 @@ name = "test-app"
 
 @pytest.mark.asyncio
 async def test_220_prepare_basic_functionality( ):
-    ''' prepare() completes basic initialization successfully. '''
+    ''' Preparation completes basic initialization successfully. '''
     exits = MagicMock( )
     # Create real distribution information
     distribution = distribution_module.Information(
@@ -423,7 +418,7 @@ name = "test"
 
 @pytest.mark.asyncio
 async def test_300_prepare_integration_complete( ):
-    ''' prepare() full integration test with real components. '''
+    ''' Full preparation integrates real components successfully. '''
     exits = MagicMock( )
     # Use a real application info
     application = application_module.Information(

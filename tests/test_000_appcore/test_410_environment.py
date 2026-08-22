@@ -28,7 +28,8 @@ from unittest.mock import patch
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
+from appcore import environment as module
+
 from .fixtures import create_globals_with_temp_dirs
 
 
@@ -38,14 +39,6 @@ def _get_home_environment_vars( ):
         key: value for key, value in os.environ.items( )
         if key in ( 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'HOME' )
     }
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.environment"
-module = cache_import_module( MODULE_QNAME )
-
-application_module = cache_import_module( f"{PACKAGE_NAME}.application" )
-distribution_module = cache_import_module( f"{PACKAGE_NAME}.distribution" )
-state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
 
 
 @pytest.mark.asyncio
@@ -60,7 +53,6 @@ TEST_VAR_2=editable_value_2
     with patch.dict(
         os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
-
         # Environment should be updated with values from .env file
         assert os.environ.get( 'TEST_VAR_1' ) == 'editable_value_1'
         assert os.environ.get( 'TEST_VAR_2' ) == 'editable_value_2'
@@ -83,7 +75,6 @@ OVERRIDE_VAR=local_override
     with patch.dict(
         os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
-
         # Environment should be updated with values from both files
         assert os.environ.get( 'BASE_VAR' ) == 'base_value'
         assert os.environ.get( 'LOCAL_VAR' ) == 'local_value'
@@ -102,11 +93,9 @@ async def test_120_update_editable_no_env_file( ):
         local_env.write_text( '''
 FALLBACK_VAR=fallback_value
         ''' )
-
         with patch.dict(
             os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
-
             # Should load from local .env since project .env doesn't exist
             assert os.environ.get( 'FALLBACK_VAR' ) == 'fallback_value'
     finally:
@@ -130,7 +119,6 @@ PRECEDENCE_VAR=config_precedence
     with patch.dict(
         os.environ, _get_home_environment_vars( ), clear = True ):
         await module.update( globals_dto )
-
         # Environment should be updated from configured location
         assert os.environ.get( 'CONFIG_VAR' ) == 'config_value'
         assert os.environ.get( 'PRECEDENCE_VAR' ) == 'config_precedence'
@@ -153,11 +141,9 @@ PRECEDENCE_VAR=config_precedence
 LOCAL_VAR=local_value
 PRECEDENCE_VAR=local_precedence
         ''' )
-
         with patch.dict(
             os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
-
             # Both files should be loaded
             assert os.environ.get( 'CONFIG_VAR' ) == 'config_value'
             assert os.environ.get( 'LOCAL_VAR' ) == 'local_value'
@@ -177,11 +163,9 @@ async def test_150_update_normal_local_only( ):
         local_env.write_text( '''
 LOCAL_ONLY_VAR=local_only_value
         ''' )
-
         with patch.dict(
             os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
-
             # Should load from local .env only
             assert os.environ.get( 'LOCAL_ONLY_VAR' ) == 'local_only_value'
     finally:
@@ -245,11 +229,9 @@ async def test_180_update_home_template_substitution( ):
         home_env.write_text( '''
 HOME_VAR=home_value
         ''' )
-
         with patch.dict(
             os.environ, _get_home_environment_vars( ), clear = True ):
             await module.update( globals_dto )
-
             # Should load from home-based location
             assert os.environ.get( 'HOME_VAR' ) == 'home_value'
     finally:
@@ -264,7 +246,7 @@ HOME_VAR=home_value
 
 
 def test_200_inject_dotenv_data_success( ):
-    ''' _inject_dotenv_data successfully loads environment data. '''
+    ''' Dotenv injection successfully loads environment data. '''
     data = '''
 TEST_INJECT_VAR=inject_value
 ANOTHER_VAR=another_value
@@ -280,7 +262,7 @@ ANOTHER_VAR=another_value
 
 
 def test_210_inject_dotenv_data_empty( ):
-    ''' _inject_dotenv_data handles empty data gracefully. '''
+    ''' Dotenv injection handles empty data gracefully. '''
     with patch.dict(
         os.environ, _get_home_environment_vars( ), clear = True ):
         result = module._inject_dotenv_data( '' )
@@ -294,7 +276,7 @@ def test_210_inject_dotenv_data_empty( ):
 
 
 def test_220_inject_dotenv_data_comments_and_whitespace( ):
-    ''' _inject_dotenv_data properly handles comments and whitespace. '''
+    ''' Dotenv injection properly handles comments and whitespace. '''
     data = '''
 # This is a comment
 TEST_VAR=value_with_spaces
@@ -307,7 +289,6 @@ QUOTED_VAR="quoted value"
     with patch.dict(
         os.environ, _get_home_environment_vars( ), clear = True ):
         result = module._inject_dotenv_data( data )
-
         # Should return True for successful load
         assert result is True
         # Should properly parse variables

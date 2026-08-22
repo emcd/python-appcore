@@ -22,16 +22,12 @@
 
 
 import asyncio
+
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.asyncf"
-module = cache_import_module( MODULE_QNAME )
-
-exceptions_module = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-generics_module = cache_import_module( f"{PACKAGE_NAME}.generics" )
+from appcore import asyncf as module
+from appcore import exceptions as exceptions_module
+from appcore import generics as generics_module
 
 
 @pytest.mark.asyncio

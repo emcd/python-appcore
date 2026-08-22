@@ -29,12 +29,10 @@ from unittest.mock import patch
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-from .fixtures import create_globals_with_temp_dirs
+from appcore import __
+from appcore import inscription as module
 
-MODULE_QNAME = f"{PACKAGE_NAME}.inscription"
-module = cache_import_module( MODULE_QNAME )
-__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+from .fixtures import create_globals_with_temp_dirs
 
 
 def test_100_modes_enum_values( ):
@@ -97,7 +95,7 @@ def test_150_control_inequality( ):
 
 
 def test_200_prepare_with_null_mode( ):
-    ''' prepare() handles null mode (no configuration). '''
+    ''' Null inscription mode skips logging configuration. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
     control = module.Control( mode = module.Modes.Null )
     # Should not raise an error or configure logging
@@ -105,7 +103,7 @@ def test_200_prepare_with_null_mode( ):
 
 
 def test_210_prepare_with_plain_mode( ):
-    ''' prepare() configures logging with plain mode. '''
+    ''' Plain inscription mode configures standard logging. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
@@ -118,7 +116,7 @@ def test_210_prepare_with_plain_mode( ):
 
 
 def test_220_prepare_with_rich_mode_without_rich( ):
-    ''' prepare() gracefully degrades when Rich unavailable. '''
+    ''' Rich inscription mode degrades gracefully without Rich. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
@@ -135,7 +133,7 @@ def test_220_prepare_with_rich_mode_without_rich( ):
 
 
 def test_230_prepare_with_stream_target( ):
-    ''' prepare() accepts custom stream target. '''
+    ''' Inscription accepts a custom stream target. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
     control = module.Control(
@@ -178,7 +176,7 @@ def test_320_discover_inscription_level_name_with_log_env( ):
 
 
 def test_330_discover_inscription_level_name_precedence( ):
-    ''' _discover_inscription_level_name gives INSCRIPTION precedence. '''
+    ''' Level discovery gives INSCRIPTION env var precedence. '''
     globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
     control = module.Control( level = 'info' )
     with patch.dict( __.os.environ, {
@@ -191,7 +189,7 @@ def test_330_discover_inscription_level_name_precedence( ):
 
 
 def test_340_discover_inscription_level_name_normalizes_app_name( ):
-    ''' _discover_inscription_level_name normalizes app name for env vars. '''
+    ''' Level discovery normalizes app name for env vars. '''
     globals_dto, _ = create_globals_with_temp_dirs(
         app_name = 'my-awesome app' )
     control = module.Control( level = 'info' )
@@ -204,7 +202,7 @@ def test_340_discover_inscription_level_name_normalizes_app_name( ):
 
 
 def test_350_discover_inscription_level_name_robust_normalization( ):
-    ''' _discover_inscription_level_name handles special chars robustly. '''
+    ''' Level discovery handles special characters robustly. '''
     globals_dto, _ = create_globals_with_temp_dirs(
         app_name = 'my@app-2.0! (beta)' )
     control = module.Control( level = 'info' )

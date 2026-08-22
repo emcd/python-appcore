@@ -159,8 +159,8 @@ across multiple test files:
 - **create_config_template_files()**: Creates configuration template files
   for testing configuration processing.
 
-These fixtures follow the dependency injection patterns described in the
-`Test Writing Guide <../.auxiliary/notes/test-writing-guide.md>`_.
+These fixtures follow the dependency injection patterns described in
+``.auxiliary/instructions/tests.rst``.
 
 Test Execution Order
 ===============================================================================
@@ -186,14 +186,14 @@ The test suite maintains high coverage standards:
 - **Current**: 99% coverage with systematic gap closure
 - **Strategy**: Coverage-driven test development targeting specific uncovered lines
 
-All tests must follow the standards defined in the
-`Test Writing Guide <../.auxiliary/notes/test-writing-guide.md>`_:
+All tests must follow the standards defined in
+``.auxiliary/instructions/tests.rst``:
 
 - Behavior-focused docstrings
 - No blank lines in function bodies
 - Dependency injection over monkey-patching
-- Real temporary directories for file operations
-- Strategic use of ``pyfakefs`` for sync filesystem operations
+- Prefer ``pyfakefs`` for sync filesystem operations
+- Real temporary directories only when required (e.g., async I/O)
 
 Test Planning Process
 ===============================================================================

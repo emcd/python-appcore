@@ -23,11 +23,7 @@
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.generics"
-module = cache_import_module( MODULE_QNAME )
+from appcore import generics as module
 
 
 def test_100_value_creation( ):
@@ -198,7 +194,6 @@ def test_300_type_guards_with_different_types( ):
     string_value = module.Value( 'hello' )
     int_error = module.Error( ValueError( 'int error' ) )
     list_value = module.Value( [ 1, 2, 3 ] )
-
     assert module.is_value( string_value )
     assert not module.is_error( string_value )
     assert module.is_error( int_error )

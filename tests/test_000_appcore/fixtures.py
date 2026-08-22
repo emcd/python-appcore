@@ -22,15 +22,13 @@
 
 
 import tempfile
+
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-application_module = cache_import_module( f"{PACKAGE_NAME}.application" )
-distribution_module = cache_import_module( f"{PACKAGE_NAME}.distribution" )
-state_module = cache_import_module( f"{PACKAGE_NAME}.state" )
+from appcore import application as application_module
+from appcore import distribution as distribution_module
+from appcore import state as state_module
 
 
 def create_temp_directories_and_distribution(

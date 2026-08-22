@@ -24,17 +24,13 @@
 import platformdirs
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.application"
-module = cache_import_module( MODULE_QNAME )
+from appcore import application as module
 
 
 def test_100_information_creation_requires_name( ):
     ''' Information requires name to be explicitly provided. '''
-    app_info = module.Information( name = PACKAGE_NAME )
-    assert app_info.name == PACKAGE_NAME
+    app_info = module.Information( name = 'appcore' )
+    assert app_info.name == 'appcore'
     assert app_info.publisher is None
     assert app_info.version is None
 
@@ -91,7 +87,7 @@ def test_150_produce_platform_directories_minimal( ):
 
 
 def test_160_produce_platform_directories_with_publisher( ):
-    ''' produce_platform_directories includes publisher when provided. '''
+    ''' Platform directories include publisher when provided. '''
     app_info = module.Information(
         name = 'test-app',
         publisher = 'Test Company'
@@ -103,7 +99,7 @@ def test_160_produce_platform_directories_with_publisher( ):
 
 
 def test_170_produce_platform_directories_with_version( ):
-    ''' produce_platform_directories includes version when provided. '''
+    ''' Platform directories include version when provided. '''
     app_info = module.Information(
         name = 'test-app',
         version = '1.2.3'
@@ -115,7 +111,7 @@ def test_170_produce_platform_directories_with_version( ):
 
 
 def test_180_produce_platform_directories_complete( ):
-    ''' produce_platform_directories works with all fields provided. '''
+    ''' Platform directories work with all fields provided. '''
     app_info = module.Information(
         name = 'test-app',
         publisher = 'Test Company',

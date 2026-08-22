@@ -23,13 +23,8 @@
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.dictedits"
-module = cache_import_module( MODULE_QNAME )
-
-exceptions_module = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
+from appcore import dictedits as module
+from appcore import exceptions as exceptions_module
 
 
 def test_100_simple_edit_creation( ):

@@ -20,7 +20,6 @@
 
 ''' Global state DTO and directory management tests. '''
 
-
 import dataclasses
 
 from pathlib import Path
@@ -28,13 +27,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-MODULE_QNAME = f"{PACKAGE_NAME}.state"
-module = cache_import_module( MODULE_QNAME )
-
-application_module = cache_import_module( f"{PACKAGE_NAME}.application" )
-distribution_module = cache_import_module( f"{PACKAGE_NAME}.distribution" )
+from appcore import application as application_module
+from appcore import distribution as distribution_module
+from appcore import state as module
 
 
 def test_100_directory_species_values( ):
