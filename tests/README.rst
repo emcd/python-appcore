@@ -47,6 +47,7 @@ The test suite is organized as follows::
         ├── test_400_state.py        # State management
         ├── test_410_environment.py  # Environment handling
         ├── test_420_inscription.py  # Inscription/logging
+        ├── test_430_cli_inscription.py # CLI inscription options
         └── test_500_preparation.py  # Application preparation/integration
 
 Namespace Rationale

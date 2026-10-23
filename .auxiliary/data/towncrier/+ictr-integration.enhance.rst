@@ -1,1 +1,5 @@
-Commence integration with ``ictr`` as first-class inscription system. Adds ``ictr``-related fields to inscription ``Control`` dataclass (``active_flavors``, ``ictr_alias``, ``trace_levels``). Full ictr initialization deferred to subsequent release.
+Integrate ``ictr`` as a first-class inscription subsystem alongside Python
+logging. ``prepare()`` configures and optionally installs the ictr dispatcher;
+``Control`` gains ``install_ictr``; CLI exposes ``--active-flavors`` and
+``--trace-levels``. Flavor and trace configuration precedence is explicit
+Control args, then ``{APP}_*`` env, then ``ICTR_*`` env, then defaults.

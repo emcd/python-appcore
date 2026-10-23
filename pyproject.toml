@@ -16,8 +16,7 @@ readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.12'
 dependencies = [
   'aiofiles ~= 24.1.0',
-  'exceptiongroup ~= 1.3.0',
-  'ictr',  # TODO: Constrain version after stable release.
+  'ictr ~= 1.0a2',
   'importlib-metadata ~= 8.7.0',
   'importlib-resources ~= 6.5.2',
   'platformdirs ~= 4.4.0',

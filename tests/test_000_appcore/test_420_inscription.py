@@ -48,6 +48,10 @@ def test_110_control_creation_defaults( ):
     assert control.mode == module.Modes.Plain
     assert control.level == 'info'
     assert control.target == sys.stderr
+    assert __.is_absent( control.active_flavors )
+    assert __.is_absent( control.ictr_alias )
+    assert __.is_absent( control.install_ictr )
+    assert __.is_absent( control.trace_levels )
 
 
 def test_120_control_creation_custom_values( ):
@@ -56,8 +60,7 @@ def test_120_control_creation_custom_values( ):
     control = module.Control(
         mode = module.Modes.Rich,
         level = 'debug',
-        target = target_stream
-    )
+        target = target_stream )
     assert control.mode == module.Modes.Rich
     assert control.level == 'debug'
     assert control.target == target_stream
@@ -78,12 +81,10 @@ def test_140_control_equality( ):
     ''' Control instances with same data are equal. '''
     control1 = module.Control(
         mode = module.Modes.Rich,
-        level = 'debug'
-    )
+        level = 'debug' )
     control2 = module.Control(
         mode = module.Modes.Rich,
-        level = 'debug'
-    )
+        level = 'debug' )
     assert control1 == control2
 
 
@@ -97,7 +98,8 @@ def test_150_control_inequality( ):
 def test_200_prepare_with_null_mode( ):
     ''' Null inscription mode skips logging configuration. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
-    control = module.Control( mode = module.Modes.Null )
+    control = module.Control(
+        mode = module.Modes.Null, install_ictr = False )
     # Should not raise an error or configure logging
     module.prepare( globals_dto, control )
 
@@ -109,8 +111,7 @@ def test_210_prepare_with_plain_mode( ):
     control = module.Control(
         mode = module.Modes.Plain,
         level = 'debug',
-        target = target_stream
-    )
+        target = target_stream, install_ictr = False )
     # Should not raise an error
     module.prepare( globals_dto, control )
 
@@ -121,8 +122,7 @@ def test_220_prepare_with_rich_mode_without_rich( ):
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Rich,
-        target = target_stream
-    )
+        target = target_stream, install_ictr = False )
     # Mock Rich imports to fail
     with patch.dict( 'sys.modules', {
         'rich.console': None,
@@ -138,8 +138,7 @@ def test_230_prepare_with_stream_target( ):
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Plain,
-        target = target_stream
-    )
+        target = target_stream, install_ictr = False )
     # Should not raise an error
     module.prepare( globals_dto, control )
 
@@ -222,7 +221,7 @@ def test_400_prepare_scribes_logging_plain( ):
     control = module.Control(
         mode = module.Modes.Plain,
         level = 'debug',
-        target = target_stream )
+        target = target_stream, install_ictr = False )
     # Should not raise an error
     module._prepare_scribes_logging(
         globals_dto, control, target = target_stream )
@@ -234,7 +233,7 @@ def test_410_prepare_scribes_logging_rich_fallback( ):
     target_stream = io.StringIO( )
     control = module.Control(
         mode = module.Modes.Rich,
-        target = target_stream )
+        target = target_stream, install_ictr = False )
     # Mock Rich imports to fail
     with patch.dict( 'sys.modules', {
         'rich.console': None,
@@ -248,7 +247,8 @@ def test_410_prepare_scribes_logging_rich_fallback( ):
 def test_420_prepare_scribes_logging_null( ):
     ''' Null logging can be configured. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
-    control = module.Control( mode = module.Modes.Null )
+    control = module.Control(
+        mode = module.Modes.Null, install_ictr = False )
     # Should not raise an error or configure logging
     module._prepare_scribes_logging(
         globals_dto, control, target = io.StringIO( ) )
@@ -325,7 +325,7 @@ def test_640_textio_streams_used_directly( ):
     ''' TextIO streams are used directly without conversion. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( target = target_stream )
+    control = module.Control( target = target_stream, install_ictr = False )
     result = module._process_target( globals_dto, control )
     assert result is target_stream
 
@@ -334,7 +334,7 @@ def test_650_stringio_used_directly( ):
     ''' StringIO instances are used directly without conversion. '''
     globals_dto, _ = create_globals_with_temp_dirs( )
     target_stream = io.StringIO( )
-    control = module.Control( target = target_stream )
+    control = module.Control( target = target_stream, install_ictr = False )
     result = module._process_target( globals_dto, control )
     assert result is target_stream
 
@@ -344,7 +344,7 @@ def test_660_string_location_creates_log_file( fs ):
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     log_path = temp_dir / "test.log"
     descriptor = module.TargetDescriptor( location = str( log_path ) )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module.prepare( globals_dto, control )
     assert fs.exists( str( log_path ) )
 
@@ -354,7 +354,7 @@ def test_670_pathlike_location_creates_log_file( fs ):
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     log_path = temp_dir / "test.log"
     descriptor = module.TargetDescriptor( location = log_path )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module.prepare( globals_dto, control )
     assert fs.exists( str( log_path ) )
 
@@ -365,7 +365,7 @@ def test_680_bytes_location_creates_log_file( fs ):
     log_path = temp_dir / "test.log"
     descriptor = module.TargetDescriptor(
         location = str( log_path ).encode( ) )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module.prepare( globals_dto, control )
     assert fs.exists( str( log_path ) )
 
@@ -379,7 +379,7 @@ def test_690_append_mode_preserves_existing_content( fs ):
         location = str( log_path ),
         mode = module.TargetModes.Append
     )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module.prepare( globals_dto, control )
     content = fs.get_object( str( log_path ) ).contents
     assert "existing content" in content
@@ -394,7 +394,7 @@ def test_700_truncate_mode_clears_existing_content( fs ):
         location = str( log_path ),
         mode = module.TargetModes.Truncate
     )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module.prepare( globals_dto, control )
     content = fs.get_object( str( log_path ) ).contents
     assert "existing content" not in content
@@ -405,7 +405,7 @@ def test_710_parent_directories_created_automatically( fs ):
     globals_dto, temp_dir = create_globals_with_temp_dirs( )
     log_path = temp_dir / "logs" / "subdir" / "test.log"
     descriptor = module.TargetDescriptor( location = str( log_path ) )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module.prepare( globals_dto, control )
     assert fs.exists( str( log_path ) )
     assert fs.exists( str( log_path.parent ) )
@@ -419,6 +419,198 @@ def test_720_pathlike_object_converted_to_path( fs ):
     log_path = temp_dir / "test.log"
     path_obj = Path( str( log_path ) )
     descriptor = module.TargetDescriptor( location = path_obj )
-    control = module.Control( target = descriptor )
+    control = module.Control( target = descriptor, install_ictr = False )
     module._process_target( globals_dto, control )
     assert fs.exists( str( log_path ) )
+
+
+def test_800_derive_ictr_flavors_debug( ):
+    ''' Debug level activates note, monition, error-family, and semantic. '''
+    flavors = module._derive_ictr_flavors( 'debug' )
+    assert 'note' in flavors
+    assert 'monition' in flavors
+    assert 'error' in flavors
+    assert 'errorx' in flavors
+    assert 'abort' in flavors
+    assert 'abortx' in flavors
+    assert 'future' in flavors
+    assert 'success' in flavors
+    assert 'advice' in flavors
+
+
+def test_810_derive_ictr_flavors_info( ):
+    ''' Info level activates note and error-family without monition. '''
+    flavors = module._derive_ictr_flavors( 'info' )
+    assert 'note' in flavors
+    assert 'monition' not in flavors
+    assert 'error' in flavors
+    assert 'success' in flavors
+
+
+def test_815_derive_ictr_flavors_warn( ):
+    ''' Warn level activates monition and error-family without note. '''
+    flavors = module._derive_ictr_flavors( 'warn' )
+    assert 'note' not in flavors
+    assert 'monition' in flavors
+    assert 'error' in flavors
+    assert 'abort' in flavors
+    assert 'success' in flavors
+
+
+def test_820_derive_ictr_flavors_error( ):
+    ''' Error level activates only error-family and semantic flavors. '''
+    flavors = module._derive_ictr_flavors( 'error' )
+    assert 'note' not in flavors
+    assert 'monition' not in flavors
+    assert 'error' in flavors
+    assert 'abort' in flavors
+    assert 'advice' in flavors
+
+
+def test_830_prepare_scribes_ictr_installs_dispatcher( ):
+    ''' Ictr preparation installs dispatcher into builtins by default. '''
+    import builtins
+    globals_dto, _ = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    alias = '_appcore_test_ictr_install'
+    if hasattr( builtins, alias ):
+        delattr( builtins, alias )
+    control = module.Control(
+        target = target_stream,
+        ictr_alias = alias,
+        active_flavors = ( 'note', ),
+        install_ictr = True )
+    dispatcher = module._prepare_scribes_ictr(
+        globals_dto, control, target_stream )
+    try:
+        assert getattr( builtins, alias ) is dispatcher
+    finally:
+        if hasattr( builtins, alias ):
+            delattr( builtins, alias )
+
+
+def test_840_prepare_scribes_ictr_without_install( ):
+    ''' Ictr preparation can skip builtins installation. '''
+    import builtins
+    globals_dto, _ = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    alias = '_appcore_test_ictr_noinstall'
+    if hasattr( builtins, alias ):
+        delattr( builtins, alias )
+    control = module.Control(
+        target = target_stream,
+        ictr_alias = alias,
+        install_ictr = False )
+    dispatcher = module._prepare_scribes_ictr(
+        globals_dto, control, target_stream )
+    assert dispatcher is not None
+    assert not hasattr( builtins, alias )
+
+
+def test_850_prepare_scribes_ictr_explicit_flavors( ):
+    ''' Explicit active flavors configure the dispatcher. '''
+    globals_dto, _ = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    control = module.Control(
+        target = target_stream,
+        active_flavors = ( 'note', 'error' ),
+        install_ictr = False )
+    dispatcher = module._prepare_scribes_ictr(
+        globals_dto, control, target_stream )
+    active = dispatcher.active_flavors[ None ]
+    assert active == frozenset( { 'note', 'error' } )
+
+
+def test_860_prepare_scribes_ictr_explicit_trace_levels( ):
+    ''' Explicit trace levels configure the dispatcher. '''
+    globals_dto, _ = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    control = module.Control(
+        target = target_stream,
+        trace_levels = 3,
+        install_ictr = False )
+    dispatcher = module._prepare_scribes_ictr(
+        globals_dto, control, target_stream )
+    assert dispatcher.trace_levels[ None ] == 3
+
+
+def test_870_prepare_scribes_ictr_app_env_flavors( ):
+    ''' Application-specific ACTIVE_FLAVORS env configures dispatcher. '''
+    globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
+    target_stream = io.StringIO( )
+    control = module.Control(
+        target = target_stream, install_ictr = False )
+    with patch.dict( __.os.environ, {
+        'TEST_APP_ACTIVE_FLAVORS': 'note,error',
+    }, clear = False ):
+        dispatcher = module._prepare_scribes_ictr(
+            globals_dto, control, target_stream )
+    active = dispatcher.active_flavors[ None ]
+    assert active == frozenset( { 'note', 'error' } )
+
+
+def test_880_prepare_scribes_ictr_app_env_trace_levels( ):
+    ''' Application-specific TRACE_LEVELS env configures dispatcher. '''
+    globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
+    target_stream = io.StringIO( )
+    control = module.Control(
+        target = target_stream, install_ictr = False )
+    with patch.dict( __.os.environ, {
+        'TEST_APP_TRACE_LEVELS': '4',
+    }, clear = False ):
+        dispatcher = module._prepare_scribes_ictr(
+            globals_dto, control, target_stream )
+    assert dispatcher.trace_levels[ None ] == 4
+
+
+def test_890_prepare_scribes_ictr_explicit_overrides_env( ):
+    ''' Explicit Control flavors override application environment. '''
+    globals_dto, _ = create_globals_with_temp_dirs( app_name = 'test-app' )
+    target_stream = io.StringIO( )
+    control = module.Control(
+        target = target_stream,
+        active_flavors = ( 'success', ),
+        install_ictr = False )
+    with patch.dict( __.os.environ, {
+        'TEST_APP_ACTIVE_FLAVORS': 'note,error',
+    }, clear = False ):
+        dispatcher = module._prepare_scribes_ictr(
+            globals_dto, control, target_stream )
+    active = dispatcher.active_flavors[ None ]
+    assert active == frozenset( { 'success' } )
+
+
+def test_895_prepare_scribes_ictr_ictr_env_flavors( ):
+    ''' Ictr ICTR_ACTIVE_FLAVORS env provides flavors absent app env. '''
+    globals_dto, _ = create_globals_with_temp_dirs( )
+    target_stream = io.StringIO( )
+    control = module.Control(
+        target = target_stream, install_ictr = False )
+    with patch.dict( __.os.environ, {
+        'ICTR_ACTIVE_FLAVORS': 'error',
+    }, clear = False ):
+        dispatcher = module._prepare_scribes_ictr(
+            globals_dto, control, target_stream )
+    active = dispatcher.active_flavors[ None ]
+    assert 'error' in active
+    assert 'note' not in active
+
+
+def test_900_produce_ictr_generalcfg_plain_strips_ansi( ):
+    ''' Plain mode printer factory strips ANSI escape sequences. '''
+    target_stream = io.StringIO( )
+    control = module.Control( mode = module.Modes.Plain )
+    factories = module._produce_ictr_generalcfg( control, target_stream )
+    printer = factories[ 0 ]( 'addr', 'note' )
+    printer( '\x1b[31mred\x1b[0m' )
+    assert target_stream.getvalue( ) == 'red\n'
+
+
+def test_910_produce_ictr_generalcfg_rich_uses_default_factory( ):
+    ''' Rich mode uses the default ictr printer factory. '''
+    target_stream = io.StringIO( )
+    control = module.Control( mode = module.Modes.Rich )
+    factories = module._produce_ictr_generalcfg( control, target_stream )
+    assert len( factories ) == 1
+    printer = factories[ 0 ]( 'addr', 'note' )
+    assert hasattr( printer, 'provide_textualization_control' )

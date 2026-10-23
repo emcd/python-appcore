@@ -175,11 +175,14 @@ class InscriptionControl( __.immut.DataclassObject ):
     #       Format: --deactivate-all-flavors
     #       Format: --deactivate-all-flavors-for <address>
     # TODO: Way to activate particular flavors (globally or per-address).
-    #       Format: --active-flavor <name>
     #       Format: --active-flavor <address>:<name>
-    # TODO: Way to assign trace levels (globally or per-address).
-    #       Format: --trace-level <n>
+    # TODO: Way to assign trace levels per-address.
     #       Format: --trace-level <address>:<n>
+    active_flavors: __.typx.Annotated[
+        __.typx.Optional[ tuple[ str, ... ] ],
+        __.tyro.conf.arg(
+            help = "Diagnostic flavors to activate (repeatable)." ),
+    ] = None
     level: __.typx.Annotated[
         __.inscription.Levels, __.tyro.conf.arg( help = "Log verbosity." )
     ] = 'info'
@@ -199,6 +202,10 @@ class InscriptionControl( __.immut.DataclassObject ):
         __.tyro.conf.DisallowNone,
         __.tyro.conf.arg( help = "Log to stdout or stderr." ),
     ] = TargetStreams.Stderr
+    trace_levels: __.typx.Annotated[
+        __.typx.Optional[ int ],
+        __.tyro.conf.arg( help = "Diagnostic maximum trace depth." ),
+    ] = None
 
     def as_control(
         self, exits: __.ctxl.AsyncExitStack
@@ -213,10 +220,15 @@ class InscriptionControl( __.immut.DataclassObject ):
             match target_stream_:
                 case TargetStreams.Stdout: target_stream = __.sys.stdout
                 case TargetStreams.Stderr: target_stream = __.sys.stderr
-        return __.inscription.Control(
+        nomargs: dict[ str, __.typx.Any ] = dict(
             mode = self.presentation,
             level = self.level,
             target = target_stream )
+        if self.active_flavors is not None:
+            nomargs[ 'active_flavors' ] = self.active_flavors
+        if self.trace_levels is not None:
+            nomargs[ 'trace_levels' ] = self.trace_levels
+        return __.inscription.Control( **nomargs )
 
 
 class Command(

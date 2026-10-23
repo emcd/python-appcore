@@ -20,7 +20,15 @@
 
 ''' Application inscription management.
 
-    Logging and, potentially, debug printing.
+    Logging and diagnostic printing.
+
+    Configuration precedence (highest first):
+
+    1. Explicit ``Control`` fields (``active_flavors``, ``trace_levels``)
+    2. Application-specific environment (``{APP}_ACTIVE_FLAVORS``,
+       ``{APP}_TRACE_LEVELS``)
+    3. Ictr environment (``ICTR_ACTIVE_FLAVORS``, ``ICTR_TRACE_LEVELS``)
+    4. Defaults (level-derived flavors; ictr built-in trace defaults)
 '''
 # TODO? Add structured logging support (JSON formatting for log aggregation)
 # TODO? Add distributed tracing support (correlation IDs, execution IDs)
@@ -37,6 +45,15 @@ from . import state as _state
 
 Levels: __.typx.TypeAlias = __.typx.Literal[
     'debug', 'info', 'warn', 'error', 'critical' ]
+
+# Flavor base, active at every level: failures always print, and the
+# semantic flavors sit outside the level system (active means print).
+_ICTR_ERROR_FAMILY_FLAVORS = frozenset( {
+    'error', 'errorx', 'abort', 'abortx',
+} )
+_ICTR_SEMANTIC_FLAVORS = frozenset( {
+    'future', 'success', 'advice',
+} )
 
 
 class Presentations( __.enum.Enum ): # TODO: Python 3.11: StrEnum
@@ -73,6 +90,7 @@ class Control( __.immut.DataclassObject ):
 
     active_flavors: __.Absential[ __.ictr.ActiveFlavorsArgument ] = __.absent
     ictr_alias: __.Absential[ str ] = __.absent
+    install_ictr: __.Absential[ bool ] = __.absent
     level: Levels = 'info'
     mode: Presentations = Presentations.Plain
     target: Target = __.sys.stderr
@@ -83,14 +101,33 @@ def prepare( auxdata: _state.Globals, /, control: Control ) -> None:
     ''' Prepares various scribes in a sensible manner. '''
     target = _process_target( auxdata, control )
     _prepare_scribes_logging( auxdata, control, target )
+    _prepare_scribes_ictr( auxdata, control, target )
+
+
+def _application_name_normalized( auxdata: _state.Globals ) -> str:
+    return ''.join(
+        c.upper( ) if c.isalnum( ) else '_'
+        for c in auxdata.application.name )
+
+
+def _derive_ictr_flavors( level_name: str ) -> frozenset[ str ]:
+    ''' Maps inscription level name to default active ictr flavors. '''
+    base = _ICTR_ERROR_FAMILY_FLAVORS | _ICTR_SEMANTIC_FLAVORS
+    match level_name.lower( ):
+        case 'debug':
+            return base | frozenset( { 'note', 'monition' } )
+        case 'info':
+            return base | frozenset( { 'note' } )
+        case 'warn' | 'warning':
+            return base | frozenset( { 'monition' } )
+        case _:
+            return base
 
 
 def _discover_inscription_level_name(
     auxdata: _state.Globals, control: Control
 ) -> str:
-    application_name = ''.join(
-        c.upper( ) if c.isalnum( ) else '_'
-        for c in auxdata.application.name )
+    application_name = _application_name_normalized( auxdata )
     for envvar_name_base in ( 'INSCRIPTION', 'LOG' ):
         envvar_name = (
             "{name}_{base}_LEVEL".format(
@@ -129,6 +166,33 @@ def _prepare_logging_rich(
         force = True, level = level, handlers = ( handler, ) )
 
 
+def _prepare_scribes_ictr(
+    auxdata: _state.Globals, control: Control, /, target: __.typx.TextIO
+) -> __.ictr.Dispatcher:
+    ''' Configures ictr dispatcher; installs into builtins when enabled. '''
+    active_flavors, evname_active_flavors = (
+        _resolve_ictr_active_flavors( auxdata, control ) )
+    trace_levels, evname_trace_levels = (
+        _resolve_ictr_trace_levels( auxdata, control ) )
+    printer_factories = _produce_ictr_generalcfg( control, target )
+    nomargs: dict[ str, __.typx.Any ] = dict(
+        active_flavors = active_flavors,
+        printer_factories = printer_factories,
+        trace_levels = trace_levels,
+        evname_active_flavors = evname_active_flavors,
+        evname_trace_levels = evname_trace_levels )
+    do_install = (
+        True if __.is_absent( control.install_ictr )
+        else control.install_ictr )
+    if do_install:
+        alias = (
+            __.ictr.builtins_alias_default
+            if __.is_absent( control.ictr_alias )
+            else control.ictr_alias )
+        return __.ictr.install( alias = alias, **nomargs )
+    return __.ictr.produce_dispatcher( **nomargs )
+
+
 def _prepare_scribes_logging(
     auxdata: _state.Globals, control: Control, /, target: __.typx.TextIO
 ) -> None:
@@ -161,3 +225,60 @@ def _process_target(
     mode = 'w' if target.mode is TargetModes.Truncate else 'a'
     return auxdata.exits.enter_context( open(
         location, mode = mode, encoding = target.codec ) )
+
+
+def _produce_ictr_generalcfg(
+    control: Control, target: __.typx.TextIO
+) -> __.ictr.PrinterFactoriesArgument:
+    ''' Produces ictr printer factories for the presentation mode.
+
+        Plain and Null modes never colorize, so ANSI sequences are always
+        stripped. Rich mode uses the default factory so TTY detection and
+        ``NO_COLOR`` remain with ictr.
+    '''
+    match control.mode:
+        case Presentations.Rich:
+            if isinstance( target, __.io.TextIOBase ):
+                return (
+                    __.ictr.produce_printer_factory_default( target ),
+                )
+        case _: pass
+    return (
+        __.ictr.produce_printer_factory_default(
+            target, colorize = False ),
+    )
+
+
+def _resolve_ictr_active_flavors(
+    auxdata: _state.Globals, control: Control
+) -> tuple[
+    __.ictr.ActiveFlavorsArgument,
+    __.ictr.EvnActiveFlavorsArgument,
+]:
+    ''' Resolves active flavors with Control > app env > ictr env > level. '''
+    if not __.is_absent( control.active_flavors ):
+        return control.active_flavors, None
+    app_evname = (
+        f"{_application_name_normalized( auxdata )}_ACTIVE_FLAVORS" )
+    if app_evname in __.os.environ:
+        return __.absent, app_evname
+    if 'ICTR_ACTIVE_FLAVORS' in __.os.environ:
+        return __.absent, __.absent
+    level_name = _discover_inscription_level_name( auxdata, control )
+    return _derive_ictr_flavors( level_name ), None
+
+
+def _resolve_ictr_trace_levels(
+    auxdata: _state.Globals, control: Control
+) -> tuple[
+    __.ictr.TraceLevelsArgument,
+    __.ictr.EvnTraceLevelsArgument,
+]:
+    ''' Resolves trace levels with Control > app env > ictr env > defaults. '''
+    if not __.is_absent( control.trace_levels ):
+        return control.trace_levels, None
+    app_evname = (
+        f"{_application_name_normalized( auxdata )}_TRACE_LEVELS" )
+    if app_evname in __.os.environ:
+        return __.absent, app_evname
+    return __.absent, __.absent
