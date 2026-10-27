@@ -51,8 +51,7 @@ class Information( __.immut.DataclassObject ):
         if __.is_absent( package ):
             package, _ = _discover_invoker_location( )
         if not __.is_absent( package ): # pragma: no branch
-            # TODO: Python 3.12: importlib.metadata
-            from importlib_metadata import packages_distributions
+            from importlib.metadata import packages_distributions
             name = packages_distributions( ).get( package )
             if name:
                 location = (
@@ -89,11 +88,10 @@ async def _acquire_development_information(
 async def _acquire_production_location(
     package: str, exits: __.ctxl.AsyncExitStack
 ) -> __.Path:
-    # TODO: Python 3.12: importlib.resources
-    from importlib_resources import as_file, files  # pyright: ignore
+    from importlib.resources import as_file, files
     # Extract package contents to temporary directory, if necessary.
     return exits.enter_context(
-        as_file( files( package ) ) ) # pyright: ignore
+        as_file( files( package ) ) )
 
 
 async def _acquire_pyinstaller_information( # pragma: no cover

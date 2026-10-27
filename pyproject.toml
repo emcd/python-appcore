@@ -17,8 +17,6 @@ requires-python = '>= 3.12'
 dependencies = [
   'aiofiles ~= 24.1.0',
   'ictr ~= 1.0a2',
-  'importlib-metadata ~= 8.7.0',
-  'importlib-resources ~= 6.5.2',
   'platformdirs ~= 4.4.0',
   'python-dotenv ~= 1.1.1',
   'typing-extensions ~= 4.15.0',

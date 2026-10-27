@@ -182,8 +182,8 @@ Appcore is built on a foundation of proven, lightweight dependencies:
 * **Logging Enhancement**: Optional integration with `Rich
   <https://github.com/Textualize/rich>`_ for enhanced console output with
   graceful fallbacks.
-* **Distribution Management**: Uses ``importlib-metadata`` and
-  ``importlib-resources`` for package introspection and resource handling.
+* **Distribution Management**: Uses standard library ``importlib.metadata``
+  and ``importlib.resources`` for package introspection and resource handling.
 
 The architecture emphasizes:
 

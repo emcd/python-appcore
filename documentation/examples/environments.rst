@@ -46,7 +46,7 @@ development or production mode by examining how the package is installed:
 
 **Development mode detection:**
 
-1. **Check package distribution**: Uses ``importlib_metadata.packages_distributions()`` to see if your package is installed as a proper distribution
+1. **Check package distribution**: Uses ``importlib.metadata.packages_distributions()`` to see if your package is installed as a proper distribution
 2. **If not found**: Assumes development mode (``editable = True``)
 3. **Locate project root**: Searches upward from the current file to find ``pyproject.toml``
 4. **Respect boundaries**: Honors ``GIT_CEILING_DIRECTORIES`` environment variable to limit search scope

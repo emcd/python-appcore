@@ -131,9 +131,9 @@ async def test_200_prepare_production_distribution( ):
     exits = MagicMock( )
     # Mock an installed package to trigger production mode (lines 56-58)
     with (
-        patch( 'importlib_metadata.packages_distributions' ) as mock_pkg,
-        patch( 'importlib_resources.files' ) as mock_files,
-        patch( 'importlib_resources.as_file' ) as mock_as_file
+        patch( 'importlib.metadata.packages_distributions' ) as mock_pkg,
+        patch( 'importlib.resources.files' ) as mock_files,
+        patch( 'importlib.resources.as_file' ) as mock_as_file
     ):
         mock_pkg.return_value = { 'test-package': [ 'test-distribution' ] }
         mock_files.return_value = MagicMock( )
@@ -250,8 +250,8 @@ async def test_350_acquire_production_location( ):
     temp_path = Path( '/temp/extracted' )
     exits.enter_context.return_value = temp_path
     with (
-        patch( 'importlib_resources.files' ) as mock_files,
-        patch( 'importlib_resources.as_file' ) as mock_as_file
+        patch( 'importlib.resources.files' ) as mock_files,
+        patch( 'importlib.resources.as_file' ) as mock_as_file
     ):
         mock_files.return_value = MagicMock( )
         mock_as_file.return_value = MagicMock( )
@@ -530,7 +530,7 @@ version = "1.0.0"
         mock_pkg = MagicMock( __path__ = [ str( project_root ) ] )
         with (
             # Package found but not in distributions (returns empty dict)
-            patch( 'importlib_metadata.packages_distributions',
+            patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame ),
             patch.dict( module.__.sys.modules, { 'mypackage': mock_pkg } )
@@ -694,7 +694,7 @@ version = "1.0.0"
             package_location / 'some_file.py' )
         appcore_frame.f_back = external_frame
         with (
-            patch( 'importlib_metadata.packages_distributions',
+            patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame )
         ):
@@ -734,7 +734,7 @@ name = "anchor-test"
 version = "1.0.0"
 '''
         pyproject_path.write_text( pyproject_content )
-        with patch( 'importlib_metadata.packages_distributions',
+        with patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ):
             exits = MagicMock( )
             # Call prepare WITH project_anchor - should NOT trigger
@@ -772,7 +772,7 @@ version = "1.0.0"
             package_location / 'some_file.py' )
         appcore_frame.f_back = external_frame
         with (
-            patch( 'importlib_metadata.packages_distributions',
+            patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame )
         ):
@@ -802,7 +802,7 @@ version = "1.0.0"
         # (no installed package found)
         # This triggers the development mode path when name is None
         with patch(
-            'importlib_metadata.packages_distributions', return_value = {}
+            'importlib.metadata.packages_distributions', return_value = {}
         ):
             exits = MagicMock( )
             # This should trigger development mode because package not found
