@@ -23,6 +23,32 @@ Release Notes
 
 .. towncrier release notes start
 
+appcore 1.8 (2026-10-27)
+========================
+
+Enhancements
+------------
+
+- Add rendering protocol methods to ``Omniexception`` (``render_dictionary``, ``render_json``, ``render_markdown``, ``render_toml``) for structured exception output.
+- Integrate ``ictr`` as a first-class inscription subsystem alongside Python
+  logging. ``prepare()`` configures and optionally installs the ictr dispatcher;
+  ``Control`` gains ``install_ictr``; CLI exposes ``--active-flavors`` and
+  ``--trace-levels``. Flavor and trace configuration precedence is explicit
+  Control args, then ``{APP}_*`` env, then ``ICTR_*`` env, then defaults.
+
+
+Removals
+--------
+
+- Drop support for Python 3.10 and 3.11.
+  Require Python 3.12 or newer.
+- Replace the ``importlib-metadata`` and ``importlib-resources``
+  backports with standard library ``importlib.metadata`` and
+  ``importlib.resources``.
+- Replace the third-party ``tomli`` dependency with standard library
+  ``tomllib`` for TOML parsing (guaranteed by the Python 3.12 baseline).
+
+
 appcore 1.7 (2026-07-18)
 ========================
 
