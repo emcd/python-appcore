@@ -174,7 +174,7 @@ Dependencies & Architecture 🏛️
 
 Appcore is built on a foundation of proven, lightweight dependencies:
 
-* **Configuration**: Uses standard library ``tomli`` for TOML parsing with
+* **Configuration**: Uses standard library ``tomllib`` for TOML parsing with
   `accretive <https://pypi.org/project/accretive/>`_ data structures that can
   grow but never shrink.
 * **Platform Integration**: Leverages ``platformdirs`` for cross-platform

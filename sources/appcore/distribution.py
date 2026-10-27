@@ -81,7 +81,7 @@ async def _acquire_development_information(
 ) -> tuple[ __.Path, str ]:
     location = _locate_pyproject( anchor )
     pyproject = await _io.acquire_text_file_async(
-        location / 'pyproject.toml', deserializer = __.tomli.loads )
+        location / 'pyproject.toml', deserializer = __.tomllib.loads )
     name = pyproject[ 'project' ][ 'name' ]
     return location, name
 
