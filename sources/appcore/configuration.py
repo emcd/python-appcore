@@ -82,10 +82,10 @@ class TomlAcquirer( AcquirerAbc ):
             if __.is_absent( file ): return __.accret.Dictionary( { } )
         if isinstance( file, __.io.TextIOBase ):
             content = file.read( )
-            configuration = __.tomli.loads( content )
+            configuration = __.tomllib.loads( content )
         else:
             configuration = await _io.acquire_text_file_async(
-                file, deserializer = __.tomli.loads )
+                file, deserializer = __.tomllib.loads )
         includes = await self._acquire_includes(
             application_name,
             directories,
@@ -112,7 +112,7 @@ class TomlAcquirer( AcquirerAbc ):
             for location in locations )
         return await _io.acquire_text_files_async(
             *( file for file in __.itert.chain.from_iterable( iterables ) ),
-            deserializer = __.tomli.loads )
+            deserializer = __.tomllib.loads )
 
     def _discover_copy_template(
         self,

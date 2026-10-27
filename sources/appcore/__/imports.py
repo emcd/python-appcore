@@ -46,7 +46,7 @@ import accretive as         accret
 import                      aiofiles
 import                      ictr
 import platformdirs as      pdirs
-import                      tomli
+import                      tomllib
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import dynadoc as           ddoc

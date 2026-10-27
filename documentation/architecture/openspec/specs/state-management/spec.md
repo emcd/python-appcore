@@ -1,5 +1,9 @@
 # State Management
 
+## Purpose
+
+Provides immutable global state management for application configuration, distribution information, and runtime context.
+
 ## Requirements
 
 ### Requirement: Immutable Global State

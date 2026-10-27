@@ -1,4 +1,12 @@
-## MODIFIED Requirements
+# Inscription
+
+## Purpose
+
+Provides integrated application inscription for Python applications,
+combining standard logging with ictr-powered diagnostic printing under
+unified configuration, level mapping, and precedence rules.
+
+## Requirements
 
 ### Requirement: Inscription Control
 
@@ -57,6 +65,11 @@ no explicit flavor configuration is provided.
 - **THEN** active flavors include `note` and all error-family flavors
 - **AND** `monition` is excluded
 
+#### Scenario: Warn level flavors
+- **WHEN** inscription level is `warn` and no explicit flavors are set
+- **THEN** active flavors include `monition` and all error-family flavors
+- **AND** `note` is excluded
+
 #### Scenario: Error level flavors
 - **WHEN** inscription level is `error` or `critical`
 - **THEN** only error-family and semantic flavors are active
@@ -64,12 +77,12 @@ no explicit flavor configuration is provided.
 ### Requirement: Colorization Control
 
 The system SHALL control ictr colorization based on the inscription
-presentation mode using a custom printer factory.
+presentation mode using ictr printer factories.
 
 #### Scenario: Plain or null mode
 - **WHEN** presentation mode is `Plain` or `Null`
-- **THEN** `_produce_ictr_generalcfg()` provides a printer factory that wraps
-  the output stream with ANSI stripping
+- **THEN** `_produce_ictr_generalcfg()` provides the ictr default printer
+  factory with colorization disabled
 - **AND** ANSI escape sequences are suppressed regardless of TTY detection
 
 #### Scenario: Rich mode

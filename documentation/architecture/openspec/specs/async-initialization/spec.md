@@ -1,5 +1,9 @@
 # Async Initialization
 
+## Purpose
+
+Provides a single-point async initialization mechanism that coordinates configuration loading, inscription setup, and state assembly for Python applications.
+
 ## Requirements
 
 ### Requirement: Single-Point Async Preparation

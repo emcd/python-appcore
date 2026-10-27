@@ -27,4 +27,5 @@ render_and_print
 
 active_flavors
 ictr_alias
+install_ictr
 trace_levels

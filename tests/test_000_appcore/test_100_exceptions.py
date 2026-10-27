@@ -22,11 +22,7 @@
 
 
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.exceptions"
-module = cache_import_module( MODULE_QNAME )
+from appcore import exceptions as module
 
 
 def test_100_omniexception_hierarchy( ):

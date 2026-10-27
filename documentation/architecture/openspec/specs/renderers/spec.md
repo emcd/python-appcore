@@ -1,5 +1,9 @@
 # Rendering
 
+## Purpose
+
+Defines the rendering protocol for structured output (dictionary, JSON, Markdown, TOML) used by exceptions and CLI display.
+
 ## Requirements
 
 ### Requirement: Renderable Protocol

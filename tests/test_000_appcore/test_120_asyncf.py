@@ -22,16 +22,12 @@
 
 
 import asyncio
+
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-
-MODULE_QNAME = f"{PACKAGE_NAME}.asyncf"
-module = cache_import_module( MODULE_QNAME )
-
-exceptions_module = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-generics_module = cache_import_module( f"{PACKAGE_NAME}.generics" )
+from appcore import asyncf as module
+from appcore import exceptions as exceptions_module
+from appcore import generics as generics_module
 
 
 @pytest.mark.asyncio
@@ -82,7 +78,7 @@ async def test_140_gather_async_with_failures( ):
         return 'success'
     async def failing_operation( ):
         raise ValueError( 'failure' )
-    with pytest.raises( Exception ) as exc_info:  # ExceptionGroup in 3.11+
+    with pytest.raises( ExceptionGroup ) as exc_info:
         await module.gather_async(
             successful_operation( ), failing_operation( ) )
     # Check that it's some form of exception group

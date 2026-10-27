@@ -1,5 +1,9 @@
 # Configuration Management
 
+## Purpose
+
+Provides extensible configuration acquisition with a default TOML implementation, hierarchical merging, template variables, and environment overrides.
+
 ## Requirements
 
 ### Requirement: Extensible Configuration Acquisition

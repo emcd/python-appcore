@@ -20,17 +20,13 @@
 
 ''' I/O utilities tests. '''
 
-
 import tempfile
 
 from pathlib import Path
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-MODULE_QNAME = f"{PACKAGE_NAME}.io"
-module = cache_import_module( MODULE_QNAME )
+from appcore import io as module
 
 
 @pytest.mark.asyncio

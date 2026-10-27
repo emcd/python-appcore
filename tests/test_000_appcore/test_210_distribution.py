@@ -20,7 +20,6 @@
 
 ''' Distribution detection and information tests. '''
 
-
 import os
 
 from pathlib import Path
@@ -28,12 +27,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from .__ import PACKAGE_NAME, cache_import_module
-
-MODULE_QNAME = f"{PACKAGE_NAME}.distribution"
-module = cache_import_module( MODULE_QNAME )
-
-exceptions_module = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
+from appcore import distribution as module
+from appcore import exceptions as exceptions_module
 
 
 def test_100_information_creation( ):
@@ -136,9 +131,9 @@ async def test_200_prepare_production_distribution( ):
     exits = MagicMock( )
     # Mock an installed package to trigger production mode (lines 56-58)
     with (
-        patch( 'importlib_metadata.packages_distributions' ) as mock_pkg,
-        patch( 'importlib_resources.files' ) as mock_files,
-        patch( 'importlib_resources.as_file' ) as mock_as_file
+        patch( 'importlib.metadata.packages_distributions' ) as mock_pkg,
+        patch( 'importlib.resources.files' ) as mock_files,
+        patch( 'importlib.resources.as_file' ) as mock_as_file
     ):
         mock_pkg.return_value = { 'test-package': [ 'test-distribution' ] }
         mock_files.return_value = MagicMock( )
@@ -182,13 +177,13 @@ async def test_220_prepare_production_mode_simple( ):
 
 
 def test_300_locate_pyproject_function_exists( ):
-    ''' _locate_pyproject function is available. '''
+    ''' Pyproject locator is available on the module. '''
     assert hasattr( module, '_locate_pyproject' )
     assert callable( module._locate_pyproject )
 
 
 def test_310_locate_pyproject_exception_type( ):
-    ''' _locate_pyproject raises appropriate exception type. '''
+    ''' Pyproject locator raises appropriate exception type. '''
     # This tests the exception type without actually running the function
     assert hasattr( exceptions_module, 'FileLocateFailure' )
     sample_exception = exceptions_module.FileLocateFailure(
@@ -198,7 +193,7 @@ def test_310_locate_pyproject_exception_type( ):
 
 
 def test_320_locate_pyproject_environment_awareness( ):
-    ''' _locate_pyproject is aware of environment variables. '''
+    ''' Pyproject locator is aware of environment variables. '''
     # Verify the function accesses GIT_CEILING_DIRECTORIES
     # by checking the code reads os.environ
     import inspect
@@ -209,7 +204,7 @@ def test_320_locate_pyproject_environment_awareness( ):
 
 @pytest.mark.asyncio
 async def test_330_acquire_development_information_with_location( ):
-    ''' _acquire_development_information uses provided location. '''
+    ''' Development information uses provided location. '''
     # Test with real temporary directory since aiofiles integration is complex
     import tempfile
     with tempfile.TemporaryDirectory( ) as temp_dir:
@@ -229,7 +224,7 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_340_acquire_development_information_auto_locate( ):
-    ''' _acquire_development_information auto-locates pyproject.toml. '''
+    ''' Development information auto-locates pyproject.toml. '''
     # Use real temporary directory for async file operations
     import tempfile
     with tempfile.TemporaryDirectory( ) as temp_dir:
@@ -250,13 +245,13 @@ version = "1.0.0"
 
 @pytest.mark.asyncio
 async def test_350_acquire_production_location( ):
-    ''' _acquire_production_location extracts package to temp directory. '''
+    ''' Production location extracts package to temp directory. '''
     exits = MagicMock( )
     temp_path = Path( '/temp/extracted' )
     exits.enter_context.return_value = temp_path
     with (
-        patch( 'importlib_resources.files' ) as mock_files,
-        patch( 'importlib_resources.as_file' ) as mock_as_file
+        patch( 'importlib.resources.files' ) as mock_files,
+        patch( 'importlib.resources.as_file' ) as mock_as_file
     ):
         mock_files.return_value = MagicMock( )
         mock_as_file.return_value = MagicMock( )
@@ -295,7 +290,6 @@ def test_410_information_type_annotations( ):
 def test_500_discover_invoker_location_finds_caller( ):
     ''' Invoker location discovery finds the calling location. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -322,7 +316,6 @@ def test_500_discover_invoker_location_finds_caller( ):
 def test_510_discover_invoker_location_fallback( ):
     ''' Invoker location discovery returns cwd for no external frame. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
@@ -343,7 +336,6 @@ def test_510_discover_invoker_location_fallback( ):
 def test_515_discover_invoker_location_no_frame( ):
     ''' Invoker location discovery handles when currentframe returns None. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
@@ -359,7 +351,6 @@ def test_515_discover_invoker_location_no_frame( ):
 def test_517_discover_invoker_location_site_packages( ):
     ''' Invoker location discovery allows site-packages calling packages. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         site_packages = Path( '/fake/venv/lib/python3.10/site-packages' )
@@ -387,7 +378,6 @@ def test_517_discover_invoker_location_site_packages( ):
 def test_518_discover_invoker_location_name_detection( ):
     ''' Uses __name__ for package detection with boundary finding. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         site_packages = Path( '/fake/venv/lib/python3.11/site-packages' )
@@ -422,7 +412,6 @@ def test_518_discover_invoker_location_name_detection( ):
 def test_519_discover_invoker_location_no_name( ):
     ''' Skips frames with no __name__ or __main__. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
@@ -493,7 +482,6 @@ def test_524_detect_package_boundary_fallback( ):
 def test_525_discover_invoker_location_main_module( ):
     ''' Skips frames with __name__ set to __main__. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
@@ -542,7 +530,7 @@ version = "1.0.0"
         mock_pkg = MagicMock( __path__ = [ str( project_root ) ] )
         with (
             # Package found but not in distributions (returns empty dict)
-            patch( 'importlib_metadata.packages_distributions',
+            patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame ),
             patch.dict( module.__.sys.modules, { 'mypackage': mock_pkg } )
@@ -560,7 +548,6 @@ version = "1.0.0"
 def test_527_discover_invoker_location_stdlib_continue( ):
     ''' Skips stdlib frames that are not in site-packages. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
@@ -604,7 +591,6 @@ def test_528_detect_package_boundary_absent_result( ):
 def test_529_discover_invoker_location_boundary_absent( ):
     ''' Continues searching for package when not detected on stack frame. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         cwd = Path( '/fake/cwd' )
@@ -631,7 +617,6 @@ def test_529_discover_invoker_location_boundary_absent( ):
 def test_530_locate_pyproject_finds_in_current_dir( ):
     ''' Finds pyproject.toml in current directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -649,7 +634,6 @@ version = "1.0.0"
 def test_530_locate_pyproject_finds_in_parent_dir( ):
     ''' Finds pyproject.toml in parent directory. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -669,7 +653,6 @@ version = "1.0.0"
 def test_540_locate_pyproject_handles_file_anchor( ):
     ''' Finds pyproject.toml from anchor as file path. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -711,7 +694,7 @@ version = "1.0.0"
             package_location / 'some_file.py' )
         appcore_frame.f_back = external_frame
         with (
-            patch( 'importlib_metadata.packages_distributions',
+            patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame )
         ):
@@ -727,7 +710,6 @@ version = "1.0.0"
 def test_560_locate_pyproject_with_missing_file( ):
     ''' Project location raises FileLocateFailure when pyproject absent. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         temp_path = Path( '/fake/empty' )
@@ -752,7 +734,7 @@ name = "anchor-test"
 version = "1.0.0"
 '''
         pyproject_path.write_text( pyproject_content )
-        with patch( 'importlib_metadata.packages_distributions',
+        with patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ):
             exits = MagicMock( )
             # Call prepare WITH project_anchor - should NOT trigger
@@ -790,7 +772,7 @@ version = "1.0.0"
             package_location / 'some_file.py' )
         appcore_frame.f_back = external_frame
         with (
-            patch( 'importlib_metadata.packages_distributions',
+            patch( 'importlib.metadata.packages_distributions',
                    return_value = {} ),
             patch( 'inspect.currentframe', return_value = appcore_frame )
         ):
@@ -820,7 +802,7 @@ version = "1.0.0"
         # (no installed package found)
         # This triggers the development mode path when name is None
         with patch(
-            'importlib_metadata.packages_distributions', return_value = {}
+            'importlib.metadata.packages_distributions', return_value = {}
         ):
             exits = MagicMock( )
             # This should trigger development mode because package not found
@@ -834,7 +816,6 @@ version = "1.0.0"
 def test_590_locate_pyproject_with_git_ceiling_directories( ):
     ''' Project location respects GIT_CEILING_DIRECTORIES. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         ceiling_dir = Path( '/fake/ceiling' )
@@ -861,7 +842,6 @@ version = "1.0.0"
 def test_600_locate_pyproject_with_empty_ceiling_directories( ):
     ''' Project location handles empty GIT_CEILING_DIRECTORIES. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         project_root = Path( '/fake/project' )
@@ -883,7 +863,6 @@ version = "1.0.0"
 def test_610_locate_pyproject_filesystem_root_traversal( ):
     ''' Project location raises FileLocateFailure at filesystem root. '''
     from pyfakefs.fake_filesystem_unittest import Patcher
-
     with Patcher( ) as patcher:
         fs = patcher.fs
         deep_dir = Path( '/fake/very/deep/directory/structure' )
@@ -897,8 +876,7 @@ def test_610_locate_pyproject_filesystem_root_traversal( ):
 @pytest.mark.asyncio
 async def test_615_prepare_with_auto_detection( ):
     ''' Distribution preparation auto-detects calling package. '''
-    __ = cache_import_module( f"{PACKAGE_NAME}.__" )
-
+    from appcore import __
     async with __.ctxl.AsyncExitStack( ) as exits:
         distribution = await module.Information.prepare( exits )
         # Should auto-detect this project (emcd-appcore) instead of 'appcore'
