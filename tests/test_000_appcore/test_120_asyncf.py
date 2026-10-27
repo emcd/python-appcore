@@ -78,7 +78,7 @@ async def test_140_gather_async_with_failures( ):
         return 'success'
     async def failing_operation( ):
         raise ValueError( 'failure' )
-    with pytest.raises( Exception ) as exc_info:  # ExceptionGroup in 3.11+
+    with pytest.raises( ExceptionGroup ) as exc_info:
         await module.gather_async(
             successful_operation( ), failing_operation( ) )
     # Check that it's some form of exception group
